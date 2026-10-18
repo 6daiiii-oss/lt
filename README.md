@@ -4,14 +4,14 @@ Página estática adaptable a celular y computadora, sin dependencias de instala
 
 ## Abrir el proyecto en Visual Studio Code
 
-1. Descarga y extrae `Lote.zip`.
-2. Copia los archivos extraídos (`index.html`, `styles.css`, `app.js` y este `README.md`) dentro de `C:\Users\Rodolfo\Documents\Lote`. Si el ZIP crea una carpeta `Lote`, copia su contenido para evitar que quede `Lote\Lote\index.html`.
+1. Descarga el proyecto desde GitHub con **Code → Download ZIP**, o usa el archivo `Lote.zip` que recibiste en esta conversación.
+2. Extrae los archivos (`index.html`, `styles.css`, `app.js` y este `README.md`) dentro de `C:\Users\Rodolfo\Documents\Lote`. Si se crea una carpeta extra llamada `lt` o `Lote`, copia su contenido para evitar que quede una ruta anidada como `Lote\lt\index.html`.
 3. Abre Visual Studio Code.
 4. Selecciona **Archivo → Abrir carpeta…** y elige `C:\Users\Rodolfo\Documents\Lote`.
 5. En el panel izquierdo, abre `index.html`. Para ver la página, haz clic derecho sobre el archivo y elige **Open with Live Server** si ya tienes esa extensión; también puedes abrir `index.html` directamente en Chrome o Edge.
 6. Si usas Live Server, guarda cualquier cambio con `Ctrl + S` y el navegador se actualizará.
 
-No hace falta pegar cada bloque de código por separado: el ZIP contiene los archivos listos para abrir y editar. Si prefieres copiar manualmente, crea los tres archivos con esos nombres exactos y pega en cada uno el contenido correspondiente.
+No hace falta pegar cada bloque de código por separado: el repositorio contiene los archivos listos para abrir y editar. También puedes clonar el repositorio con Git desde Visual Studio Code.
 
 ## Cómo se mostrarán productos después
 
