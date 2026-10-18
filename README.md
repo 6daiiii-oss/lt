@@ -1,43 +1,44 @@
-# Lote — página principal (primera versión)
+# Lote — página principal
 
-Página estática adaptable a celular y computadora, sin dependencias de instalación. El catálogo arranca vacío y muestra un mensaje de próximos lanzamientos. El módulo `app.js` ya puede pintar tarjetas cuando recibe productos; la carga automática real requiere conectar una fuente de catálogo.
+Prototipo visual de un marketplace mayorista que conecta marcas y proveedores con tiendas independientes. La página explica el modelo y permite recorrer categorías, selecciones, búsqueda, compra mínima y ordenamiento. El catálogo permanece vacío hasta conectar productos reales.
 
-## Abrir el proyecto en Visual Studio Code
+## Ver el sitio
 
-1. Descarga el proyecto desde GitHub con **Code → Download ZIP**, o usa el archivo `Lote.zip` que recibiste en esta conversación.
-2. Extrae los archivos (`index.html`, `styles.css`, `app.js` y este `README.md`) dentro de `C:\Users\Rodolfo\Documents\Lote`. Si se crea una carpeta extra llamada `lt` o `Lote`, copia su contenido para evitar que quede una ruta anidada como `Lote\lt\index.html`.
-3. Abre Visual Studio Code.
-4. Selecciona **Archivo → Abrir carpeta…** y elige `C:\Users\Rodolfo\Documents\Lote`.
-5. En el panel izquierdo, abre `index.html`. Para ver la página, haz clic derecho sobre el archivo y elige **Open with Live Server** si ya tienes esa extensión; también puedes abrir `index.html` directamente en Chrome o Edge.
-6. Si usas Live Server, guarda cualquier cambio con `Ctrl + S` y el navegador se actualizará.
+1. En el repositorio de GitHub, selecciona **Code → Download ZIP** y extrae el contenido en `C:\Users\Rodolfo\Documents\Lote`.
+2. Abre esa carpeta en Visual Studio Code.
+3. Para verlo en `http://localhost:3000`, abre **Terminal → Nuevo terminal** y ejecuta `py -m http.server 3000`.
+4. Si Python no reconoce `py`, usa `python -m http.server 3000`. Abre `http://localhost:3000` en el navegador y detén el servidor con `Ctrl + C`.
 
-No hace falta pegar cada bloque de código por separado: el repositorio contiene los archivos listos para abrir y editar. También puedes clonar el repositorio con Git desde Visual Studio Code.
+También se puede abrir `index.html` directamente o usar la extensión Live Server.
 
-## Cómo se mostrarán productos después
+## Catálogo y filtros
 
-`app.js` consulta `GET /api/products`. La respuesta puede ser un arreglo JSON:
+`app.js` consulta `GET /api/products` y también acepta el arreglo `window.LOTE_PRODUCTS`. Campos esperados por producto:
 
 ```json
-[
-  {
-    "name": "Nombre del producto",
-    "category": "Hogar",
-    "seller": "Nombre del proveedor",
-    "price": 24.9,
-    "unit": "caja de 12",
-    "image": "/images/producto.jpg"
-  }
-]
+{
+  "name": "Nombre del producto",
+  "category": "Hogar",
+  "brand": "Marca",
+  "wholesalePrice": 24.9,
+  "retailPrice": 39.9,
+  "minUnits": 12,
+  "stock": 50,
+  "image": "/images/producto.jpg",
+  "isNew": true,
+  "tags": ["nuevo"],
+  "createdAt": "2026-10-18"
+}
 ```
 
-También acepta `{ "products": [ ... ] }`. Cuando la lista llegue vacía o el endpoint no exista, se conserva el estado vacío actual. Las tarjetas se generan con los datos recibidos.
+También se acepta `price` como precio mayorista y `seller` como proveedor. Los filtros trabajan con categoría, texto, mínimo de compra, novedades, lotes pequeños y margen. La selección de margen estima `(PVP - precio mayorista) / PVP`; es una referencia bruta, no una promesa de rentabilidad, pues no contempla otros costos del negocio.
 
-**Importante:** esta versión solo contiene la interfaz. No consulta proveedores, no importa inventario por su cuenta y no guarda pedidos. Para que los productos aparezcan de forma autónoma habrá que conectar una base de datos y la fuente que los publicará (por ejemplo, un panel de proveedores, una integración o un backend). Las tarjetas y la sección vacía ya están preparadas para esa siguiente etapa.
+**La interfaz todavía no conecta una base de datos, proveedores, inventario real, carrito ni pedidos.** Para cargar productos automáticamente hace falta implementar la fuente de catálogo y exponer el endpoint o publicar `window.LOTE_PRODUCTS`.
 
 ## Archivos
 
-- `index.html`: estructura y contenido de la página.
-- `styles.css`: identidad visual y diseño adaptable.
-- `app.js`: menú móvil y renderizado de productos del catálogo.
+- `index.html`: contenido semántico y estructura de la portada.
+- `styles.css`: tipografía, jerarquía visual, categorías y diseño adaptable.
+- `app.js`: filtros, selecciones, menú móvil y renderizado del catálogo.
 
-La tipografía se carga desde Google Fonts; con internet se verá como se diseñó. Sin conexión, el navegador usará tipografías de respaldo.
+La tipografía DM Sans y Manrope se carga desde Google Fonts; se usan fuentes del sistema como respaldo.
