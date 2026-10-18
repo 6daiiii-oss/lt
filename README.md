@@ -41,4 +41,4 @@ También se acepta `price` como precio mayorista y `seller` como proveedor. Los 
 - `styles.css`: tipografía, jerarquía visual, categorías y diseño adaptable.
 - `app.js`: filtros, selecciones, menú móvil y renderizado del catálogo.
 
-La tipografía DM Sans y Manrope se carga desde Google Fonts; se usan fuentes del sistema como respaldo.
+La tipografía Inter para lectura y Manrope para titulares se carga desde Google Fonts; se usan fuentes del sistema como respaldo.
