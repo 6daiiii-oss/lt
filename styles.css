@@ -1,7 +1,7 @@
 :root{
   --paper:#f7f8f4;--white:#fff;--ink:#17231d;--muted:#536159;--soft:#6c786f;--line:#dce3d9;
   --green:#d9f26b;--green-dark:#678229;--pine:#20382d;--pine-2:#2d4a3a;--lav:#e7e3f5;
-  --sans:'DM Sans','Segoe UI',Arial,sans-serif;--display:'Manrope','Segoe UI',Arial,sans-serif;
+  --sans:'Inter','Segoe UI',Arial,sans-serif;--display:'Manrope','Segoe UI',Arial,sans-serif;
   --xs:.75rem;--sm:.875rem;--base:1rem;--lead:1.125rem;--h3:1.5rem;--h2:clamp(2rem,3.6vw,2.75rem);
 }
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--paper);color:var(--ink);font:400 var(--base)/1.6 var(--sans);-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{color:inherit}.shell{width:min(1160px,calc(100% - 64px));margin-inline:auto}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
