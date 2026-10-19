@@ -2,13 +2,19 @@
 
 ## Portada
 
-`/` es una landing de descubrimiento: propuesta de valor, búsqueda principal, fotografía editorial, categorías, selecciones, pasos y llamada para proveedores. No utiliza el panel privado como entrada. Si no existe inventario publicado, informa del lanzamiento sin crear productos ficticios.
+`/` es la portada del marketplace. La cabecera contiene la búsqueda principal y una descripción permanente: «Productos al por mayor». La navegación permite entrar en Inicio, Productos, Novedades, Pocas unidades, Marcas, Cómo comprar y Vender en Lote.
+
+La portada muestra un banner corto, categorías, catálogo con pestañas y un bloque para proveedores. La explicación de compra queda en un desplegable. Se eliminaron los eslóganes, subtítulos y secciones repetidas que competían por atención. Si no existe inventario publicado, se informa en un bloque compacto sin crear productos ficticios.
+
+El contenido principal usa 16–17 px, la navegación 15–16 px y el título del catálogo 28 px en escritorio. El banner de portada usa 38 px, frente a los 64 px de la propuesta anterior. Los títulos y mensajes usan nombres concretos: «Todos los productos», «Marcas», «Iniciar sesión» y «No encontramos productos».
 
 Las dos fotografías de estilo editorial son generadas y están identificadas como imágenes de inspiración. Sus dimensiones, proporciones y variantes están documentadas en `public/images/README.md`. La identidad visual sigue siendo provisional.
 
 ## Catálogo y búsqueda
 
-`/catalogo` tiene búsqueda con sugerencias de productos y marcas publicados, y categorías disponibles. Las sugerencias aparecen tras dos caracteres; hay espera de 280 ms, descarte de respuestas antiguas, navegación por enlaces con Tab, acceso a sugerencias con flecha abajo y cierre con Escape o al salir. Una búsqueda sin coincidencias no inventa sugerencias comerciales.
+La búsqueda compartida de cabecera ofrece sugerencias de productos y marcas publicados, y categorías disponibles. En `/marcas` busca marcas; en `/catalogo` conserva los filtros actuales al buscar. Las sugerencias aparecen tras dos caracteres; hay espera de 280 ms, descarte de respuestas antiguas, navegación por enlaces con Tab, acceso a sugerencias con flecha abajo y cierre con Escape o al salir. Una búsqueda sin coincidencias no inventa sugerencias comerciales.
+
+Las pestañas Todos, Novedades y Pocas unidades consultan el catálogo real. En portada muestran hasta ocho productos y en catálogo conservan la paginación. «Pocas unidades» filtra productos con un mínimo de hasta 12 unidades; el mínimo monetario por marca se revisa por separado. Cambiar entre pestañas o categorías de una misma página conserva el desplazamiento para evitar saltos a la cabecera.
 
 La búsqueda de productos combina palabras en nombre, marca, categoría y SKU; ignora mayúsculas y acentos. Los filtros siguen en la URL y funcionan al volver/avanzar. Las categorías están a un toque; ordenar actualiza la vista; los filtros avanzados se despliegan con un botón y se cierran al aplicar, pulsar Escape o hacer clic fuera. Los filtros activos muestran nombres legibles y se quitan por separado. El rango de precios se valida antes de aplicar.
 

@@ -7,9 +7,10 @@ import { sellerView } from './seller.js';
 import { adminView } from './admin.js';
 import { navigate, reload } from './router.js';
 import { bindSearch, disposeSearch } from './search.js';
-let generation=0;
+let generation=0,nextScrollTop=0;
 async function render() {
   const current=++generation,root=document.querySelector('#app'),path=location.pathname.replace(/\/$/,'')||'/',url=new URL(location.href);
+  const scrollTop=nextScrollTop;nextScrollTop=0;
   disposeSearch();
   root.setAttribute('aria-busy','true');
   let shell=publicShell;
@@ -34,12 +35,12 @@ async function render() {
     if(current!==generation)return;
     root.innerHTML=shell(view?.html||`<section class="container page">${empty('Esta página no está disponible.','Revisa la dirección o vuelve al inicio.',button('Volver a Lote','/'))}</section>`);
     view?.bind?.();
-    bindSearch('global-search');
+    bindSearch('global-search',{params:location.pathname==='/catalogo'?new URLSearchParams(location.search):new URLSearchParams(),destination:location.pathname==='/marcas'?'/marcas':'/catalogo'});
     onAction('logout',async()=>{await api('/auth/logout',{method:'POST',body:{}});state.organizationId=null;await refreshMe();navigate('/');});
     document.querySelector('#org-switch')?.addEventListener('change',async event=>{state.organizationId=event.target.value;await refreshMe();reload();});
     document.querySelectorAll('img').forEach(image=>image.addEventListener('error',()=>{const span=document.createElement('span');span.className='image-placeholder';span.textContent='Imagen no disponible';image.replaceWith(span);},{once:true}));
     const h1=document.querySelector('h1');document.title=h1?`${h1.innerText.replace(/\s+/g,' ').trim()} — Lote`:'Lote';
-    document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:0});
+    document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:scrollTop});
   }catch(error) {
     if(current!==generation)return;
     if(error.status===401){state.user=null;state.organizations=[];state.organizationId=null;state.csrfToken=null;navigate('/login?next='+encodeURIComponent(path+url.search)+'&sesion=caducada',{replace:true});return;}
@@ -51,6 +52,7 @@ document.addEventListener('click',event=>{
   const a=event.target.closest('a[href]');if(!a||a.target||a.hasAttribute('download')||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||event.button!==0)return;
   const url=new URL(a.href,location.origin);
   if(url.origin!==location.origin||url.hash||url.pathname.startsWith('/api/')||url.pathname.startsWith('/media/'))return;
+  if(a.closest('.browse-tabs,.category-tabs')&&url.pathname===location.pathname)nextScrollTop=window.scrollY;
   event.preventDefault();navigate(url.pathname+url.search);
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const filters=document.querySelector('.filter-popover[open]');if(filters){filters.open=false;filters.querySelector('summary')?.focus();}}});

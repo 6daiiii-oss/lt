@@ -4,7 +4,7 @@ Lote conecta marcas y proveedores revisados con tiendas independientes para reve
 
 La instalación normal empieza con cero productos, pedidos, reseñas y actividad comercial. Solo se crean seis categorías. No se crean administradores automáticamente.
 
-La portada `/` presenta Lote como una landing de descubrimiento, con imágenes editoriales y búsqueda. El catálogo público se explora sin cuenta; para guardar, comprar y gestionar un negocio hay que iniciar sesión. Detalles de búsqueda, filtros y accesos: [docs/DISCOVERY.md](docs/DISCOVERY.md).
+La portada `/` presenta el marketplace con búsqueda en la cabecera, categorías y pestañas de productos, novedades y compras de pocas unidades. El catálogo público se explora sin cuenta; para guardar, comprar y gestionar un negocio hay que iniciar sesión. Detalles de búsqueda, filtros y accesos: [docs/DISCOVERY.md](docs/DISCOVERY.md).
 
 ## Windows / VS Code
 

@@ -2,7 +2,7 @@
 
 ## Revisión de descubrimiento y accesos
 
-Portada rediseñada como landing, dos imágenes editoriales generadas con variantes WebP, buscador con sugerencias reales y filtros desplegables. Se hizo explícita la autenticación antes de renderizar espacios privados y se sustituyeron controles de compra para visitantes por llamadas de ingreso/registro. Los endpoints privados conservan sus comprobaciones del servidor. Detalles: [docs/DISCOVERY.md](docs/DISCOVERY.md).
+Portada de marketplace con búsqueda compartida en la cabecera, navegación ampliada y pestañas de catálogo funcionales. Se redujeron eslóganes y párrafos, se aumentó el texto de lectura a 16–17 px y se redujo el título del catálogo a 28 px. Se conservan las dos imágenes editoriales con variantes WebP, las sugerencias reales y los filtros desplegables. Se consulta la sesión antes de renderizar espacios privados; los visitantes reciben llamadas de ingreso/registro en lugar de controles de compra. Los endpoints privados conservan sus comprobaciones del servidor. Detalles: [docs/DISCOVERY.md](docs/DISCOVERY.md).
 
 Se revisaron capturas de portada y catálogo en escritorio/móvil con el servidor cloud. No se ejecutaron suites de pruebas en esta revisión; las cantidades y resultados que aparecen más abajo documentan la implementación inicial, no una nueva ejecución sobre esta interfaz.
 
