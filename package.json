@@ -1,0 +1,43 @@
+{
+  "name": "lote-b2b",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "postinstall": "node scripts/fonts.js",
+    "predev": "node --env-file-if-exists=.env scripts/prepare-dev.js",
+    "dev": "node --env-file-if-exists=.env --watch server/index.js",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "setup:local": "node scripts/setup-local.js",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "migrate": "node --env-file-if-exists=.env scripts/migrate.js",
+    "worker": "node --env-file-if-exists=.env server/worker.js",
+    "admin:create": "node --env-file-if-exists=.env scripts/admin-create.js",
+    "demo:seed": "node --env-file-if-exists=.env scripts/demo.js",
+    "demo:dev": "node --env-file=.env --watch scripts/run-demo.js server",
+    "demo:worker": "node --env-file=.env scripts/run-demo.js worker",
+    "test": "node --env-file-if-exists=.env --test --test-concurrency=1 tests/*.test.js",
+    "test:ui": "playwright test",
+    "check": "node scripts/check.js"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/manrope": "5.3.0",
+    "csv-parse": "7.0.3",
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.1",
+    "helmet": "8.3.0",
+    "ipaddr.js": "2.5.0",
+    "nodemailer": "10.1.7",
+    "pg": "8.23.1",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

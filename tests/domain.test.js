@@ -1,0 +1,262 @@
+import { test, before, beforeEach, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { once } from 'node:events';
+import { randomUUID } from 'node:crypto';
+import { isolatedDatabase, fixtures, product } from './helpers.js';
+let isolated,db,app,server,base,accounts,config,services;
+before(async()=>{
+  isolated=await isolatedDatabase();
+  db=await import('../server/db.js');await db.migrate();
+  ({config}=await import('../server/config.js'));
+  services=await import('../server/payments.js');
+  app=(await import('../server/app.js')).createApp({testing:true});
+  server=app.listen(0,'127.0.0.1');await once(server,'listening');base=`http://127.0.0.1:${server.address().port}`;
+});
+beforeEach(async()=>{
+  await db.query('TRUNCATE users,organizations RESTART IDENTITY CASCADE');
+  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;
+  accounts=await fixtures(db);
+});
+after(async()=>{if(server){await new Promise(resolve=>server.close(resolve));}if(db)await db.pool.end();if(isolated)await isolated.drop();});
+async function request(method,path,body,user,headers={}) {
+  const response=await fetch(base+'/api'+path,{method,headers:{Origin:config.origin,...(user?{Cookie:user.cookie,'X-CSRF-Token':user.csrf,...(user.orgId?{'X-Organization-Id':user.orgId}:{})}:{}),...(body!==undefined?{'Content-Type':'application/json'}:{}),...headers},...(body!==undefined?{body:typeof body==='string'?body:JSON.stringify(body)}:{})});
+  const data=await response.json();return {status:response.status,data,headers:response.headers};
+}
+const post=(path,body,user,headers)=>request('POST',path,body,user,headers);
+async function putInCart(buyer,p,n=p.moq) {const r=await post('/cart/items',{product_id:p.id,quantity:n,expected_price_cents:p.wholesale_cents},buyer);assert.equal(r.status,201,JSON.stringify(r.data));}
+async function checkout(buyer,key=randomUUID()) {
+  const cart=await request('GET','/cart',undefined,buyer);
+  return post('/checkout',{address_id:buyer.addressId,receipt:{kind:'order_summary'},reviewed_total_cents:cart.data.total_cents,agree_to_conditions:true,sandbox:true},buyer,{'Idempotency-Key':key});
+}
+async function paidOrder({twoBrands=false}={}) {
+  const a=await product(db,accounts.sellerA,{moq:6,pack_multiple:6,wholesale_cents:250});await putInCart(accounts.buyerA,a);
+  let b;
+  if(twoBrands){b=await product(db,accounts.sellerB,{moq:3,pack_multiple:3,wholesale_cents:400});await putInCart(accounts.buyerA,b);}
+  const result=await checkout(accounts.buyerA);assert.equal(result.status,201,JSON.stringify(result.data));
+  const approved=await post('/payments/sandbox/'+result.data.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA);assert.equal(approved.status,200,JSON.stringify(approved.data));
+  const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1 ORDER BY brand_id',[result.data.purchase_id])).rows;
+  return {a,b,checkout:result.data,orders};
+}
+test('instalación vacía: cero productos, pedidos, reseñas y métricas comerciales',async()=>{
+  assert.equal((await request('GET','/products')).data.total,0);
+  assert.equal((await request('GET','/categories')).data.length,6);
+  const summary=await request('GET','/admin/summary',undefined,accounts.admin);assert.equal(summary.status,200);assert.equal(Number(summary.data.gmv_cents),0);assert.equal(summary.data.orders,0);
+});
+test('MOQ, múltiplos, precio, mínimo de marca y margen sin PVP/base comparable',async()=>{
+  const {margin,validateQuantity}=await import('../server/lib.js');
+  assert.equal(margin(250,null),null);assert.equal(margin(250,0),null);assert.equal(margin(250,500,true),50);assert.equal(margin(250,500,false),null);
+  assert.throws(()=>validateQuantity({moq:6,pack_multiple:3,wholesale_cents:0},6));
+  const p=await product(db,accounts.sellerA,{moq:6,pack_multiple:3});
+  for(const quantity of [-1,0,5,7,6.5])assert.equal((await post('/cart/items',{product_id:p.id,quantity,expected_price_cents:p.wholesale_cents},accounts.buyerA)).status,422);
+  await putInCart(accounts.buyerA,p,6);await db.query('UPDATE brands SET min_order_cents=99999 WHERE id=$1',[accounts.sellerA.brandId]);
+  assert.equal((await checkout(accounts.buyerA)).status,422);
+  await db.query('UPDATE products SET retail_cents=NULL WHERE id=$1',[p.id]);assert.equal((await request('GET','/products/'+p.id)).data.margin_percent,null);
+  await db.query('UPDATE products SET retail_cents=500,same_tax_basis=false WHERE id=$1',[p.id]);assert.equal((await request('GET','/products/'+p.id)).data.margin_percent,null);
+});
+test('carrito de dos marcas: compra padre, pedidos hijos, envío y suma exacta; reintento idempotente',async()=>{
+  const a=await product(db,accounts.sellerA,{moq:6,pack_multiple:6,wholesale_cents:250});
+  const b=await product(db,accounts.sellerB,{moq:3,pack_multiple:3,wholesale_cents:400});
+  await putInCart(accounts.buyerA,a);await putInCart(accounts.buyerA,b);
+  const key=randomUUID(),result=await checkout(accounts.buyerA,key);assert.equal(result.status,201,JSON.stringify(result.data));
+  const replay=await checkout(accounts.buyerA,key);assert.equal(replay.status,200);assert.equal(replay.data.checkout_id,result.data.checkout_id);
+  const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[result.data.purchase_id])).rows;assert.equal(orders.length,2);
+  const total=orders.reduce((s,o)=>s+o.total_cents,0);assert.equal(total,3500);
+  assert.equal((await db.query('SELECT total_cents FROM purchases WHERE id=$1',[result.data.purchase_id])).rows[0].total_cents,total);
+  assert.equal((await db.query('SELECT count(*) FROM inventory_reservations')).rows[0].count,'2');
+});
+test('dos checkouts concurrentes sobre el último stock: solo una reserva elegible',async()=>{
+  const p=await product(db,accounts.sellerA,{stock:6,moq:6,pack_multiple:6});
+  await putInCart(accounts.buyerA,p);await putInCart(accounts.buyerB,p);
+  const results=await Promise.all([checkout(accounts.buyerA),checkout(accounts.buyerB)]);
+  assert.equal(results.filter(r=>r.status===201).length,1,JSON.stringify(results));
+  assert.equal(results.filter(r=>r.status===422||r.status===409).length,1);
+  const inventory=(await db.query('SELECT total,reserved FROM inventory WHERE product_id=$1',[p.id])).rows[0];assert.deepEqual(inventory,{total:6,reserved:6});
+});
+test('pago fallido/caducado libera stock una sola vez y un pago tardío entra en excepción sin sobreventa',async()=>{
+  const p=await product(db,accounts.sellerA,{stock:10,moq:5});await putInCart(accounts.buyerA,p);
+  const c=(await checkout(accounts.buyerA)).data;
+  const failed={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'failed',amount_cents:1550,occurred_at:new Date().toISOString()};
+  const first=await services.applyPaymentEvent(failed);assert.equal(first.state,'failed');
+  assert.equal((await services.applyPaymentEvent(failed)).duplicate,true);
+  await services.expireCheckout(c.checkout_id,{force:true});
+  assert.deepEqual((await db.query('SELECT total,reserved FROM inventory WHERE product_id=$1',[p.id])).rows[0],{total:10,reserved:0});
+  const late=await services.applyPaymentEvent({...failed,event_id:randomUUID(),kind:'approved'});assert.equal(late.state,'exception');
+  assert.deepEqual((await db.query('SELECT total,reserved FROM inventory WHERE product_id=$1',[p.id])).rows[0],{total:10,reserved:0});
+  assert.equal((await db.query(`SELECT count(*) FROM inventory_movements WHERE kind='released'`)).rows[0].count,'1');
+});
+test('worker expira reservas; webhooks duplicados/desordenados y reembolsos no duplican movimientos',async()=>{
+  const {a,checkout:c,orders}=await paidOrder();
+  const later=await post('/payments/sandbox/'+c.payment_attempt_id+'/simulate',{outcome:'failed'},accounts.buyerA);assert.equal(later.data.ignored,true);
+  await post('/payments/sandbox/'+c.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA);
+  assert.equal((await db.query(`SELECT count(*) FROM inventory_movements WHERE product_id=$1 AND kind='sold'`,[a.id])).rows[0].count,'1');
+  const input={amount_cents:100,reason:'Prueba de devolución parcial autorizada',reference:'sandbox:'+randomUUID()};
+  assert.equal((await post('/admin/orders/'+orders[0].id+'/refund',input,accounts.admin)).status,200);
+  assert.equal((await post('/admin/orders/'+orders[0].id+'/refund',input,accounts.admin)).data.duplicate,true);
+  assert.equal((await db.query('SELECT refunded_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0].refunded_cents,100);
+  assert.equal((await db.query(`SELECT count(*) FROM ledger_entries WHERE kind='refund'`)).rows[0].count,'1');
+  await putInCart(accounts.buyerB,a);const expiry=(await checkout(accounts.buyerB)).data;
+  await db.query(`UPDATE checkouts SET expires_at=now()-interval '1 minute' WHERE id=$1`,[expiry.checkout_id]);await services.expireReservations();await services.expireReservations();
+  assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[expiry.checkout_id])).rows[0].state,'expired');
+  assert.equal((await db.query('SELECT reserved FROM inventory WHERE product_id=$1',[a.id])).rows[0].reserved,0);
+});
+test('confirmación del frontend, importe alterado y webhook sin firma nunca confirman pago',async()=>{
+  const p=await product(db,accounts.sellerA);await putInCart(accounts.buyerA,p);const c=(await checkout(accounts.buyerA)).data;
+  const event={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'approved',amount_cents:1,occurred_at:new Date().toISOString()};
+  assert.equal((await post('/webhooks/sandbox',event,undefined)).status,401);
+  const raw=Buffer.from(JSON.stringify(event)),ts=String(Math.floor(Date.now()/1000));
+  assert.equal((await post('/webhooks/sandbox',raw.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(raw,ts)})).status,422);
+  assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].state,'pending');
+  assert.equal((await post('/checkout/'+c.checkout_id+'/success',{paid:true},accounts.buyerA)).status,404);
+  event.amount_cents=550;const valid=Buffer.from(JSON.stringify(event));
+  assert.equal((await post('/webhooks/sandbox',valid.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(valid,ts)})).status,200);
+});
+test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
+  await db.query(`INSERT INTO commission_rules(basis_points,effective_at,approved_by) VALUES(350,now()-interval '1 day',$1)`,[accounts.admin.userId]);
+  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,350);assert.equal(orders[0].commission_cents,53);
+  await post('/admin/commissions',{brand_id:null,basis_points:1500,effective_at:new Date().toISOString()},accounts.admin);
+  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:350,commission_cents:53});
+});
+test('aislamiento: dos marcas y dos tiendas; CSRF y origen; API de proveedor queda ligada a su organización',async()=>{
+  const p=await product(db,accounts.sellerA);const {orders}=await paidOrder();
+  assert.equal((await request('GET','/admin/orders?state=cancelled',undefined,accounts.admin)).data.length,0);
+  assert.equal((await request('GET','/admin/orders?state=confirmed&payment_state=approved',undefined,accounts.admin)).data.length,1);
+  assert.equal((await request('GET','/orders/'+orders[0].id,undefined,accounts.buyerB)).status,404);
+  assert.equal((await request('GET','/orders/'+orders[0].id,undefined,accounts.sellerB)).status,404);
+  assert.equal((await request('GET','/seller/products',undefined,accounts.sellerA,{'X-Organization-Id':accounts.sellerB.orgId})).status,403);
+  assert.equal((await request('PUT','/seller/products/'+p.id,{},accounts.sellerB)).status,404);
+  assert.equal((await post('/seller/products',{},accounts.sellerA,{'X-CSRF-Token':'wrong'})).status,403);
+  assert.equal((await post('/auth/login',{email:accounts.sellerA.email,password:accounts.sellerA.password},undefined,{Origin:'https://evil.invalid'})).status,403);
+  const key=(await post('/seller/api-keys',{label:'Integración de prueba'},accounts.sellerA)).data;
+  const headers={Authorization:'Bearer '+key.token,'Idempotency-Key':randomUUID(),'X-Organization-Id':accounts.sellerB.orgId};
+  const payload={products:[{name:'DEMO API',sku:'API-1',category_id:'hogar',wholesale_cents:100,moq:1,stock:5,brand_id:accounts.sellerB.brandId}],dry_run:false,confirm:true};
+  const upsert=await post('/seller/catalog/upsert',payload,undefined,headers);assert.equal(upsert.status,200,JSON.stringify(upsert.data));
+  assert.equal((await db.query(`SELECT brand_id FROM products WHERE sku='API-1'`)).rows[0].brand_id,accounts.sellerA.brandId);
+  assert.equal((await request('GET','/admin/orders',undefined,undefined,{Authorization:'Bearer '+key.token})).status,403);
+  const publicBrand=await request('GET','/brands/'+accounts.sellerA.brandId);assert.ok(!('contact_email' in publicBrand.data));assert.ok(!('payout_encrypted' in publicBrand.data));
+});
+test('recompra muestra cambios y revalida precio, stock y publicación antes de añadir',async()=>{
+  const {a,orders}=await paidOrder();
+  const original=(await post('/orders/'+orders[0].id+'/reorder',{confirm:false},accounts.buyerA)).data;
+  await db.query('UPDATE products SET wholesale_cents=300 WHERE id=$1',[a.id]);
+  assert.equal((await post('/orders/'+orders[0].id+'/reorder',{confirm:true,quote_hash:original.quote_hash},accounts.buyerA)).status,409);
+  const updated=(await post('/orders/'+orders[0].id+'/reorder',{confirm:false},accounts.buyerA)).data;
+  assert.equal(updated.items[0].previous_price_cents,250);assert.equal(updated.items[0].current_price_cents,300);assert.equal(updated.items[0].changed,true);
+  await db.query(`UPDATE products SET status='archived' WHERE id=$1`,[a.id]);
+  const removed=(await post('/orders/'+orders[0].id+'/reorder',{confirm:false},accounts.buyerA)).data;assert.ok(removed.items[0].issues.length);
+  assert.equal((await post('/orders/'+orders[0].id+'/reorder',{confirm:true,quote_hash:removed.quote_hash},accounts.buyerA)).status,422);
+});
+test('reseña requiere compra entregada, pertenece a la tienda y no se duplica; incidencia conserva historia',async()=>{
+  const {orders}=await paidOrder(),o=orders[0],item=(await db.query('SELECT id FROM order_items WHERE order_id=$1',[o.id])).rows[0];
+  const review={order_item_id:item.id,rating:5,body:'Experiencia de prueba con compra entregada.'};
+  assert.equal((await post('/reviews',review,accounts.buyerA)).status,403);
+  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,409);
+  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'preparing'},accounts.sellerA)).status,200);
+  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,200);
+  assert.equal((await post('/orders/'+o.id+'/delivery',{},accounts.buyerA)).status,200);
+  assert.equal((await post('/reviews',review,accounts.buyerB)).status,403);
+  assert.equal((await post('/reviews',review,accounts.buyerA)).status,201);
+  assert.equal((await post('/reviews',review,accounts.buyerA)).status,409);
+  const incident=await post('/orders/'+o.id+'/incidents',{reason:'Embalaje',description:'Consulta de prueba sobre el embalaje recibido.'},accounts.buyerA);assert.equal(incident.status,201);
+  assert.equal((await request('GET','/incidents/'+incident.data.id,undefined,accounts.sellerB)).status,404);
+  assert.equal((await db.query('SELECT state FROM orders WHERE id=$1',[o.id])).rows[0].state,'delivered');
+});
+test('CSV: comillas UTF-8, duplicados, negativos, MOQ incompatible, archivo roto y dry run sin publicación',async()=>{
+  const head='name,sku,category_id,wholesale_cents,retail_cents,moq,pack_multiple,stock,same_tax_basis\n';
+  const csv=head+'"Vaso, ""alto""",CSV-1,hogar,250,500,6,3,100,true\n';
+  const staged=await post('/seller/imports',csv,accounts.sellerA,{'Content-Type':'text/csv'});assert.equal(staged.status,201,JSON.stringify(staged.data));assert.equal(staged.data.state,'staged');
+  assert.equal((await db.query('SELECT count(*) FROM products')).rows[0].count,'0');
+  const details=(await request('GET','/seller/imports/'+staged.data.id,undefined,accounts.sellerA)).data;assert.equal(details.rows[0].data.name,'Vaso, "alto"');
+  for(const body of [head+'Malo,X,hogar,-1,,1,1,2,false\n',head+'Malo,X,hogar,250,,7,3,2,false\n',head+'Uno,X,hogar,100,,1,1,2,false\nDos,X,hogar,100,,1,1,2,false\n']) {
+    const invalid=await post('/seller/imports',body,accounts.sellerA,{'Content-Type':'text/csv'});assert.equal(invalid.data.state,'invalid');assert.equal((await post('/seller/imports/'+invalid.data.id+'/publish',{confirm:true},accounts.sellerA)).status,422);
+  }
+  assert.equal((await post('/seller/imports',head+'"rota',accounts.sellerA,{'Content-Type':'text/csv'})).status,422);
+  assert.equal((await post('/seller/imports/'+staged.data.id+'/publish',{confirm:true},accounts.sellerB)).status,404);
+  assert.equal((await post('/seller/imports/'+staged.data.id+'/publish',{confirm:true},accounts.sellerA)).status,200);
+  assert.equal((await request('GET','/products')).data.total,0,'Primera publicación aún requiere moderación');
+  assert.equal((await db.query('SELECT count(*) FROM products')).rows[0].count,'1');
+});
+test('sincronización incremental idempotente, stock antiguo no sobrescribe, ausencias no borran y SSRF bloqueado',async()=>{
+  const {synchronizeSource,publicAddress,fetchAuthorizedFeed}=await import('../server/sources.js');
+  const source=(await db.query(`INSERT INTO catalog_sources(brand_id,url,approved,enabled,category_map) VALUES($1,'https://feed.example/catalog',true,true,'{"Homeware":"hogar"}') RETURNING *`,[accounts.sellerA.brandId])).rows[0];
+  const row={name:'DEMO Fuente',sku:'SYNC-1',category:'Homeware',wholesale_cents:250,moq:1,stock:20,external_id:'source-1',updated_at:new Date(Date.now()-5000).toISOString()};
+  const get=async()=>({mode:'incremental',products:[row]});assert.equal((await synchronizeSource(source,get)).rows,1);
+  await synchronizeSource(source,get);assert.equal((await db.query(`SELECT count(*) FROM products WHERE sku='SYNC-1'`)).rows[0].count,'1');
+  row.stock=99;row.updated_at=new Date(Date.now()-10000).toISOString();await synchronizeSource(source,get);
+  assert.equal((await db.query(`SELECT total FROM inventory i JOIN products p ON p.id=i.product_id WHERE p.sku='SYNC-1'`)).rows[0].total,20);
+  await synchronizeSource(source,async()=>({mode:'incremental',products:[]}));assert.equal((await db.query('SELECT count(*) FROM products')).rows[0].count,'1');
+  const invalid=await synchronizeSource(source,async()=>({mode:'incremental',products:[{...row,stock:-1}]}));assert.equal(invalid.failed,true);
+  assert.equal((await db.query(`SELECT count(*) FROM import_jobs WHERE state='invalid' AND source_id=$1`,[source.id])).rows[0].count,'1');
+  for(const ip of ['127.0.0.1','10.0.0.1','169.254.169.254','100.64.0.1','::1','::ffff:127.0.0.1'])assert.equal(publicAddress(ip),false,ip);
+  assert.equal(publicAddress('8.8.8.8'),true);
+  config.feedOrigins=['https://127.0.0.1'];await assert.rejects(()=>fetchAuthorizedFeed({url:'https://127.0.0.1/feed'}),e=>e.status===403);
+});
+test('tokens de correo de un uso y expiración; recuperación revoca sesiones, sin exposición entre cuentas',async()=>{
+  const signup=await post('/auth/register',{email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
+  const cookie=signup.headers.get('set-cookie').split(';')[0];const me=await request('GET','/me',undefined,{cookie,csrf:''});
+  const user={cookie,csrf:me.data.csrfToken,orgId:me.data.organizationId};
+  const mails=(await request('GET','/dev/mail',undefined,user)).data;const raw=new URL(mails[0].body.match(/http[^\s]+/)[0]).searchParams.get('token');
+  const verification=await post('/auth/verify',{token:raw},user);assert.equal(verification.status,200,JSON.stringify(verification.data));assert.equal((await post('/auth/verify',{token:raw},user)).status,400);
+  const other=(await request('GET','/dev/mail',undefined,accounts.buyerB)).data;assert.equal(other.length,0);
+  await post('/auth/forgot',{email:'new@demo.invalid'});
+  const expiredMail=(await db.query(`SELECT m.body FROM mail_outbox m WHERE subject='Recupera tu acceso a Lote' ORDER BY created_at DESC LIMIT 1`)).rows[0];
+  const expired=new URL(expiredMail.body.split('\n').find(line=>line.startsWith('http'))).searchParams.get('token');
+  await db.query(`UPDATE account_tokens SET expires_at=now()-interval '1 minute' WHERE purpose='reset'`);
+  assert.equal((await post('/auth/reset',{token:expired,password:'New-demo-password-456'},user)).status,400);
+  await post('/auth/forgot',{email:'new@demo.invalid'});
+  const resetMail=(await db.query(`SELECT body FROM mail_outbox WHERE subject='Recupera tu acceso a Lote' ORDER BY created_at DESC LIMIT 1`)).rows[0];
+  const reset=new URL(resetMail.body.match(/http[^\s]+/)[0]).searchParams.get('token');
+  assert.equal((await post('/auth/reset',{token:reset,password:'New-demo-password-456'},user)).status,200);
+  assert.equal((await request('GET','/me',undefined,user)).data.user,null);
+  assert.equal((await post('/auth/reset',{token:reset,password:'New-demo-password-456'})).status,400);
+  assert.equal((await post('/auth/login',{email:'new@demo.invalid',password:'New-demo-password-456'})).status,200);
+});
+test('antes del pago se revalidan precio/condiciones y se exige revisión sin consumir la reserva',async()=>{
+  const p=await product(db,accounts.sellerA);await putInCart(accounts.buyerA,p);const c=(await checkout(accounts.buyerA)).data;
+  await db.query('UPDATE products SET wholesale_cents=300 WHERE id=$1',[p.id]);
+  assert.equal((await post('/payments/sandbox/'+c.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA)).status,409);
+  assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].state,'expired');
+  assert.deepEqual((await db.query('SELECT total,reserved FROM inventory WHERE product_id=$1',[p.id])).rows[0],{total:100,reserved:0});
+  assert.equal((await db.query('SELECT count(*) FROM payment_events')).rows[0].count,'0');
+});
+test('cancelación autorizada antes del despacho reembolsa y repone una sola vez; entregados no se reponen',async()=>{
+  const {a,orders}=await paidOrder();
+  const input={reason:'Cancelación revisada antes de preparar el envío.',reference:randomUUID(),restock:true};
+  assert.equal((await post('/admin/orders/'+orders[0].id+'/cancel',input,accounts.buyerA)).status,403);
+  assert.equal((await post('/admin/orders/'+orders[0].id+'/cancel',input,accounts.admin)).status,200);
+  assert.equal((await post('/admin/orders/'+orders[0].id+'/cancel',input,accounts.admin)).data.duplicate,true);
+  assert.equal((await db.query('SELECT total FROM inventory WHERE product_id=$1',[a.id])).rows[0].total,100);
+  assert.equal((await db.query(`SELECT count(*) FROM inventory_movements WHERE kind='restock'`)).rows[0].count,'1');
+  assert.equal((await db.query('SELECT state FROM orders WHERE id=$1',[orders[0].id])).rows[0].state,'cancelled');
+});
+test('liquidaciones requieren entrega, ausencia de incidencias, transiciones y evidencia sandbox',async()=>{
+  const {orders}=await paidOrder(),o=orders[0];
+  const input={brand_id:accounts.sellerA.brandId,order_ids:[o.id]};
+  assert.equal((await post('/admin/settlements',input,accounts.admin)).status,422);
+  await post('/seller/orders/'+o.id+'/fulfillment',{state:'preparing'},accounts.sellerA);
+  await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'DEMO',tracking_code:'DEMO-2'},accounts.sellerA);
+  await post('/orders/'+o.id+'/delivery',{},accounts.buyerA);
+  const created=await post('/admin/settlements',input,accounts.admin);assert.equal(created.status,201,JSON.stringify(created.data));
+  const s=created.data;assert.equal(s.amount_cents,o.total_cents-o.commission_cents);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'paid'},accounts.admin)).status,409);
+  const incident=await post('/orders/'+o.id+'/incidents',{reason:'Revisión',description:'Revisar la evidencia antes de avanzar la liquidación.'},accounts.buyerA);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'eligible'},accounts.admin)).status,409);
+  await post('/admin/incidents/'+incident.data.id+'/resolve',{state:'resolved',resolution:'Evidencia de prueba revisada y caso resuelto.'},accounts.admin);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'eligible'},accounts.admin)).status,200);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'scheduled'},accounts.admin)).status,200);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'paid'},accounts.admin)).status,400);
+  assert.equal((await post('/admin/settlements/'+s.id+'/state',{state:'paid',reference:'sandbox:'+randomUUID(),evidence:'Simulación conciliada en la prueba automatizada.'},accounts.admin)).status,200);
+  assert.equal((await post('/admin/orders/'+o.id+'/cancel',{reference:randomUUID(),reason:'No permitido luego de entrega',restock:true},accounts.admin)).status,409);
+});
+test('imágenes se decodifican, normalizan y mantienen privadas; otra organización no puede leer documentos',async()=>{
+  const {default:sharp}=await import('sharp');
+  async function upload(data,user) {
+    const r=await fetch(base+'/api/uploads?purpose=verification',{method:'POST',headers:{Origin:config.origin,Cookie:user.cookie,'X-CSRF-Token':user.csrf,'X-Organization-Id':user.orgId,'Content-Type':'image/png'},body:data});
+    return {status:r.status,data:await r.json()};
+  }
+  assert.equal((await upload(Buffer.from('not an image'),accounts.sellerA)).status,422);
+  const image=await sharp({create:{width:8,height:8,channels:3,background:'#173f35'}}).png().toBuffer();
+  const attachment=await upload(image,accounts.sellerA);assert.equal(attachment.status,201);
+  assert.equal((await request('GET','/attachments/'+attachment.data.id,undefined,accounts.sellerB)).status,404);
+  const publicResponse=await fetch(base+'/media/'+attachment.data.id);assert.equal(publicResponse.status,404);
+  const privateResponse=await fetch(base+'/api/attachments/'+attachment.data.id,{headers:{Cookie:accounts.sellerA.cookie}});assert.equal(privateResponse.status,200);assert.equal(privateResponse.headers.get('content-type'),'image/webp');
+});

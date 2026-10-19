@@ -1,0 +1,46 @@
+import express from 'express';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
+import { ZodError } from 'zod';
+import { resolve } from 'node:path';
+import { query } from './db.js';
+import { config } from './config.js';
+import { identify, csrf, authRouter } from './auth.js';
+import { catalogRouter } from './catalog.js';
+import { accountRouter } from './accounts.js';
+import { commerceRouter } from './commerce.js';
+import { paymentRouter } from './payments.js';
+import { sellerRouter } from './seller.js';
+import { adminRouter } from './admin.js';
+import { aftercareRouter } from './aftercare.js';
+import { mediaRouter, servePublicImage } from './media.js';
+export function createApp({testing=false}={}) {
+  const app=express();app.disable('x-powered-by');
+  app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],styleSrc:["'self'"],fontSrc:["'self'"],imgSrc:["'self'",'https:','blob:'],connectSrc:["'self'"],upgradeInsecureRequests:config.production?[]:null}},referrerPolicy:{policy:'no-referrer'}}));
+  if(!testing) app.use('/api',rateLimit({windowMs:60000,limit:300,standardHeaders:'draft-8',legacyHeaders:false}));
+  app.use('/api/webhooks',express.raw({type:'application/json',limit:'64kb'}));
+  app.use('/api/uploads',express.raw({type:['image/png','image/jpeg','image/webp'],limit:config.uploadMaxBytes}));
+  app.use(express.json({limit:'2mb'}));app.use(express.text({type:'text/csv',limit:config.importMaxBytes}));
+  app.get('/api/health',async(req,res)=>{await query('SELECT 1');res.json({status:'ok',database:true});});
+  app.use('/api',(req,res,next)=>{res.set('Cache-Control','no-store');next();},identify,csrf);
+  app.use('/api',authRouter,catalogRouter,paymentRouter);
+  app.use('/api/seller',sellerRouter);
+  app.use('/api/admin',adminRouter);
+  app.use('/api',mediaRouter,accountRouter,commerceRouter,aftercareRouter);
+  app.use('/api',(req,res)=>res.status(404).json({message:'Ruta de API no encontrada.',code:'not_found'}));
+  app.get('/media/:id',servePublicImage);
+  const publicDir=resolve('public');
+  app.use(express.static(publicDir,{index:false,dotfiles:'deny'}));
+  app.get('/{*path}',(req,res)=>res.sendFile(resolve(publicDir,'index.html')));
+  app.use((error,req,res,next)=>{
+    if(res.headersSent) return next(error);
+    if(error.type==='entity.parse.failed') return res.status(400).json({message:'JSON inválido.',code:'invalid_json'});
+    if(error.type==='entity.too.large') return res.status(413).json({message:'El archivo o solicitud supera el límite permitido.',code:'too_large'});
+    if(error instanceof ZodError) return res.status(422).json({message:'Revisa los campos indicados.',code:'validation',details:error.issues.slice(0,20).map(i=>({field:i.path.join('.'),message:i.message}))});
+    const codes={'23505':[409,'Ya existe un registro con estos datos.'],'23503':[422,'Referencia no válida.'],'23514':[422,'Los datos incumplen una regla del dominio.'],'22P02':[422,'Identificador no válido.'],'40001':[409,'Conflicto concurrente; vuelve a intentar con la misma clave.'],'40P01':[409,'Conflicto concurrente; vuelve a intentar con la misma clave.']};
+    const mapped=codes[error.code];
+    const status=mapped?.[0]||error.status||500;
+    if(status>=500) console.error('Solicitud fallida',{name:error.name,code:error.code||'internal',path:req.path});
+    res.status(status).json({message:mapped?.[1]||(status>=500?'No fue posible completar la operación.':error.message),code:error.code||'request_failed',...(status<500&&error.details?{details:error.details}:{})});
+  });return app;
+}

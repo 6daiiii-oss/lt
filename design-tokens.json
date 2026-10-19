@@ -1,0 +1,8 @@
+{
+  "source": "Tokens suministrados en la solicitud; referencias adicionales no adjuntadas",
+  "colors": { "brand": "#173F35", "brandHover": "#0E3028", "background": "#F7F6F0", "surface": "#FFFFFF", "text": "#192D27", "textSecondary": "#58645E", "surfaceSoft": "#E4EBDF", "accent": "#DBEF86", "terracotta": "#B74424", "peach": "#F5E3D8", "border": "#D8DDD5", "error": "#A02D31" },
+  "fonts": { "display": "Manrope, Segoe UI, sans-serif", "body": "Inter, Segoe UI, sans-serif" },
+  "spacing": [4, 8, 12, 16, 24, 32, 48, 64],
+  "radii": { "control": 8, "card": 16, "block": 22 },
+  "container": { "outer": 1328, "inner": 1248, "desktopGutter": 40, "mobileGutter": 20 }
+}

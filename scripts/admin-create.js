@@ -1,0 +1,18 @@
+import readline from 'node:readline';
+import { Writable } from 'node:stream';
+import { z } from 'zod';
+import { config, validateConfig } from '../server/config.js';
+import { migrate, pool, query } from '../server/db.js';
+import { email, passwordHash } from '../server/lib.js';
+validateConfig();
+const address=email.parse(process.argv[2]);
+if(!config.production)await migrate();
+let muted=false;
+const output=new Writable({write(chunk,encoding,callback){if(!muted)process.stdout.write(chunk,encoding);callback();}});
+const terminal=readline.createInterface({input:process.stdin,output,terminal:process.stdin.isTTY});
+const password=await new Promise(resolve=>{terminal.question('Contraseña nueva (mínimo 16 caracteres, no se muestra): ',resolve);muted=true;});
+terminal.close();process.stdout.write('\n');
+z.string().min(16).max(128).parse(password);
+await query(`INSERT INTO users(email,name,password_hash,verified_at,is_admin) VALUES($1,'Operador Lote',$2,now(),true)`,[address,await passwordHash(password)]);
+console.log('Cuenta administrativa creada de forma controlada. No se modificaron cuentas existentes.');
+await pool.end();

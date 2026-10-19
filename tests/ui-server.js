@@ -1,0 +1,11 @@
+import { writeFile, mkdir } from 'node:fs/promises';
+import { isolatedDatabase, fixtures } from './helpers.js';
+process.env.NODE_ENV='test';process.env.APP_ORIGIN='http://127.0.0.1:3100';
+const isolated=await isolatedDatabase('lote_ui_test');
+const db=await import('../server/db.js');await db.migrate();
+const accounts=await fixtures(db);await mkdir('.runtime',{recursive:true});
+await writeFile('.runtime/ui-accounts.json',JSON.stringify(Object.fromEntries(Object.entries(accounts).map(([key,a])=>[key,{email:a.email,password:a.password,brandId:a.brandId}]))),{mode:0o600});
+const {createApp}=await import('../server/app.js');
+const server=createApp({testing:true}).listen(3100,'127.0.0.1',()=>console.log('Servidor E2E: base aislada, fixtures DEMO, puerto 3100.'));
+let stopping=false;
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,async()=>{if(stopping)return;stopping=true;await new Promise(resolve=>server.close(resolve));await db.pool.end();await isolated.drop();process.exit(0);});

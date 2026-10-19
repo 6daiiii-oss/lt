@@ -1,0 +1,10 @@
+ALTER TABLE import_jobs ADD COLUMN idempotency_key text;
+ALTER TABLE import_jobs ADD COLUMN request_hash text;
+CREATE UNIQUE INDEX import_idempotency ON import_jobs(brand_id,idempotency_key) WHERE idempotency_key IS NOT NULL;
+CREATE UNIQUE INDEX checkout_one_pending ON checkouts(organization_id) WHERE state='pending';
+CREATE UNIQUE INDEX account_token_active ON account_tokens(user_id,purpose) WHERE used_at IS NULL;
+CREATE INDEX sync_sources_due ON catalog_sources(next_run_at) WHERE enabled AND approved;
+CREATE INDEX audit_log_created ON audit_logs(created_at DESC);
+ALTER TABLE settlements DROP CONSTRAINT settlements_state_check;
+ALTER TABLE settlements ADD CONSTRAINT settlements_state_check CHECK(state IN ('pending','eligible','scheduled','paid','cancelled'));
+ALTER TABLE settlements ADD COLUMN orders_snapshot jsonb NOT NULL DEFAULT '[]';

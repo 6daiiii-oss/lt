@@ -1,0 +1,19 @@
+name: lote
+services:
+  db:
+    image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+    environment:
+      POSTGRES_USER: lote
+      POSTGRES_DB: lote
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run setup:local first}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - lote_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lote -d lote"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  lote_pg:
