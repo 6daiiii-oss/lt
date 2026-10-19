@@ -12,7 +12,7 @@ async function adapt(directory){
     if(entry.isDirectory()){await adapt(filename);continue;}
     if(!/\.(html|css|js)$/.test(filename))continue;
     let text=await readFile(filename,'utf8');
-    text=text.replace(/(["'(])\/(images|fonts|modules)\//g,'$1./$2/')
+    text=text.replace(/(["'(\s,])\/(images|fonts|modules)\//g,'$1./$2/')
       .replace(/(["'])\/(styles\.css|discovery\.css|mark\.svg|packaging\.svg)/g,'$1./$2')
       .replaceAll('location.pathname','window.loteRoute().pathname')
       .replaceAll('location.search','window.loteRoute().search')
