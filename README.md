@@ -30,6 +30,17 @@ El worker libera reservas caducadas, procesa feeds autorizados y entrega correos
 
 Los pasos también se pueden ejecutar explícitamente: `npm run setup:local`, `npm run db:up`, `npm run migrate`. En producción usa `npm start` y las migraciones como paso separado obligatorio. Las migraciones aplicadas tienen checksum: crea otra migración para evolucionar el esquema.
 
+### Si Windows bloquea el puerto 5432
+
+Si Docker muestra `ports are not available` o un error de permisos al enlazar `127.0.0.1:5432`, cambia el puerto local de PostgreSQL:
+
+```powershell
+npm run db:port -- 55432
+npm run dev
+```
+
+El comando ajusta `POSTGRES_PORT` y `DATABASE_URL` en `.env`, conservando las claves y el volumen de datos. Detén antes el servidor y el worker si están abiertos y reinícialos después. La web sigue en `http://localhost:3000`. Si Windows también bloquea 55432, puede elegirse otro puerto libre. No borres `.env` ni el volumen para resolver un conflicto de puertos.
+
 ## Cuentas y configuración local
 
 `npm run setup:local` crea `.env` con contraseñas/claves aleatorias; conserva un archivo existente. `.env.example` describe variables sin secretos. PostgreSQL solo se publica en la interfaz local, puerto 5432.

@@ -13,6 +13,7 @@
     "start": "node --env-file-if-exists=.env server/index.js",
     "setup:local": "node scripts/setup-local.js",
     "db:up": "docker compose up -d --wait db",
+    "db:port": "node scripts/db-port.js",
     "db:down": "docker compose down",
     "migrate": "node --env-file-if-exists=.env scripts/migrate.js",
     "worker": "node --env-file-if-exists=.env server/worker.js",
