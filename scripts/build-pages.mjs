@@ -52,3 +52,14 @@ export const currentOrg=()=>state.organizations.find(o=>o.id===state.organizatio
 await writeFile(path.join(output,'.nojekyll'),'');
 await mkdir(path.join(output,'modules'),{recursive:true});
 console.log('Exported original public/ frontend to _site. Backend operations remain unavailable.');
+
+// Version module URLs so browsers cannot mix files from successive deployments.
+const version=process.env.GITHUB_SHA||String(Date.now());
+for(const entry of await readdir(path.join(output,'modules'))){
+  if(!entry.endsWith('.js'))continue;
+  const file=path.join(output,'modules',entry);
+  const source=await readFile(file,'utf8');
+  await writeFile(file,source.replace(/(['"])(\.\/[^'"\s]+\.js)\1/g,(_,quote,url)=>quote+url+'?v='+version+quote));
+}
+const indexFile=path.join(output,'index.html');
+await writeFile(indexFile,(await readFile(indexFile,'utf8')).replaceAll('./modules/app.js','./modules/app.js?v='+version).replaceAll('./pages-runtime.js','./pages-runtime.js?v='+version));
