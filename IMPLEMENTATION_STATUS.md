@@ -1,10 +1,16 @@
 # Estado real de implementación · Lote
 
+## Revisión de descubrimiento y accesos
+
+Portada rediseñada como landing, dos imágenes editoriales generadas con variantes WebP, buscador con sugerencias reales y filtros desplegables. Se hizo explícita la autenticación antes de renderizar espacios privados y se sustituyeron controles de compra para visitantes por llamadas de ingreso/registro. Los endpoints privados conservan sus comprobaciones del servidor. Detalles: [docs/DISCOVERY.md](docs/DISCOVERY.md).
+
+Se revisaron capturas de portada y catálogo en escritorio/móvil con el servidor cloud. No se ejecutaron suites de pruebas en esta revisión; las cantidades y resultados que aparecen más abajo documentan la implementación inicial, no una nueva ejecución sobre esta interfaz.
+
 ## Entrega local / sandbox
 
 Implementado en el checkout `/workspace/lt`, rama `feat/lote-b2b-mvp`. Se amplió el prototipo conforme a la solicitud vigente: Node/Express, PostgreSQL y frontend modular. El trabajo se realizó en cloud; no se modificó el disco Windows. La portada y README anteriores se conservan en `docs/reference/original/`.
 
-El usuario autorizó actualizar GitHub mediante commit y push a `main`. La descarga al checkout de Windows se realiza desde VS Code con `git pull --ff-only origin main`, antes de instalar las dependencias. No se hizo despliegue ni se habilitaron cobros, transferencias o facturación reales. El entorno actual ejecuta servidor y worker; se verificaron respuestas funcionales, no solo procesos abiertos.
+El usuario autorizó actualizar GitHub mediante commit y push a `main`. La descarga al checkout de Windows se realiza desde VS Code con `git pull --ff-only origin main`, antes de instalar las dependencias. No se hizo despliegue ni se habilitaron cobros, transferencias o facturación reales. Durante la entrega inicial se ejecutaron servidor y worker y se verificaron respuestas funcionales, no solo procesos abiertos.
 
 ## Etapas verificadas
 

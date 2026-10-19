@@ -21,7 +21,13 @@ catalogRouter.get('/products',async(req,res)=>{
     available:z.enum(['true','false']).optional(),selection:z.enum(['new','small','margin']).optional(),
     sort:z.enum(['date','price','price-desc','margin','moq']).default('date'),page:z.coerce.number().int().min(1).max(10000).default(1),limit:z.coerce.number().int().min(1).max(48).default(24)}),req.query);
   const values=[],where=[visible],bind=(value)=>{values.push(value);return `$${values.length}`;};
-  if(f.q) where.push(`(p.name ILIKE ${bind('%'+f.q+'%')} OR b.name ILIKE $${values.length})`);
+  if(f.q) {
+    const terms=f.q.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim().split(/\s+/).filter(Boolean).slice(0,10);
+    for(const term of terms) {
+      const literal=term.replace(/[\\%_]/g,'\\$&');
+      where.push(`translate(lower(concat_ws(' ',p.name,b.name,c.name,p.sku)), 'áéíóúüñ', 'aeiouun') LIKE ${bind('%'+literal+'%')}`);
+    }
+  }
   if(f.category) where.push(`(p.category_id=${bind(f.category)} OR c.parent_id=$${values.length})`);
   if(f.brand) where.push(`p.brand_id=${bind(f.brand)}`);
   if(f.min_price!==undefined) where.push(`p.wholesale_cents>=${bind(f.min_price)}`);
@@ -33,7 +39,7 @@ catalogRouter.get('/products',async(req,res)=>{
   if(f.selection==='new') where.push(`p.published_at>now()-${bind(config.newDays)}*interval '1 day'`);
   if(f.selection==='small') where.push('p.moq<=12');
   if(f.selection==='margin') where.push('p.retail_cents>0 AND p.same_tax_basis');
-  const order={date:'p.published_at DESC',price:'p.wholesale_cents', 'price-desc':'p.wholesale_cents DESC',margin:'margin_percent DESC NULLS LAST',moq:'p.moq'}[f.selection==='margin'?'margin':f.sort];
+  const order={date:'p.published_at DESC',price:'p.wholesale_cents', 'price-desc':'p.wholesale_cents DESC',margin:'margin_percent DESC NULLS LAST',moq:'p.moq'}[f.selection==='margin'&&!req.query.sort?'margin':f.sort];
   const base=`${catalogFrom} WHERE ${where.join(' AND ')}`;
   const total=Number((await query(`SELECT count(*) ${base}`,values)).rows[0].count);
   const rows=(await query(`SELECT ${catalogColumns} ${base} ORDER BY ${order},p.id LIMIT ${bind(f.limit)} OFFSET ${bind((f.page-1)*f.limit)}`,values)).rows;
@@ -52,7 +58,7 @@ const publicBrandColumns=`b.id,b.name,b.story,b.location,b.min_order_cents,b.shi
 catalogRouter.get('/brands',async(req,res)=>{
   const search=z.string().max(100).parse(req.query.q||'');
   res.json((await query(`SELECT ${publicBrandColumns},count(p.id)::int AS product_count FROM brands b JOIN organizations o ON o.id=b.organization_id LEFT JOIN products p ON p.brand_id=b.id AND p.status='published'
-    WHERE o.status='approved' AND b.terms_approved AND b.name ILIKE $1 GROUP BY b.id,o.status ORDER BY b.name LIMIT 100`,['%'+search+'%'])).rows);
+    WHERE o.status='approved' AND b.terms_approved AND translate(lower(b.name),'áéíóúüñ','aeiouun') LIKE $1 GROUP BY b.id,o.status ORDER BY b.name LIMIT 100`,['%'+search.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').replace(/[\\%_]/g,'\\$&')+'%'])).rows);
 });
 catalogRouter.get('/brands/:id',async(req,res)=>{
   const brand=(await query(`SELECT ${publicBrandColumns} FROM brands b JOIN organizations o ON o.id=b.organization_id WHERE b.id=$1 AND o.status='approved' AND b.terms_approved`,[id.parse(req.params.id)])).rows[0];
