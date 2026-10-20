@@ -139,3 +139,25 @@ test('paneles operativos y simulador 10/7: sin errores ni desbordes en móvil',a
     } finally {await context.close();}
   }
 });
+
+test('registro de marca dedicado: diseño adaptable, pasos y datos opcionales',async({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  for(const width of [1440,768,390,360]) {
+    await page.setViewportSize({width,height:1000});await page.goto('/registro?tipo=proveedor');
+    await expect(page.getByRole('heading',{name:'Crea el espacio de tu marca',exact:true})).toBeVisible();
+    await expect(page.locator('.brand-steps [aria-current=step]')).toContainText('Tu marca');
+    await expect(page.locator('[data-form=auth] input[name=kind]')).toHaveValue('seller');
+    await expect(page.getByRole('searchbox')).toHaveCount(0);
+    await expect(page.getByLabel('Tu número de celular',{exact:true})).toBeVisible();
+    await expect(page.getByLabel('RUC (opcional)',{exact:true})).toBeHidden();
+    await noOverflow(page);await page.screenshot({path:`test-results/registro-marca-${width}.png`,fullPage:true});
+  }
+  await page.getByLabel('Contraseña · mínimo 12 caracteres',{exact:true}).fill('Password-de-prueba-2026');
+  await page.getByRole('button',{name:'Mostrar contraseña',exact:true}).click();
+  await expect(page.locator('[name=password]')).toHaveAttribute('type','text');
+  await page.getByRole('button',{name:'Ocultar contraseña',exact:true}).click();
+  await expect(page.locator('[name=password]')).toHaveAttribute('type','password');
+  await page.getByText('Datos legales (opcional por ahora)',{exact:true}).click();
+  await expect(page.getByLabel('RUC (opcional)',{exact:true})).toBeVisible();
+  await noOverflow(page);expect(errors).toEqual([]);
+});
