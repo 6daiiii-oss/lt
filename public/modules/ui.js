@@ -12,9 +12,9 @@ let fieldSequence=0;
 export function field(name,label,type='text',value='',extra='') {const fid='f-'+name+'-'+(++fieldSequence);return `<label class="field" for="${esc(fid)}"><span>${esc(label)}</span><input id="${esc(fid)}" name="${esc(name)}" type="${type}" value="${esc(value)}" ${extra}></label>`;}
 export function area(name,label,value='',extra='') {return `<label class="field"><span>${esc(label)}</span><textarea name="${esc(name)}" rows="4" ${extra}>${esc(value)}</textarea></label>`;}
 export function select(name,label,options,value='') {const fid='f-'+name+'-'+(++fieldSequence);return `<div class="field"><label for="${esc(fid)}">${esc(label)}</label><select id="${esc(fid)}" name="${esc(name)}">${options.map(([v,t])=>`<option value="${esc(v)}" ${String(v)===String(value)?'selected':''}>${esc(t)}</option>`).join('')}</select></div>`;}
-export const check=(name,label,checked=false)=>`<label class="check"><input type="checkbox" name="${esc(name)}" ${checked?'checked':''}> <span>${esc(label)}</span></label>`;
+export const check=(name,label,checked=false,value)=>`<label class="check"><input type="checkbox" name="${esc(name)}" ${value!==undefined?`value="${esc(value)}"`: ''} ${checked?'checked':''}> <span>${esc(label)}</span></label>`;
 export const formEnd=(label)=>`<div class="form-message" role="alert" tabindex="-1"></div><button class="button" type="submit">${esc(label)}</button>`;
-export function errorText(e) {let detail='';if(Array.isArray(e.details))detail=e.details.map(d=>typeof d==='string'?d:`${d.field||''}: ${d.message||''}`).join(' · ');return `${e.message}${detail?' '+detail:''}`;}
+export function errorText(e) {let detail='';if(Array.isArray(e.details))detail=e.details.filter(d=>d!==e.message).map(d=>typeof d==='string'?d:`${d.field||''}: ${d.message||''}`).join(' · ');return `${e.message}${detail?' '+detail:''}`;}
 export function toast(message) {const el=document.querySelector('#toast');el.textContent=message;el.hidden=false;clearTimeout(el.timer);el.timer=setTimeout(()=>el.hidden=true,6000);}
 export function onForm(name,handler) {
   const form=document.querySelector(`[data-form="${name}"]`);if(!form)return;

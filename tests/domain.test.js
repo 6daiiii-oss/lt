@@ -23,6 +23,29 @@ async function request(method,path,body,user,headers={}) {
   const data=await response.json();return {status:response.status,data,headers:response.headers};
 }
 const post=(path,body,user,headers)=>request('POST',path,body,user,headers);
+test('el carrito comprueba la dirección elegida y explica la región que impide comprar',async()=>{
+  const p=await product(db,accounts.sellerA);await putInCart(accounts.buyerA,p);
+  await db.query("UPDATE brands SET shipping_regions=ARRAY['arequipa'] WHERE id=$1",[accounts.sellerA.brandId]);
+  const cart=await request('GET','/cart?address_id='+accounts.buyerA.addressId,undefined,accounts.buyerA);
+  assert.equal(cart.data.eligible,false);assert.match(cart.data.groups[0].issues[0],/no envía a Lima/);
+  assert.match(cart.data.groups[0].issues[0],/Arequipa/);
+  const blocked=await checkout(accounts.buyerA);assert.equal(blocked.status,422);
+  assert.match(blocked.data.message,/no envía a Lima/);assert.ok(Array.isArray(blocked.data.details));
+  assert.equal((await db.query('SELECT count(*) FROM checkouts')).rows[0].count,'0');
+  assert.equal((await request('GET','/cart?address_id='+accounts.buyerB.addressId,undefined,accounts.buyerA)).status,404);
+  await db.query("UPDATE brands SET shipping_regions=ARRAY['lima'] WHERE id=$1",[accounts.sellerA.brandId]);
+  assert.equal((await request('GET','/cart?address_id='+accounts.buyerA.addressId,undefined,accounts.buyerA)).data.eligible,true);
+  assert.equal((await checkout(accounts.buyerA)).status,201);
+});
+test('regiones de envío y dirección rechazan texto libre inválido y aceptan tildes',async()=>{
+  const body={name:'Marca de prueba',story:'',location:'Lima',min_order_cents:0,shipping_cents:0,shipping_regions:['ww'],preparation_days:2,shipping_policy:'Entrega coordinada.',return_policy:'Problemas sujetos a revisión.',terms_approved:true};
+  assert.equal((await request('PUT','/seller/brand',body,accounts.sellerA)).status,422);
+  assert.equal((await request('PUT','/seller/brand',{...body,shipping_regions:['Áncash','Lima']},accounts.sellerA)).status,200);
+  assert.deepEqual((await db.query('SELECT shipping_regions FROM brands WHERE id=$1',[accounts.sellerA.brandId])).rows[0].shipping_regions,['ancash','lima']);
+  const address={recipient:'Persona de prueba',line1:'Calle de ejemplo',district:'Distrito de ejemplo',region:'ww',phone:'999999999'};
+  assert.equal((await post('/organizations/me/addresses',address,accounts.buyerA)).status,422);
+  assert.equal((await post('/organizations/me/addresses',{...address,region:'Áncash'},accounts.buyerA)).data.region,'Áncash');
+});
 test('las cuentas rápidas de demo nunca habilitan acceso en la base normal',async()=>{
   const info=await request('GET','/demo/info');assert.equal(info.data.enabled,false);
   assert.equal((await post('/demo/login',{role:'admin'})).status,404);

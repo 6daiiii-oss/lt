@@ -1,5 +1,11 @@
 # Estado real de implementación · Lote
 
+## Corrección de envío en checkout — 20 de octubre de 2026
+
+La bolsa comprueba la dirección seleccionada antes de pagar y muestra la región y la marca que impiden continuar. Las condiciones fallidas llegan como mensajes legibles en lugar de ocultarse dentro del objeto de cotización. Direcciones ajenas siguen bloqueadas.
+
+Las regiones de envío se eligen con casillas y las direcciones con una lista. El servidor valida regiones peruanas y compara nombres de forma consistente, incluidas tildes. No se cambia automáticamente la cobertura de un proveedor.
+
 ## Simplificación de paneles y compra — 20 de octubre de 2026
 
 - Formulario de producto con datos básicos, inventario separado de mínimo por compra y código automático. Características en filas y opciones avanzadas plegables.

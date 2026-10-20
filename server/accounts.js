@@ -1,3 +1,4 @@
+import { normalizeRegion, peruRegions, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
 import { Router } from 'express';
 import { z } from 'zod';
@@ -34,7 +35,7 @@ accountRouter.post('/organizations/me/verification',verified,phoneVerified,async
   const result=await query('INSERT INTO business_verifications(organization_id,notes) VALUES($1,$2) RETURNING id',[req.org.id,notes]);
   res.status(201).json(result.rows[0]);
 });
-export const addressSchema=z.object({recipient:text,line1:text,district:text,region:text,phone:text,country:z.literal('PE').default('PE')});
+export const addressSchema=z.object({recipient:text,line1:text,district:text,region:z.string().transform(normalizeRegion).refine(value=>peruRegions.some(name=>normalizeRegion(name)===value),'Selecciona una región válida de Perú.').transform(regionName),phone:text,country:z.literal('PE').default('PE')});
 accountRouter.post('/organizations/me/addresses',verified,async(req,res)=>{
   requireThat(req.org,'Organización requerida.',403);
   const v=parse(addressSchema,req.body);

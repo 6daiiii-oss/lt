@@ -87,3 +87,17 @@ test('producto sencillo: 1100 disponibles, mínimo 1 y código automático sin o
   const products=await (await page.request.get('/api/seller/products')).json(),p=products.find(p=>p.name==='Prueba de cantidades claras');
   expect(p.moq).toBe(1);expect(p.total).toBe(1100);expect(p.sku).toMatch(/^LOTE-/);expect(p.status).toBe('pending');
 });
+
+test('la marca selecciona regiones con casillas y las conserva al guardar',async({page})=>{
+  const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
+  await login(page,accounts.sellerA);await page.goto('/panel/marca');
+  await expect(page.getByLabel('Lima',{exact:true})).toBeChecked();
+  await page.getByLabel('Áncash',{exact:true}).check();
+  await page.getByRole('button',{name:'Guardar condiciones',exact:true}).click();
+  await expect(page.getByRole('status')).toHaveText('Condiciones guardadas.');
+  await page.reload();await expect(page.getByLabel('Áncash',{exact:true})).toBeChecked();
+  await expect(page.getByLabel('Lima',{exact:true})).toBeChecked();
+  const organization=await (await page.request.get('/api/organizations/me')).json();
+  expect(organization.brand.shipping_regions).toEqual(expect.arrayContaining(['ancash','lima']));
+  await page.setViewportSize({width:390,height:900});await noOverflow(page);
+});

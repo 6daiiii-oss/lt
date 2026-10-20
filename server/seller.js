@@ -1,3 +1,4 @@
+import { normalizeRegion, peruRegions } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
@@ -20,7 +21,7 @@ sellerRouter.get('/summary',async(req,res)=>{
 });
 sellerRouter.put('/brand',verified,orgRole('seller',{owner:true}),async(req,res)=>{
   const v=parse(z.object({name:text,story:z.string().max(3000),location:text,min_order_cents:cents,shipping_cents:cents,
-    shipping_regions:z.array(z.string().trim().min(1).max(80).transform(s=>s.toLocaleLowerCase('es-PE'))).max(30),preparation_days:z.number().int().min(0).max(365),shipping_policy:text,return_policy:text,terms_approved:z.boolean()}),req.body);
+    shipping_regions:z.array(z.string().transform(normalizeRegion).refine(value=>peruRegions.some(name=>normalizeRegion(name)===value),'Selecciona una región válida de Perú.')).min(1,'Selecciona al menos una región de envío.').max(30),preparation_days:z.number().int().min(0).max(365),shipping_policy:text,return_policy:text,terms_approved:z.boolean()}),req.body);
   await tx(async db=>{
     await db.query(`UPDATE brands SET name=$2,story=$3,location=$4,min_order_cents=$5,shipping_cents=$6,shipping_regions=$7,preparation_days=$8,shipping_policy=$9,return_policy=$10,terms_approved=$11 WHERE id=$1`,[req.org.brand_id,v.name,v.story,v.location,v.min_order_cents,v.shipping_cents,v.shipping_regions,v.preparation_days,v.shipping_policy,v.return_policy,v.terms_approved]);
     await audit(db,req,'brand.terms.updated',req.org.brand_id);

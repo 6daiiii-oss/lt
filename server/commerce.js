@@ -1,3 +1,4 @@
+import { normalizeRegion, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
 import { MARKUP_BPS, buyerOrder } from './pricing.js';
 import { Router } from 'express';
@@ -36,10 +37,10 @@ export function quoteCart(rows,address) {
     group.subtotal_cents=sumMoney([group.subtotal_cents,p.quantity*p.wholesale_cents]);
   }
   for(const g of groups.values()) {
-    if(g.subtotal_cents<g.min_order_cents) g.issues.push(`Faltan ${g.min_order_cents-g.subtotal_cents} céntimos para el mínimo de esta marca.`);
+    if(g.subtotal_cents<g.min_order_cents) g.issues.push(`Añade S/ ${((g.min_order_cents-g.subtotal_cents)/100).toFixed(2)} en productos de esta marca para completar su compra mínima.`);
     if(!g.shipping_regions.length) g.issues.push('El proveedor aún no configuró cobertura.');
-    if(address&&!g.shipping_regions.includes(address.region.trim().toLocaleLowerCase('es-PE'))) g.issues.push('La dirección está fuera de cobertura de esta marca.');
-    if(address&&config.coverageRegions.length&&!config.coverageRegions.includes(address.region.trim().toLocaleLowerCase('es-PE'))) g.issues.push('La dirección está fuera de la cobertura de Lote.');
+    if(address&&!g.shipping_regions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push(`Esta marca no envía a ${regionName(address.region)}. Zonas de envío: ${g.shipping_regions.map(regionName).join(', ')||'sin configurar'}. Elige otra dirección o consulta con la marca.`);
+    if(address&&config.coverageRegions.length&&!config.coverageRegions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push('La dirección está fuera de la cobertura de Lote.');
     g.total_cents=sumMoney([g.subtotal_cents,g.shipping_cents]);
   }
   const array=[...groups.values()],total=sumMoney(array.map(g=>g.total_cents));
@@ -49,7 +50,10 @@ export async function ensureCart(db,orgId) { return (await db.query('INSERT INTO
 export const commerceRouter=Router();
 commerceRouter.use(authenticated);
 commerceRouter.get('/cart',orgRole('buyer'),async(req,res)=>{
-  res.json({...quoteCart(await cartRows({query},req.org.id)),pendingCheckout:await pendingCheckout({query},req.org.id)});
+  const addressId=req.query.address_id===undefined?null:id.parse(req.query.address_id);
+  const address=addressId?(await query('SELECT id,region FROM addresses WHERE id=$1 AND organization_id=$2',[addressId,req.org.id])).rows[0]:null;
+  if(addressId)requireThat(address,'Dirección no autorizada.',404);
+  res.json({...quoteCart(await cartRows({query},req.org.id),address),address_id:address?.id||null,pendingCheckout:await pendingCheckout({query},req.org.id)});
 });
 commerceRouter.post('/cart/items',verified,orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({product_id:id,quantity,expected_price_cents:cents}),req.body);
@@ -80,7 +84,8 @@ commerceRouter.post('/checkout',verified,phoneVerified,orgRole('buyer',{approved
     const address=(await db.query('SELECT recipient,line1,district,region,country,phone FROM addresses WHERE id=$1 AND organization_id=$2',[input.address_id,req.org.id])).rows[0];
     requireThat(address,'Dirección no autorizada.',422);
     const rows=await cartRows(db,req.org.id,true),quote=quoteCart(rows,address);
-    requireThat(quote.eligible,'Revisa disponibilidad, mínimos y cobertura.',422,'cart_conditions',quote);
+    const problems=quote.groups.flatMap(g=>[...g.issues.map(issue=>g.brand_name+': '+issue),...g.items.flatMap(p=>p.issues.map(issue=>p.name+': '+issue))]);
+    requireThat(quote.eligible,problems[0]||'Tu bolsa está vacía. Añade un producto para continuar.',422,'cart_conditions',problems);
     requireThat(quote.total_cents===input.reviewed_total_cents,'El total cambió. Revisa el carrito antes de confirmar.',409,'total_changed',quote);
     const checkout=(await db.query(`INSERT INTO checkouts(organization_id,user_id,idempotency_key,request_hash,total_cents,address_snapshot,receipt_snapshot,expires_at)
       VALUES($1,$2,$3,$4,$5,$6,$7,now()+$8*interval '1 minute') RETURNING *`,[req.org.id,req.user.id,key,requestHash,quote.total_cents,address,{...input.receipt,fiscal_document_issued:false},config.reservationMinutes])).rows[0];
