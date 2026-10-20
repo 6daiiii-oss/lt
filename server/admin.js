@@ -35,12 +35,15 @@ adminRouter.post('/verifications/:id/review',async(req,res)=>{
     await audit(db,req,'verification.reviewed',v.id,input);await notify(db,v.organization_id,'verification','Tu solicitud comercial recibió una respuesta.','/cuenta/perfil');
   });res.json({message:'Revisión guardada.'});
 });
-adminRouter.get('/catalog',async(req,res)=>res.json((await query(`SELECT p.*,b.name AS brand_name,o.status AS seller_status FROM products p JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id ORDER BY (p.status='pending') DESC,p.updated_at DESC LIMIT 500`)).rows));
+adminRouter.get('/catalog',async(req,res)=>res.json((await query(`SELECT p.*,b.name AS brand_name,b.terms_approved,o.status AS seller_status,i.total,i.reserved,(SELECT json_agg(json_build_object('url',pi.url,'alt',pi.alt) ORDER BY pi.position) FROM product_images pi WHERE pi.product_id=p.id) AS images FROM products p JOIN inventory i ON i.product_id=p.id JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id ORDER BY (p.status='pending') DESC,p.updated_at DESC LIMIT 500`)).rows));
 adminRouter.post('/catalog/:id/review',async(req,res)=>{
   const input=parse(z.object({status:z.enum(['published','blocked','pending']),reason:text}),req.body);
   await tx(async db=>{
     const p=(await db.query(`SELECT p.id,o.status,b.terms_approved FROM products p JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id WHERE p.id=$1 FOR UPDATE OF p`,[id.parse(req.params.id)])).rows[0];requireThat(p,'Producto no encontrado.',404);
-    if(input.status==='published') requireThat(p.status==='approved'&&p.terms_approved,'La marca requiere verificación y condiciones completas.',422);
+    if(input.status==='published') {
+      requireThat(p.status==='approved','Primero aprueba el negocio de la marca en Administración → Verificaciones o Negocios.',422,'seller_not_approved');
+      requireThat(p.terms_approved,'La marca ya está aprobada, pero el proveedor debe completar y confirmar sus condiciones en su panel → Marca y condiciones, y guardar los cambios.',422,'brand_terms_required');
+    }
     await db.query(`UPDATE products SET status=$2,review_reason=$3,published_at=CASE WHEN $2='published' THEN coalesce(published_at,now()) ELSE published_at END,updated_at=now() WHERE id=$1`,[p.id,input.status,input.reason]);await audit(db,req,'catalog.reviewed',p.id,input);
   });res.json({message:'Moderación guardada.'});
 });
@@ -60,8 +63,7 @@ adminRouter.get('/orders',async(req,res)=>{
 adminRouter.get('/payments',async(req,res)=>res.json((await query(`SELECT pa.*,c.state AS checkout_state,c.expires_at,(SELECT json_agg(json_build_object('product_id',product_id,'quantity',quantity,'state',state)) FROM inventory_reservations WHERE checkout_id=c.id) AS reservations FROM payment_attempts pa JOIN checkouts c ON c.id=pa.checkout_id ORDER BY pa.created_at DESC LIMIT 300`)).rows));
 adminRouter.get('/commissions',async(req,res)=>res.json((await query('SELECT * FROM commission_rules ORDER BY effective_at DESC LIMIT 200')).rows));
 adminRouter.post('/commissions',async(req,res)=>{
-  const input=parse(z.object({brand_id:id.nullable().default(null),basis_points:z.number().int().min(0).max(10000),effective_at:z.iso.datetime()}),req.body);
-  const result=await tx(async db=>{const r=(await db.query('INSERT INTO commission_rules(brand_id,basis_points,effective_at,approved_by) VALUES($1,$2,$3,$4) RETURNING *',[input.brand_id,input.basis_points,input.effective_at,req.user.id])).rows[0];await audit(db,req,'commission.created',r.id,{...input,sandbox:true});return r;});res.status(201).json(result);
+  requireThat(false,'El precio usa un recargo fijo del 10% sobre la base de la marca. Las reglas anteriores solo se conservan como historial.',409,'fixed_markup');
 });
 adminRouter.get('/incidents',async(req,res)=>res.json((await query(`SELECT i.*,b.name AS brand_name FROM incidents i JOIN orders o ON o.id=i.order_id JOIN brands b ON b.id=o.brand_id ORDER BY i.created_at DESC LIMIT 300`)).rows));
 adminRouter.post('/incidents/:id/resolve',async(req,res)=>{

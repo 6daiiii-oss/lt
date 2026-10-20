@@ -6,6 +6,8 @@ La instalación normal empieza con cero productos, pedidos, reseñas y actividad
 
 La portada `/` presenta el marketplace con búsqueda en la cabecera, categorías y pestañas de productos, novedades y compras de pocas unidades. El catálogo público se explora sin cuenta; para guardar, comprar y gestionar un negocio hay que iniciar sesión. Detalles de búsqueda, filtros y accesos: [docs/DISCOVERY.md](docs/DISCOVERY.md).
 
+Guía actual de cuentas, Gmail, SMS, recargo del 10%, Faire, pasarelas y comprobantes: [docs/OPERACION_PERU.md](docs/OPERACION_PERU.md).
+
 ## Windows / VS Code
 
 Requisitos: Node.js **24 LTS**, npm y Docker Desktop con contenedores Linux y Docker Compose v2. Abre el checkout real en VS Code. Si está en la carpeta indicada originalmente:
@@ -48,9 +50,10 @@ El comando ajusta `POSTGRES_PORT` y `DATABASE_URL` en `.env`, conservando las cl
 `npm run setup:local` crea `.env` con contraseñas/claves aleatorias; conserva un archivo existente. `.env.example` describe variables sin secretos. PostgreSQL solo se publica en la interfaz local, puerto 5432.
 
 1. Registra tu cuenta en `/registro` como tienda o proveedor.
-2. Sin SMTP, abre **Mi cuenta → Mi buzón local** y verifica el correo. Solo muestra mensajes de tu sesión; se deshabilita en producción o al configurar SMTP.
-3. Completa el perfil comercial, direcciones y solicita verificación. Los documentos comerciales e imágenes de incidencias son privados.
-4. Crea un administrador desde una terminal autorizada:
+2. Verifica tu celular en **Mi cuenta → Seguridad**. En desarrollo, `SMS_PROVIDER=sandbox` muestra un código local; no envía SMS. Producción requiere Twilio Verify y credenciales. No compartas contraseñas o tokens en el chat.
+3. Sin SMTP, abre **Mi cuenta → Mi buzón local** y verifica el correo. Solo muestra mensajes de tu sesión; se deshabilita en producción o al configurar SMTP.
+4. Completa el perfil comercial, direcciones y solicita verificación. Los documentos comerciales e imágenes de incidencias son privados.
+5. Crea un administrador desde una terminal autorizada:
 
 ```powershell
 npm run admin:create -- tu-correo-de-operacion@tu-dominio.pe
@@ -58,7 +61,7 @@ npm run admin:create -- tu-correo-de-operacion@tu-dominio.pe
 
 El comando pide una contraseña nueva de al menos 16 caracteres sin mostrarla. No tiene contraseña predeterminada ni eleva una cuenta existente; considera verificado al operador creado por este mecanismo controlado. Inicia sesión y abre `/administracion`. Su acceso se comprueba en el servidor y no aparece en la navegación pública.
 
-5. Aprueba la solicitud comercial. El proveedor completa `/panel/marca`, carga productos y solicita revisión. Publica desde administración. El comprador necesita correo y negocio aprobados para iniciar checkout.
+6. Aprueba la solicitud comercial. El proveedor completa `/panel/marca`, carga productos y solicita revisión. Publica desde administración. El comprador necesita correo y negocio aprobados para iniciar checkout.
 
 La recuperación sin sesión necesita entrega por SMTP; el buzón local no abre mensajes de otras cuentas. Verificación y recuperación usan tokens de un uso con vencimiento a 30 minutos. Cambiar contraseña revoca las sesiones.
 
@@ -73,7 +76,7 @@ npm run demo:worker
 
 Se crea otra base `lote_demo_<identificador>` con dos marcas, dos tiendas, un operador y dos productos **DEMO**. La base normal no cambia. Los accesos aleatorios están en `.runtime/demo-access.json`, un archivo privado local: ábrelo localmente y no lo compartas. `.env.demo` selecciona esa base, incluso si la terminal tenía otra URL de base inyectada. La demo utiliza buzón local y desactiva SMTP externo. El seed conserva una demo existente y está prohibido en producción.
 
-Detén el servidor normal antes de iniciar la demo: ambos usan el puerto 3000. Para volver a la base normal utiliza `npm run dev` y `npm run worker`.
+La demo ahora abre en **http://127.0.0.1:3200/prueba-compra**, con botones para entrar como comprador, marcas y administrador sin escribir contraseñas. Usa otra base y otra cookie; puede funcionar al mismo tiempo que la web principal en puerto 3000. Solo está disponible en modo local y no envía correos ni SMS reales.
 
 ## Catálogo y fuentes autorizadas
 
@@ -92,7 +95,7 @@ Los importes son enteros en céntimos; cantidades y múltiplos son enteros. El s
 
 El checkout crea una compra padre y pedidos por marca, guarda snapshots y reserva inventario dentro de transacciones. El adaptador sandbox entrega eventos HMAC con cuerpo original, timestamp e ID único. Una URL del navegador no confirma pagos. Un pago tardío sin reserva válida queda en excepción para conciliación, sin sobreventa.
 
-La tarifa comercial no está aprobada. `SANDBOX_COMMISSION_BPS=0` es el porcentaje inicial ilustrativo; las reglas de administración se congelan por pedido. El margen bruto requiere PVP positivo y declaración de igual unidad/base tributaria; en otro caso muestra “Sin referencia”. No equivale a rentabilidad neta.
+La marca ingresa su precio base y el servidor añade 10% por unidad, redondeado al céntimo (mitad hacia arriba). Base S/100 → precio comprador S/110. La comisión es la diferencia de precios multiplicada por unidades, no 10% del total cobrado. Solo marca/administración ven el desglose. Los pedidos históricos conservan sus importes; las reglas de comisión anteriores son de consulta y no se aplican a nuevos pedidos. El margen bruto requiere PVP positivo y declaración de igual unidad/base tributaria; en otro caso muestra “Sin referencia”. No equivale a rentabilidad neta.
 
 Se usan los precios declarados sin inventar impuestos adicionales. El snapshot indica `tax_applied:null` y `sandbox_unconfigured`. Solicitar boleta/factura no emite un comprobante fiscal; la política tributaria y la emisión electrónica están pendientes de definición/integración.
 

@@ -1,9 +1,11 @@
+import { phoneVerified } from './phone.js';
+import { MARKUP_BPS, buyerOrder } from './pricing.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, tx } from './db.js';
 import { config } from './config.js';
 import { authenticated, orgRole, verified } from './auth.js';
-import { audit, cents, commission, hash, id, notify, parse, quantity, requireThat, sumMoney, validateQuantity } from './lib.js';
+import { audit, cents, hash, id, notify, parse, quantity, requireThat, sumMoney, validateQuantity } from './lib.js';
 
 export async function lockBuyer(db,orgId) { return (await db.query('SELECT id,status FROM organizations WHERE id=$1 FOR UPDATE',[orgId])).rows[0]; }
 export async function pendingCheckout(db,orgId) { return (await db.query(`SELECT id,expires_at,total_cents FROM checkouts WHERE organization_id=$1 AND state='pending' ORDER BY created_at DESC LIMIT 1`,[orgId])).rows[0]; }
@@ -41,7 +43,7 @@ export function quoteCart(rows,address) {
     g.total_cents=sumMoney([g.subtotal_cents,g.shipping_cents]);
   }
   const array=[...groups.values()],total=sumMoney(array.map(g=>g.total_cents));
-  return {groups:array,total_cents:total,eligible:rows.length>0&&array.every(g=>!g.issues.length&&g.items.every(p=>!p.issues.length)),currency:'PEN',sandbox:true,tax_notice:'Simulación: base tributaria declarada por proveedor; sin cálculo ni emisión de comprobante fiscal.'};
+  return {groups:array,total_cents:total,eligible:rows.length>0&&array.every(g=>!g.issues.length&&g.items.every(p=>!p.issues.length)),currency:'PEN',sandbox:true,tax_notice:'Prueba sin cobro. El resumen no es una boleta ni una factura.'};
 }
 export async function ensureCart(db,orgId) { return (await db.query('INSERT INTO carts(organization_id) VALUES($1) ON CONFLICT(organization_id) DO UPDATE SET updated_at=now() RETURNING id',[orgId])).rows[0].id; }
 export const commerceRouter=Router();
@@ -64,7 +66,7 @@ commerceRouter.delete('/cart/items/:id',orgRole('buyer'),async(req,res)=>{
   await tx(async db=>{await lockBuyer(db,req.org.id);requireThat(!await pendingCheckout(db,req.org.id),'Cancela primero el checkout pendiente.',409);
     await db.query('DELETE FROM cart_items WHERE product_id=$1 AND cart_id IN(SELECT id FROM carts WHERE organization_id=$2)',[id.parse(req.params.id),req.org.id]);});res.json({message:'Producto eliminado.'});
 });
-commerceRouter.post('/checkout',verified,orgRole('buyer',{approved:true}),async(req,res)=>{
+commerceRouter.post('/checkout',verified,phoneVerified,orgRole('buyer',{approved:true}),async(req,res)=>{
   requireThat(!config.production,'El checkout real está deshabilitado; falta proveedor y configuración comercial aprobada.',503,'real_checkout_disabled');
   const input=parse(z.object({address_id:id,receipt:z.object({kind:z.enum(['order_summary','boleta_requested','factura_requested']),legal_name:z.string().max(300).default(''),tax_id:z.string().max(30).default('')}),reviewed_total_cents:cents,agree_to_conditions:z.literal(true),sandbox:z.literal(true)}),req.body);
   if(input.receipt.kind==='factura_requested') requireThat(input.receipt.legal_name&&input.receipt.tax_id,'Indica los datos de comprobante solicitado.');
@@ -84,10 +86,10 @@ commerceRouter.post('/checkout',verified,orgRole('buyer',{approved:true}),async(
       VALUES($1,$2,$3,$4,$5,$6,$7,now()+$8*interval '1 minute') RETURNING *`,[req.org.id,req.user.id,key,requestHash,quote.total_cents,address,{...input.receipt,fiscal_document_issued:false},config.reservationMinutes])).rows[0];
     const purchase=(await db.query('INSERT INTO purchases(checkout_id,organization_id,total_cents) VALUES($1,$2,$3) RETURNING id',[checkout.id,req.org.id,quote.total_cents])).rows[0];
     for(const g of quote.groups) {
-      const rule=(await db.query(`SELECT basis_points FROM commission_rules WHERE (brand_id=$1 OR brand_id IS NULL) AND effective_at<=now() ORDER BY (brand_id IS NOT NULL) DESC,effective_at DESC,created_at DESC LIMIT 1`,[g.brand_id])).rows[0];
-      const bps=rule?.basis_points??config.sandboxBps;
+      const bps=MARKUP_BPS;
+      const markupCents=sumMoney(rows.filter(p=>p.brand_id===g.brand_id).map(p=>(p.wholesale_cents-p.supplier_cents)*p.quantity));
       const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,commission(g.subtotal_cents,bps),g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'sandbox_unconfigured',commission:'sandbox_illustrative_not_commercial'}])).rows[0];
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'sandbox_unconfigured',pricing:'supplier_plus_10_percent_per_unit',commission:'10_percent_of_supplier_base'}])).rows[0];
       for(const item of g.items) {
         const p=rows.find(p=>p.id===item.product_id);
         const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);
@@ -110,17 +112,17 @@ commerceRouter.get('/checkout/:id',orgRole('buyer'),async(req,res)=>{
   res.json({...checkout,orders:(await query('SELECT id,brand_id,total_cents,state FROM orders WHERE purchase_id=$1',[checkout.purchase_id])).rows,sandbox:true});
 });
 export async function accessibleOrder(db,req,orderId,{lock=false}={}) {
-  const order=(await db.query(`SELECT ord.*,b.organization_id AS seller_id,b.name AS brand_name,p.payment_state,p.checkout_id,c.address_snapshot,c.receipt_snapshot
-    FROM orders ord JOIN brands b ON b.id=ord.brand_id JOIN purchases p ON p.id=ord.purchase_id JOIN checkouts c ON c.id=p.checkout_id
+  const order=(await db.query(`SELECT ord.*,b.organization_id AS seller_id,b.name AS brand_name,p.payment_state,p.checkout_id,c.address_snapshot,c.receipt_snapshot,buyer.name AS buyer_name,buyer.contact_email AS buyer_email
+    FROM orders ord JOIN organizations buyer ON buyer.id=ord.buyer_id JOIN brands b ON b.id=ord.brand_id JOIN purchases p ON p.id=ord.purchase_id JOIN checkouts c ON c.id=p.checkout_id
     WHERE ord.id=$1 ${lock?'FOR UPDATE OF ord':''}`,[orderId])).rows[0];
   requireThat(order&&(req.user.is_admin||order.buyer_id===req.org?.id||order.seller_id===req.org?.id),'Pedido no encontrado.',404);return order;
 }
 commerceRouter.get('/orders',async(req,res)=>{
   requireThat(req.org,'Organización requerida.',403);
   const input=parse(z.object({state:z.string().max(40).optional(),q:z.string().max(80).optional(),from:z.iso.date().optional(),to:z.iso.date().optional()}),req.query);
-  const rows=(await query(`SELECT ord.*,b.name AS brand_name,p.payment_state FROM orders ord JOIN brands b ON b.id=ord.brand_id JOIN purchases p ON p.id=ord.purchase_id
-    WHERE (ord.buyer_id=$1 OR b.organization_id=$1) AND ($2::text IS NULL OR ord.state=$2) AND ($3::text IS NULL OR ord.id::text ILIKE '%'||$3||'%' OR b.name ILIKE '%'||$3||'%')
-    AND ($4::date IS NULL OR ord.created_at >= ($4::date::timestamp AT TIME ZONE 'America/Lima')) AND ($5::date IS NULL OR ord.created_at < (($5::date+1)::timestamp AT TIME ZONE 'America/Lima')) ORDER BY ord.created_at DESC LIMIT 200`,[req.org.id,input.state||null,input.q||null,input.from||null,input.to||null])).rows;res.json(rows);
+  const rows=(await query(`SELECT ord.*,b.name AS brand_name,buyer.name AS buyer_name,p.payment_state FROM orders ord JOIN organizations buyer ON buyer.id=ord.buyer_id JOIN brands b ON b.id=ord.brand_id JOIN purchases p ON p.id=ord.purchase_id
+    WHERE (ord.buyer_id=$1 OR b.organization_id=$1) AND ($2::text IS NULL OR ord.state=$2) AND ($3::text IS NULL OR ord.id::text ILIKE '%'||$3||'%' OR b.name ILIKE '%'||$3||'%' OR buyer.name ILIKE '%'||$3||'%')
+    AND ($4::date IS NULL OR ord.created_at >= ($4::date::timestamp AT TIME ZONE 'America/Lima')) AND ($5::date IS NULL OR ord.created_at < (($5::date+1)::timestamp AT TIME ZONE 'America/Lima')) ORDER BY ord.created_at DESC LIMIT 200`,[req.org.id,input.state||null,input.q||null,input.from||null,input.to||null])).rows;res.json(rows.map(o=>!req.user.is_admin&&o.buyer_id===req.org.id?buyerOrder(o):o));
 });
 commerceRouter.get('/orders/:id',async(req,res)=>{
   const order=await accessibleOrder({query},req,id.parse(req.params.id));
@@ -130,8 +132,8 @@ commerceRouter.get('/orders/:id',async(req,res)=>{
     query('SELECT * FROM shipments WHERE order_id=$1',[order.id]),query('SELECT * FROM incidents WHERE order_id=$1 ORDER BY created_at DESC',[order.id]),
     query('SELECT kind,amount_cents,reference,created_at FROM ledger_entries WHERE order_id=$1 ORDER BY created_at',[order.id])]);
   // Commission and internal ledger are restricted to seller/admin.
-  if(!req.user.is_admin&&req.org.id===order.buyer_id) {delete order.commission_cents;delete order.commission_bps;}
-  res.json({...order,items:items.rows,events:events.rows,shipment:shipments.rows[0]||null,incidents:incidents.rows,ledger:(!req.user.is_admin&&req.org.id===order.buyer_id)?[]:ledger.rows});
+  const isBuyer=!req.user.is_admin&&req.org.id===order.buyer_id;
+  res.json({... (isBuyer?buyerOrder(order):order),items:items.rows,events:events.rows,shipment:shipments.rows[0]||null,incidents:incidents.rows,ledger:(!req.user.is_admin&&req.org.id===order.buyer_id)?[]:ledger.rows});
 });
 commerceRouter.post('/orders/:id/reorder',verified,orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({confirm:z.boolean().default(false),quote_hash:z.string().optional()}),req.body);

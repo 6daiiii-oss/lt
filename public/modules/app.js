@@ -1,3 +1,5 @@
+import { demoView } from './demo.js';
+import { bindPhotoGalleries } from './photos.js';
 import { api, currentOrg, refreshMe, state } from './api.js';
 import { errorText, empty, button, onAction } from './ui.js';
 import { privateShell, publicShell } from './layout.js';
@@ -22,7 +24,7 @@ async function render() {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       root.innerHTML='<main id="main" class="container loading" tabindex="-1" aria-live="polite">Abriendo tu espacio…</main>';
     }
-    let view=await authView(path,url)||await publicView(path,url);
+    let view=await authView(path,url)||await demoView(path)||await publicView(path,url);
     if(!view) {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       const admin=path.startsWith('/administracion'),seller=path.startsWith('/panel'),shopping=path==='/carrito'||path.startsWith('/checkout/');
@@ -35,10 +37,11 @@ async function render() {
     if(current!==generation)return;
     root.innerHTML=shell(view?.html||`<section class="container page">${empty('Esta página no está disponible.','Revisa la dirección o vuelve al inicio.',button('Volver a Lote','/'))}</section>`);
     view?.bind?.();
+    bindPhotoGalleries();
     bindSearch('global-search',{params:location.pathname==='/catalogo'?new URLSearchParams(location.search):new URLSearchParams(),destination:location.pathname==='/marcas'?'/marcas':'/catalogo'});
     onAction('logout',async()=>{await api('/auth/logout',{method:'POST',body:{}});state.organizationId=null;await refreshMe();navigate('/');});
     document.querySelector('#org-switch')?.addEventListener('change',async event=>{state.organizationId=event.target.value;await refreshMe();reload();});
-    document.querySelectorAll('img').forEach(image=>image.addEventListener('error',()=>{const span=document.createElement('span');span.className='image-placeholder';span.textContent='Imagen no disponible';image.replaceWith(span);},{once:true}));
+    document.querySelectorAll('img:not(.photo-main)').forEach(image=>image.addEventListener('error',()=>{const span=document.createElement('span');span.className='image-placeholder';span.textContent='Imagen no disponible';image.replaceWith(span);},{once:true}));
     const h1=document.querySelector('h1');document.title=h1?`${h1.innerText.replace(/\s+/g,' ').trim()} — Lote`:'Lote';
     document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:scrollTop});
   }catch(error) {

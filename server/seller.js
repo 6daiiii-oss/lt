@@ -1,3 +1,4 @@
+import { phoneVerified } from './phone.js';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
@@ -9,11 +10,13 @@ import { applyImport, csvColumns, csvRows, productSchema, stageImport, upsertPro
 import { accessibleOrder } from './commerce.js';
 export const sellerRouter=Router();
 sellerRouter.use(authenticated,orgRole('seller'));
+sellerRouter.use((req,res,next)=>['GET','HEAD'].includes(req.method)?next():phoneVerified(req,res,next));
 sellerRouter.get('/summary',async(req,res)=>{
   const orders=(await query(`SELECT count(*) FILTER(WHERE state IN ('confirmed','preparing'))::int AS pending_orders,count(*)::int AS orders FROM orders WHERE brand_id=$1`,[req.org.brand_id])).rows[0];
   const products=(await query(`SELECT count(*)::int AS products,count(*) FILTER(WHERE total-reserved<moq*2)::int AS low_stock FROM products p JOIN inventory i ON i.product_id=p.id WHERE brand_id=$1`,[req.org.brand_id])).rows[0];
   const jobs=(await query(`SELECT count(*)::int AS failed_syncs FROM catalog_sources WHERE brand_id=$1 AND last_error IS NOT NULL`,[req.org.brand_id])).rows[0];
-  res.json({...orders,...products,...jobs});
+  const latest_orders=(await query(`SELECT o.id,o.total_cents,o.state,o.created_at,buyer.name AS buyer_name FROM orders o JOIN organizations buyer ON buyer.id=o.buyer_id WHERE o.brand_id=$1 ORDER BY o.created_at DESC LIMIT 5`,[req.org.brand_id])).rows;
+  res.json({...orders,...products,...jobs,latest_orders});
 });
 sellerRouter.put('/brand',verified,orgRole('seller',{owner:true}),async(req,res)=>{
   const v=parse(z.object({name:text,story:z.string().max(3000),location:text,min_order_cents:cents,shipping_cents:cents,
@@ -23,7 +26,7 @@ sellerRouter.put('/brand',verified,orgRole('seller',{owner:true}),async(req,res)
     await audit(db,req,'brand.terms.updated',req.org.brand_id);
   });res.json({message:'Condiciones actualizadas. Los checkouts pendientes volverán a validar precio y condiciones.'});
 });
-sellerRouter.get('/products',async(req,res)=>res.json((await query(`SELECT p.*,i.total,i.reserved,i.total-i.reserved AS available,i.source_updated_at,(SELECT json_agg(json_build_object('url',url,'alt',alt) ORDER BY position) FROM product_images WHERE product_id=p.id) AS images FROM products p JOIN inventory i ON i.product_id=p.id WHERE brand_id=$1 ORDER BY p.created_at DESC LIMIT 1000`,[req.org.brand_id])).rows));
+sellerRouter.get('/products',async(req,res)=>res.json((await query(`SELECT p.*,p.wholesale_cents AS customer_price_cents,p.supplier_cents AS wholesale_cents,i.total,i.reserved,i.total-i.reserved AS available,i.source_updated_at,(SELECT json_agg(json_build_object('url',url,'alt',alt) ORDER BY position) FROM product_images WHERE product_id=p.id) AS images FROM products p JOIN inventory i ON i.product_id=p.id WHERE brand_id=$1 ORDER BY p.created_at DESC LIMIT 1000`,[req.org.brand_id])).rows));
 sellerRouter.post('/products',verified,async(req,res)=>{
   const input=parse(productSchema,req.body);
   const result=await tx(async db=>{const product=await upsertProduct(db,req.org.brand_id,input);await audit(db,req,'product.upsert',product.id);return product;});res.status(201).json(result);

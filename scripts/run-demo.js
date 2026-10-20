@@ -8,5 +8,6 @@ if(!/^lote_demo_[a-f0-9]+$/.test(name))throw new Error('La demo requiere una bas
 if(!['server','worker'].includes(process.argv[2]))throw new Error('Selecciona server o worker.');
 // Explicitly select the isolated database even when DATABASE_URL was injected by the shell.
 process.env.DATABASE_URL=database.href;process.env.STORAGE_DIR=resolve('.runtime',name,'uploads');process.env.NODE_ENV='development';
+process.env.LOTE_DEMO_MODE='true';process.env.PORT='3200';process.env.APP_ORIGIN='http://127.0.0.1:3200';process.env.SMS_PROVIDER='sandbox';
 process.env.SMTP_HOST=''; // Demo accounts never send mail through an injected real SMTP service.
 await import(process.argv[2]==='worker'?'../server/worker.js':'../server/index.js');

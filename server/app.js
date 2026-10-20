@@ -13,6 +13,7 @@ import { paymentRouter } from './payments.js';
 import { sellerRouter } from './seller.js';
 import { adminRouter } from './admin.js';
 import { aftercareRouter } from './aftercare.js';
+import { phoneRouter } from './phone.js';
 import { mediaRouter, servePublicImage } from './media.js';
 export function createApp({testing=false}={}) {
   const app=express();app.disable('x-powered-by');
@@ -26,7 +27,7 @@ export function createApp({testing=false}={}) {
   app.use('/api',authRouter,catalogRouter,paymentRouter);
   app.use('/api/seller',sellerRouter);
   app.use('/api/admin',adminRouter);
-  app.use('/api',mediaRouter,accountRouter,commerceRouter,aftercareRouter);
+  app.use('/api',phoneRouter,mediaRouter,accountRouter,commerceRouter,aftercareRouter);
   app.use('/api',(req,res)=>res.status(404).json({message:'Ruta de API no encontrada.',code:'not_found'}));
   app.get('/media/:id',servePublicImage);
   const publicDir=resolve('public');

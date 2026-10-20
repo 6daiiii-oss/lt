@@ -3,7 +3,7 @@
 ## Requisitos externos antes de una operación comercial
 
 - Elegir y contratar pasarela con soporte real para el modelo B2B/marketplace en Perú. Validar titularidad de fondos, split o conciliación administrativa, comisiones de pasarela, reembolsos, desembolsos y evidencia. Implementar su adaptador oficial y probar credenciales/webhooks/conciliación antes de levantar el bloqueo de checkout real.
-- Aprobar tarifa comercial, base de cálculo de comisión, acuerdos con proveedores, plazos de liquidación y cancelación. Las reglas actuales son de sandbox.
+- El recargo solicitado del 10% sobre la base de marca ya está implementado. Formalizar acuerdos, impuestos, gastos de pasarela, plazos de liquidación y cancelación. Contratar SMS y configurar credenciales de Twilio Verify.
 - Definir política tributaria, comprobantes y base de precios con asesoría correspondiente. Integrar emisión fiscal si procede; los resúmenes actuales no son comprobantes legales.
 - Revisar privacidad, tratamiento de datos, retención, contratación, cancelaciones e incidencias. Publicar un contacto operativo aprobado. Los textos actuales están rotulados como pendientes.
 - Configurar SMTP y validar entrega externa. El buzón local sirve solo a desarrollo.

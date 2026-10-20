@@ -1,3 +1,4 @@
+import { phoneVerified } from './phone.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, tx } from './db.js';
@@ -25,7 +26,7 @@ accountRouter.put('/organizations/me',async(req,res)=>{
     await audit(db,req,'organization.update',req.org.id);
   });res.json({message:'Perfil actualizado.'});
 });
-accountRouter.post('/organizations/me/verification',verified,async(req,res)=>{
+accountRouter.post('/organizations/me/verification',verified,phoneVerified,async(req,res)=>{
   requireThat(req.org?.role==='owner','Requiere titular.',403);
   requireThat(req.org.legal_name&&req.org.business_type&&req.org.phone,'Completa el perfil comercial antes de solicitar revisión.');
   requireThat(req.org.status!=='suspended','Organización suspendida.',403);

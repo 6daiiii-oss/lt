@@ -5,7 +5,7 @@ import { loadSettings } from './settings.js';
 validateConfig();
 if(!config.production) await migrate();
 await loadSettings();
-const server=createApp().listen(config.port,'0.0.0.0',error=>{
+const server=createApp().listen(config.port,config.demo?'127.0.0.1':'0.0.0.0',error=>{
   if(error){console.error('No fue posible abrir el puerto del servidor',{code:error.code,port:config.port});process.exitCode=1;pool.end().catch(()=>{});return;}
   console.log(`Lote iniciado en puerto ${config.port}. Pagos reales deshabilitados.`);
 });

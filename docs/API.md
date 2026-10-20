@@ -2,6 +2,10 @@
 
 Base `/api`. Respuestas JSON salvo plantilla CSV y archivos. Dinero en céntimos PEN, cantidades enteras, fechas ISO 8601. Errores: `{message, code, details?}`. Las escrituras privadas y todas las lecturas privadas verifican identidad y organización en servidor.
 
+## Demo local aislada
+
+GET `/demo/info` informa si está habilitada. POST `/demo/login` admite `{role: buyerA|sellerA|sellerB|admin}` únicamente con `LOTE_DEMO_MODE=true`, base `lote_demo_*`, origen local y fuera de producción. Usa cookie `lote_demo_session` separada. `scripts/run-demo.js` establece ese entorno en puerto 3200. La base normal rechaza siempre este acceso.
+
 ## Autenticación
 
 `GET /me` devuelve usuario, membresías autorizadas, organización seleccionada y token CSRF de esa sesión; no devuelve hashes, secretos ni datos bancarios. El navegador conserva una cookie HttpOnly. Las escrituras exigen `Origin` igual a `APP_ORIGIN` y, con sesión, `X-CSRF-Token`. `X-Organization-Id` solo selecciona una membresía existente. No hay selector de privilegios.
@@ -12,7 +16,14 @@ Base `/api`. Respuestas JSON salvo plantilla CSV y archivos. Dinero en céntimos
 | POST `/auth/login`, `/auth/logout` | Inicio/fin de sesión y revocación del token actual. |
 | POST `/auth/resend`, `/auth/verify` | Reenviar verificación / consumir `{token}` de un uso. |
 | POST `/auth/forgot`, `/auth/reset` | Solicitud genérica por email / `{token,password}`; revoca sesiones. |
+| POST `/auth/password` | `{currentPassword,password}`; cambia contraseña y revoca todas las sesiones. |
+| GET `/auth/phone` | Número verificado y solicitud pendiente del usuario autenticado. |
+| POST `/auth/phone/send` | `{phone}` con +51; exige correo verificado, cooldown 60 s y máximo 5 solicitudes/hora por usuario o número. |
+| POST `/auth/phone/verify` | `{id,code}`; código de 6 dígitos, máximo 5 intentos, caduca a los 10 minutos. |
+| GET `/dev/sms` | Solo desarrollo con SMS sandbox: códigos pendientes propios. |
 | GET `/dev/mail` | Solo desarrollo sin SMTP y con sesión: mensajes de ese usuario. |
+
+Los endpoints de vendedor reciben `wholesale_cents` como base de marca; sus lecturas incluyen `customer_price_cents`. Los endpoints públicos y de comprador usan `wholesale_cents` como precio final con 10% añadido. Los pedidos de comprador omiten comisión y reglas internas. La configuración histórica de comisiones es solo de consulta; POST `/admin/commissions` devuelve 409 `fixed_markup`.
 
 ## Público y cuenta
 
@@ -24,7 +35,7 @@ Base `/api`. Respuestas JSON salvo plantilla CSV y archivos. Dinero en céntimos
 | GET `/products/:id`, `/products/:id/reviews` | Producto vendible y reseñas moderadas de compras entregadas. |
 | GET `/brands?q=...`, `/brands/:id` | Fichas públicas aprobadas, condiciones y opiniones. Sin contacto privado ni payout. |
 | GET/PUT `/organizations/me` | Perfil comercial de la organización; payout se cifra y solo se sustituye al enviar los tres campos. |
-| POST `/organizations/me/verification` | `{notes}`; perfil completo y correo verificado. |
+| POST `/organizations/me/verification` | `{notes}`; perfil completo, correo y celular verificados. |
 | POST `/organizations/me/addresses` | `{recipient,line1,district,region,phone,country:PE}`. |
 | DELETE `/organizations/me/addresses/:id` | Solo direcciones propias. |
 | GET `/account/summary` | Conteos reales de pedidos de tienda. |

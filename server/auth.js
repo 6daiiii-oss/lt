@@ -2,22 +2,22 @@ import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { query, tx } from './db.js';
-import { config } from './config.js';
+import { config, demoEnabled } from './config.js';
 import { audit, digest, email, equal, id, parse, passwordHash, passwordMatches, requireThat, text, token } from './lib.js';
 
 export async function identify(req,res,next) {
   try {
     if (req.headers.authorization?.startsWith('Bearer ')) {
       requireThat(req.path==='/seller/catalog/upsert'&&req.method==='POST','La clave solo autoriza sincronización de catálogo.',403);
-      const key=(await query(`SELECT k.*,u.email,u.verified_at FROM api_keys k JOIN users u ON u.id=k.user_id
+      const key=(await query(`SELECT k.*,u.email,u.verified_at,u.phone,u.phone_verified_at FROM api_keys k JOIN users u ON u.id=k.user_id
         WHERE token_hash=$1 AND revoked_at IS NULL AND expires_at>now()`,[digest(req.headers.authorization.slice(7))])).rows[0];
       requireThat(key,'Clave inválida.',401);
-      req.apiKey=key; req.user={id:key.user_id,email:key.email,verified_at:key.verified_at,is_admin:false};
+      req.apiKey=key; req.user={id:key.user_id,email:key.email,verified_at:key.verified_at,is_admin:false,phone:key.phone,phone_verified_at:key.phone_verified_at};
     } else {
-      const raw=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('lote_session='))?.slice(13);
+      const raw=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(config.cookieName+'='))?.slice(config.cookieName.length+1);
       if (raw && /^[a-f0-9]{64}$/.test(raw)) {
-        const session=(await query(`SELECT s.*,u.email,u.name,u.verified_at,u.is_admin FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND expires_at>now()`,[digest(raw)])).rows[0];
-        if (session) { req.session=session; req.user={id:session.user_id,email:session.email,name:session.name,verified_at:session.verified_at,is_admin:session.is_admin}; }
+        const session=(await query(`SELECT s.*,u.email,u.name,u.verified_at,u.is_admin,u.phone,u.phone_verified_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND expires_at>now()`,[digest(raw)])).rows[0];
+        if (session) { req.session=session; req.user={id:session.user_id,email:session.email,name:session.name,verified_at:session.verified_at,is_admin:session.is_admin,phone:session.phone,phone_verified_at:session.phone_verified_at}; }
       }
     }
     if (req.user) {
@@ -57,7 +57,7 @@ async function createSession(db,req,res,userId) {
   if(req.session) await db.query('DELETE FROM sessions WHERE token_hash=$1',[req.session.token_hash]);
   const raw=token();
   await db.query(`INSERT INTO sessions(token_hash,user_id,csrf_token,expires_at) VALUES($1,$2,$3,now()+interval '7 days')`,[digest(raw),userId,token()]);
-  res.cookie('lote_session',raw,{httpOnly:true,secure:config.production,sameSite:'lax',maxAge:7*24*3600*1000,path:'/'});
+  res.cookie(config.cookieName,raw,{httpOnly:true,secure:config.production,sameSite:'lax',maxAge:7*24*3600*1000,path:'/'});
 }
 async function accountEmail(db,user,purpose) {
   const raw=token();
@@ -68,6 +68,14 @@ async function accountEmail(db,user,purpose) {
 }
 export const authRouter=Router();
 const accountLimit=rateLimit({windowMs:15*60*1000,limit:30,standardHeaders:'draft-8',legacyHeaders:false,message:{message:'Demasiados intentos. Prueba más tarde.'}});
+authRouter.get('/demo/info',(req,res)=>res.json({enabled:demoEnabled(),available:!config.production&&['localhost','127.0.0.1'].includes(req.hostname)}));
+authRouter.post('/demo/login',accountLimit,async(req,res)=>{
+  requireThat(demoEnabled(),'La demo solo permite cuentas de ejemplo en su base aislada.',404);
+  const {role}=parse(z.object({role:z.enum(['buyerA','sellerA','sellerB','admin'])}),req.body);
+  const user=(await query('SELECT id FROM users WHERE email=$1',[role.toLowerCase()+'@demo.invalid'])).rows[0];
+  requireThat(user,'Prepara primero las cuentas de ejemplo.',404);
+  await tx(db=>createSession(db,req,res,user.id));res.json({message:'Cuenta de ejemplo lista.'});
+});
 authRouter.post('/auth/register',accountLimit,async(req,res)=>{
   const input=parse(z.object({email,password:z.string().min(12).max(128),name:text,businessName:text,kind:z.enum(['buyer','seller'])}),req.body);
   const encoded=await passwordHash(input.password);
@@ -91,7 +99,7 @@ authRouter.post('/auth/login',accountLimit,async(req,res)=>{
   res.json({message:'Sesión iniciada.'});
 });
 authRouter.post('/auth/logout',authenticated,async(req,res)=>{
-  await query('DELETE FROM sessions WHERE token_hash=$1',[req.session.token_hash]);res.clearCookie('lote_session',{path:'/'});res.json({message:'Sesión cerrada.'});
+  await query('DELETE FROM sessions WHERE token_hash=$1',[req.session.token_hash]);res.clearCookie(config.cookieName,{path:'/'});res.json({message:'Sesión cerrada.'});
 });
 authRouter.post('/auth/forgot',accountLimit,async(req,res)=>{
   const input=parse(z.object({email}),req.body);
@@ -114,12 +122,25 @@ for(const purpose of ['verify','reset']) authRouter.post(`/auth/${purpose}`,acco
     else {
       await db.query('UPDATE users SET password_hash=$2 WHERE id=$1',[found.user_id,encoded]);
       await db.query('DELETE FROM sessions WHERE user_id=$1',[found.user_id]);
-      res.clearCookie('lote_session',{path:'/'});
+      res.clearCookie(config.cookieName,{path:'/'});
     }
   });res.json({message:purpose==='verify'?'Correo verificado.':'Contraseña actualizada. Inicia sesión de nuevo.'});
 });
+authRouter.post('/auth/password',authenticated,accountLimit,async(req,res)=>{
+  const input=parse(z.object({currentPassword:z.string().max(128),password:z.string().min(12).max(128)}),req.body);
+  requireThat(input.currentPassword!==input.password,'Elige una contraseña diferente.');
+  const encoded=await passwordHash(input.password);
+  await tx(async db=>{
+    const user=(await db.query('SELECT password_hash FROM users WHERE id=$1 FOR UPDATE',[req.user.id])).rows[0];
+    requireThat(await passwordMatches(input.currentPassword,user.password_hash),'Contraseña actual incorrecta.',422);
+    await db.query('UPDATE users SET password_hash=$2 WHERE id=$1',[req.user.id,encoded]);
+    await db.query('DELETE FROM sessions WHERE user_id=$1',[req.user.id]);
+    await audit(db,req,'account.password.changed',req.user.id);
+  });
+  res.clearCookie(config.cookieName,{path:'/'});res.json({message:'Contraseña actualizada. Inicia sesión de nuevo en tus dispositivos.'});
+});
 authRouter.get('/me',async(req,res)=>{
-  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
+  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,demo:demoEnabled(),mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
 });
 authRouter.get('/dev/mail',authenticated,async(req,res)=>{
   requireThat(!config.production&&!process.env.SMTP_HOST,'Buzón sandbox no disponible.',404);

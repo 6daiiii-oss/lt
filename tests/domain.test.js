@@ -14,7 +14,7 @@ before(async()=>{
 });
 beforeEach(async()=>{
   await db.query('TRUNCATE users,organizations RESTART IDENTITY CASCADE');
-  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;
+  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;config.smsProvider='sandbox';config.production=false;
   accounts=await fixtures(db);
 });
 after(async()=>{if(server){await new Promise(resolve=>server.close(resolve));}if(db)await db.pool.end();if(isolated)await isolated.drop();});
@@ -23,6 +23,118 @@ async function request(method,path,body,user,headers={}) {
   const data=await response.json();return {status:response.status,data,headers:response.headers};
 }
 const post=(path,body,user,headers)=>request('POST',path,body,user,headers);
+test('las cuentas rápidas de demo nunca habilitan acceso en la base normal',async()=>{
+  const info=await request('GET','/demo/info');assert.equal(info.data.enabled,false);
+  assert.equal((await post('/demo/login',{role:'admin'})).status,404);
+  const before=config.demo;config.demo=true;
+  try {assert.equal((await post('/demo/login',{role:'admin'})).status,404);}finally{config.demo=before;}
+});
+test('publicación distingue negocio aprobado de condiciones pendientes y publica tras confirmarlas',async()=>{
+  const seller=accounts.sellerA,p=await product(db,seller);
+  await db.query("UPDATE products SET status='pending' WHERE id=$1",[p.id]);
+  await db.query('UPDATE brands SET terms_approved=false WHERE id=$1',[seller.brandId]);
+  const review={status:'published',reason:'Producto revisado'};
+  const blocked=await post('/admin/catalog/'+p.id+'/review',review,accounts.admin);
+  assert.equal(blocked.status,422);assert.equal(blocked.data.code,'brand_terms_required');
+  assert.match(blocked.data.message,/ya está aprobada/);
+  assert.equal((await request('GET','/products/'+p.id)).status,404);
+  const catalog=(await request('GET','/admin/catalog',undefined,accounts.admin)).data;
+  assert.equal(catalog.find(item=>item.id===p.id).terms_approved,false);
+  const updated=await request('PUT','/seller/brand',{name:'Marca de prueba',story:'',location:'Lima',min_order_cents:0,shipping_cents:300,shipping_regions:['lima'],preparation_days:2,shipping_policy:'Despacho en dos días.',return_policy:'Reportar faltantes o daños para revisión.',terms_approved:true},seller);
+  assert.equal(updated.status,200);
+  await db.query("UPDATE organizations SET status='pending' WHERE id=$1",[seller.orgId]);
+  assert.equal((await post('/admin/catalog/'+p.id+'/review',review,accounts.admin)).data.code,'seller_not_approved');
+  await db.query("UPDATE organizations SET status='approved' WHERE id=$1",[seller.orgId]);
+  assert.equal((await post('/admin/catalog/'+p.id+'/review',review,accounts.admin)).status,200);
+  assert.equal((await request('GET','/products/'+p.id)).status,200);
+});
+test('precio base +10%: edición no compone recargos y compradores no ven comisión ni precio base',async()=>{
+  const {priceForBuyer}=await import('../server/pricing.js');
+  assert.equal(priceForBuyer(10000),11000);assert.equal(priceForBuyer(105),116);assert.equal(priceForBuyer(1),1);
+  const input={name:'Prueba de precios',sku:'PRICE-1',category_id:'hogar',wholesale_cents:10000,moq:1,stock:10,submit_for_review:true};
+  assert.equal((await post('/seller/products',input,accounts.buyerA)).status,403);
+  const created=await post('/seller/products',input,accounts.sellerA);assert.equal(created.status,201);
+  const pid=created.data.id;
+  const own=(await request('GET','/seller/products',undefined,accounts.sellerA)).data.find(p=>p.id===pid);
+  assert.equal(own.wholesale_cents,10000);assert.equal(own.customer_price_cents,11000);
+  assert.equal((await request('PUT','/seller/products/'+pid,input,accounts.sellerA)).status,200);
+  await db.query("UPDATE products SET status='published',published_at=now() WHERE id=$1",[pid]);
+  const publicProduct=(await request('GET','/products/'+pid)).data;
+  assert.equal(publicProduct.wholesale_cents,11000);assert.equal('supplier_cents' in publicProduct,false);
+  await putInCart(accounts.buyerA,{id:pid,moq:1,wholesale_cents:11000});
+  const c=await checkout(accounts.buyerA);assert.equal(c.status,201);
+  const oid=(await db.query('SELECT id FROM orders WHERE purchase_id=$1',[c.data.purchase_id])).rows[0].id;
+  for(const data of [(await request('GET','/orders',undefined,accounts.buyerA)).data[0],(await request('GET','/orders/'+oid,undefined,accounts.buyerA)).data]) {
+    assert.equal('commission_cents' in data,false);assert.equal('commission_bps' in data,false);
+    assert.equal(JSON.stringify(data).includes('supplier_'),false);assert.equal(JSON.stringify(data).includes('commission'),false);
+  }
+  const seller=(await request('GET','/orders/'+oid,undefined,accounts.sellerA)).data;
+  assert.equal(seller.commission_cents,1000);assert.equal(seller.subtotal_cents,11000);
+});
+test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación obligatoria',async()=>{
+  const user=accounts.buyerA;
+  await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
+  const p=await product(db,accounts.sellerA);await putInCart(user,p);
+  assert.equal((await checkout(user)).data.code,'phone_unverified');
+  assert.equal((await post('/auth/phone/send',{phone:'987654321'},user)).status,422);
+  const sent=await post('/auth/phone/send',{phone:'+51 987 654 321'},user);assert.equal(sent.status,201);
+  assert.equal('code' in sent.data,false);
+  assert.equal((await post('/auth/phone/send',{phone:'+51987654321'},user)).status,429);
+  const other=(await request('GET','/dev/sms',undefined,accounts.buyerB)).data;assert.deepEqual(other,[]);
+  const sms=(await request('GET','/dev/sms',undefined,user)).data[0];
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},accounts.buyerB)).status,422);
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:'000000'},user)).status,422);
+  assert.equal((await db.query('SELECT attempts FROM phone_verifications WHERE id=$1',[sent.data.id])).rows[0].attempts,1);
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},user)).status,200);
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},user)).status,422);
+  assert.equal((await request('GET','/me',undefined,user)).data.user.phone,'+51987654321');
+  assert.equal((await checkout(user)).status,201);
+  config.production=true;
+  assert.equal((await request('GET','/dev/sms',undefined,user)).status,404);
+  assert.equal((await post('/auth/phone/send',{phone:'+51987654322'},user)).status,503);
+});
+test('SMS bloquea tras 5 intentos y rechaza códigos caducados; marcas sin celular no crean productos',async()=>{
+  const user=accounts.sellerA;
+  await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
+  assert.equal((await post('/seller/products',{},user)).data.code,'phone_unverified');
+  const sent=(await post('/auth/phone/send',{phone:'+51987654322'},user)).data;
+  const sms=(await request('GET','/dev/sms',undefined,user)).data[0];
+  for(let n=0;n<5;n++)assert.equal((await post('/auth/phone/verify',{id:sent.id,code:'000000'},user)).status,422);
+  assert.equal((await post('/auth/phone/verify',{id:sent.id,code:sms.code},user)).status,422);
+  await db.query("UPDATE phone_verifications SET attempts=0,expires_at=now()-interval '1 second' WHERE id=$1",[sent.id]);
+  assert.equal((await post('/auth/phone/verify',{id:sent.id,code:sms.code},user)).status,422);
+});
+test('cambio de contraseña requiere contraseña actual y revoca todas las sesiones',async()=>{
+  const user=accounts.buyerA,newPassword='Nueva-password-segura-2026';
+  assert.equal((await post('/auth/password',{currentPassword:'incorrecta',password:newPassword},user)).status,422);
+  assert.equal((await post('/auth/password',{currentPassword:user.password,password:newPassword},user)).status,200);
+  assert.equal((await request('GET','/me',undefined,user)).data.user,null);
+  assert.equal((await post('/auth/login',{email:user.email,password:user.password})).status,401);
+  assert.equal((await post('/auth/login',{email:user.email,password:newPassword})).status,200);
+});
+test('adaptador Twilio usa Verify y vincula la comprobación al SID; transporte simulado sin SMS reales',async()=>{
+  const originalFetch=globalThis.fetch,keys=['TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_VERIFY_SERVICE_SID'];
+  const previous=keys.map(k=>process.env[k]),calls=[];
+  process.env.TWILIO_ACCOUNT_SID='AC'+'0'.repeat(32);process.env.TWILIO_AUTH_TOKEN='test-only-token';process.env.TWILIO_VERIFY_SERVICE_SID='VA'+'0'.repeat(32);
+  config.smsProvider='twilio';
+  globalThis.fetch=async(url,options)=>{
+    if(!String(url).startsWith('https://verify.twilio.com/'))return originalFetch(url,options);
+    calls.push({url,body:Object.fromEntries(options.body),authorization:options.headers.Authorization});
+    return Response.json(String(url).endsWith('/VerificationCheck')?{status:'approved'}:{sid:'VE'+'1'.repeat(32),status:'pending'});
+  };
+  try {
+    const user=accounts.buyerA;
+    const sent=await post('/auth/phone/send',{phone:'+51987654324'},user);assert.equal(sent.status,201);
+    assert.equal((await request('GET','/dev/sms',undefined,user)).status,404);
+    assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:'123456'},user)).status,200);
+    assert.equal(calls.length,2);assert.equal(calls[0].body.Channel,'sms');assert.equal(calls[0].body.To,'+51987654324');
+    assert.equal(calls[1].body.VerificationSid,'VE'+'1'.repeat(32));assert.equal(calls[1].body.Code,'123456');
+    assert.ok(calls[0].authorization.startsWith('Basic '));
+  }finally {
+    globalThis.fetch=originalFetch;config.smsProvider='sandbox';
+    keys.forEach((key,i)=>{if(previous[i]===undefined)delete process.env[key];else process.env[key]=previous[i];});
+  }
+});
 async function putInCart(buyer,p,n=p.moq) {const r=await post('/cart/items',{product_id:p.id,quantity:n,expected_price_cents:p.wholesale_cents},buyer);assert.equal(r.status,201,JSON.stringify(r.data));}
 async function checkout(buyer,key=randomUUID()) {
   const cart=await request('GET','/cart',undefined,buyer);
@@ -60,7 +172,7 @@ test('carrito de dos marcas: compra padre, pedidos hijos, envío y suma exacta; 
   const key=randomUUID(),result=await checkout(accounts.buyerA,key);assert.equal(result.status,201,JSON.stringify(result.data));
   const replay=await checkout(accounts.buyerA,key);assert.equal(replay.status,200);assert.equal(replay.data.checkout_id,result.data.checkout_id);
   const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[result.data.purchase_id])).rows;assert.equal(orders.length,2);
-  const total=orders.reduce((s,o)=>s+o.total_cents,0);assert.equal(total,3500);
+  const total=orders.reduce((s,o)=>s+o.total_cents,0);assert.equal(total,3770);
   assert.equal((await db.query('SELECT total_cents FROM purchases WHERE id=$1',[result.data.purchase_id])).rows[0].total_cents,total);
   assert.equal((await db.query('SELECT count(*) FROM inventory_reservations')).rows[0].count,'2');
 });
@@ -75,7 +187,7 @@ test('dos checkouts concurrentes sobre el último stock: solo una reserva elegib
 test('pago fallido/caducado libera stock una sola vez y un pago tardío entra en excepción sin sobreventa',async()=>{
   const p=await product(db,accounts.sellerA,{stock:10,moq:5});await putInCart(accounts.buyerA,p);
   const c=(await checkout(accounts.buyerA)).data;
-  const failed={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'failed',amount_cents:1550,occurred_at:new Date().toISOString()};
+  const failed={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'failed',amount_cents:1675,occurred_at:new Date().toISOString()};
   const first=await services.applyPaymentEvent(failed);assert.equal(first.state,'failed');
   assert.equal((await services.applyPaymentEvent(failed)).duplicate,true);
   await services.expireCheckout(c.checkout_id,{force:true});
@@ -107,14 +219,14 @@ test('confirmación del frontend, importe alterado y webhook sin firma nunca con
   assert.equal((await post('/webhooks/sandbox',raw.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(raw,ts)})).status,422);
   assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].state,'pending');
   assert.equal((await post('/checkout/'+c.checkout_id+'/success',{paid:true},accounts.buyerA)).status,404);
-  event.amount_cents=550;const valid=Buffer.from(JSON.stringify(event));
+  event.amount_cents=575;const valid=Buffer.from(JSON.stringify(event));
   assert.equal((await post('/webhooks/sandbox',valid.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(valid,ts)})).status,200);
 });
 test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
   await db.query(`INSERT INTO commission_rules(basis_points,effective_at,approved_by) VALUES(350,now()-interval '1 day',$1)`,[accounts.admin.userId]);
-  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,350);assert.equal(orders[0].commission_cents,53);
+  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,1000);assert.equal(orders[0].commission_cents,150);
   await post('/admin/commissions',{brand_id:null,basis_points:1500,effective_at:new Date().toISOString()},accounts.admin);
-  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:350,commission_cents:53});
+  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:1000,commission_cents:150});
 });
 test('aislamiento: dos marcas y dos tiendas; CSRF y origen; API de proveedor queda ligada a su organización',async()=>{
   const p=await product(db,accounts.sellerA);const {orders}=await paidOrder();
@@ -140,7 +252,7 @@ test('recompra muestra cambios y revalida precio, stock y publicación antes de 
   await db.query('UPDATE products SET wholesale_cents=300 WHERE id=$1',[a.id]);
   assert.equal((await post('/orders/'+orders[0].id+'/reorder',{confirm:true,quote_hash:original.quote_hash},accounts.buyerA)).status,409);
   const updated=(await post('/orders/'+orders[0].id+'/reorder',{confirm:false},accounts.buyerA)).data;
-  assert.equal(updated.items[0].previous_price_cents,250);assert.equal(updated.items[0].current_price_cents,300);assert.equal(updated.items[0].changed,true);
+  assert.equal(updated.items[0].previous_price_cents,275);assert.equal(updated.items[0].current_price_cents,300);assert.equal(updated.items[0].changed,true);
   await db.query(`UPDATE products SET status='archived' WHERE id=$1`,[a.id]);
   const removed=(await post('/orders/'+orders[0].id+'/reorder',{confirm:false},accounts.buyerA)).data;assert.ok(removed.items[0].issues.length);
   assert.equal((await post('/orders/'+orders[0].id+'/reorder',{confirm:true,quote_hash:removed.quote_hash},accounts.buyerA)).status,422);

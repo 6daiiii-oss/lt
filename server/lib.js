@@ -46,7 +46,7 @@ export async function notify(db, organizationId, kind, title, link) {
 }
 export function margin(wholesale, retail, sameTaxBasis=false) { return retail>0&&sameTaxBasis ? ((retail-wholesale)*100)/retail : null; }
 export function validateQuantity(product, n) {
-  requireThat(Number.isSafeInteger(n)&&n>=product.moq&&n%product.pack_multiple===0,`Mínimo ${product.moq} unidades; múltiplo de ${product.pack_multiple}.`,422,'quantity');
+  requireThat(Number.isSafeInteger(n)&&n>=product.moq&&n%product.pack_multiple===0,`Debes comprar al menos ${product.moq} unidades, en grupos de ${product.pack_multiple}.`,422,'quantity');
   requireThat(Number.isSafeInteger(product.wholesale_cents)&&product.wholesale_cents>0,'Precio mayorista inválido.',422);
 }
 export function sumMoney(values) { const sum=values.reduce((a,b)=>a+b,0); requireThat(Number.isSafeInteger(sum)&&sum>=0&&sum<=2_000_000_000,'Importe fuera de límite.'); return sum; }

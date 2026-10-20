@@ -40,6 +40,7 @@ export async function api(path,{method='GET'}={}){
   const endpoint=new URL(path,'https://lote.invalid');
   if(method==='GET'){
     if(endpoint.pathname==='/me')return {...state};
+    if(endpoint.pathname==='/demo/info')return {enabled:false,available:false};
     if(endpoint.pathname==='/categories')return categories;
     if(endpoint.pathname==='/products')return {products:[],total:0,page:1,pages:0,newDays:30};
     if(endpoint.pathname==='/brands')return [];

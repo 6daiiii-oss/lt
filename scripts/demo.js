@@ -10,7 +10,7 @@ try {
   const access=Object.fromEntries(Object.entries(accounts).filter(([,a])=>a.email).map(([key,a])=>[key,{email:a.email,password:a.password}]));
   await writeFile('.runtime/demo-access.json',JSON.stringify(access,null,2),{mode:0o600,flag:'wx'});
   await writeFile('.env.demo',`DATABASE_URL=${process.env.DATABASE_URL}\nSTORAGE_DIR=.runtime/${isolated.name}/uploads\nNODE_ENV=development\n`,{mode:0o600,flag:'wx'});
-  console.log('Demo creada en una base aislada. La base principal permanece vacía.');
+  console.log('Demo creada en una base aislada. No se modificó la base principal.');
   console.log('Accesos aleatorios en .runtime/demo-access.json (archivo privado local).');
   console.log('Inicia con npm run demo:dev y, en otra terminal, npm run demo:worker.');
   await db.pool.end();await isolated.retain();

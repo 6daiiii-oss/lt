@@ -1,3 +1,4 @@
+import { priceForBuyer } from './pricing.js';
 import { parse as parseCsv } from 'csv-parse/sync';
 import { z } from 'zod';
 import { config } from './config.js';
@@ -30,12 +31,13 @@ export async function upsertProduct(db,brandId,input,{sourceId=null}={}) {
   requireThat(effectiveStock>=(old?.reserved||0),'El stock informado no cubre reservas locales. Requiere conciliación.',409,'stock_reconciliation');
   let status=p.active?(p.submit_for_review?'pending':'draft'):'archived';
   if(old?.status==='blocked') status='blocked';
-  const sensitive=old&&['name','sku','category_id','variant','description','wholesale_cents','retail_cents','same_tax_basis','moq','pack_multiple'].some(key=>p[key]!==old[key]);
+  const sensitive=old&&['name','sku','category_id','variant','description','wholesale_cents','retail_cents','same_tax_basis','moq','pack_multiple'].some(key=>p[key]!== (key==='wholesale_cents'?old.supplier_cents:old[key]));
   if(old?.status==='published'&&p.active) status=sensitive?'pending':'published';
   if(old&&JSON.stringify(p.specifications)!==JSON.stringify(old.specifications)&&old.status==='published') status='pending';
-  const values=[brandId,p.category_id,p.name,p.description,p.sku,p.variant,p.specifications,p.wholesale_cents,p.retail_cents,p.same_tax_basis,p.moq,p.pack_multiple,status];
-  const row=old?(await db.query(`UPDATE products SET category_id=$2,name=$3,description=$4,sku=$5,variant=$6,specifications=$7,wholesale_cents=$8,retail_cents=$9,same_tax_basis=$10,moq=$11,pack_multiple=$12,status=$13,updated_at=now() WHERE id=$14 AND brand_id=$1 RETURNING *`,[...values,old.id])).rows[0]
-    :(await db.query(`INSERT INTO products(brand_id,category_id,name,description,sku,variant,specifications,wholesale_cents,retail_cents,same_tax_basis,moq,pack_multiple,status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,values)).rows[0];
+  const values=[brandId,p.category_id,p.name,p.description,p.sku,p.variant,p.specifications,priceForBuyer(p.wholesale_cents),p.retail_cents,p.same_tax_basis,p.moq,p.pack_multiple,status];
+  values.push(p.wholesale_cents);
+  const row=old?(await db.query(`UPDATE products SET category_id=$2,name=$3,description=$4,sku=$5,variant=$6,specifications=$7,wholesale_cents=$8,retail_cents=$9,same_tax_basis=$10,moq=$11,pack_multiple=$12,status=$13,supplier_cents=$14,updated_at=now() WHERE id=$15 AND brand_id=$1 RETURNING *`,[...values,old.id])).rows[0]
+    :(await db.query(`INSERT INTO products(brand_id,category_id,name,description,sku,variant,specifications,wholesale_cents,retail_cents,same_tax_basis,moq,pack_multiple,status,supplier_cents) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,values)).rows[0];
   await db.query(`INSERT INTO inventory(product_id,total,source_updated_at) VALUES($1,$2,$3) ON CONFLICT(product_id) DO UPDATE SET total=$2,source_updated_at=$3,updated_at=now()`,[row.id,effectiveStock,updatedAt]);
   await db.query(`INSERT INTO inventory_movements(product_id,kind,quantity,reference) VALUES($1,'source_snapshot',$2,$3)`,[row.id,effectiveStock,`source:${row.id}:${crypto.randomUUID()}`]);
   const priorImages=(await db.query('SELECT url,alt FROM product_images WHERE product_id=$1 ORDER BY position',[row.id])).rows;

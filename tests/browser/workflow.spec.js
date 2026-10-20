@@ -6,9 +6,9 @@ async function noOverflow(page){expect(await page.evaluate(()=>document.document
 async function login(page,account){await page.goto('/login');await page.getByLabel('Correo electrónico',{exact:true}).fill(account.email);await page.getByLabel('Contraseña',{exact:true}).fill(account.password);await page.getByRole('button',{name:'Ingresar',exact:true}).click();await expect(page).not.toHaveURL(/\/login/);}
 test('portada y catálogo vacío responsive, filtros compartibles, historial, etiquetas, foco y error',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  for(const width of widths){await page.setViewportSize({width,height:1000});await page.goto('/');await expect(page.getByRole('heading',{name:/Buenas marcas/})).toBeVisible();await noOverflow(page);await page.goto('/catalogo');await expect(page.getByRole('heading',{name:'El catálogo está tomando forma.'})).toBeVisible();await noOverflow(page);await page.screenshot({path:`test-results/catalogo-vacio-${width}.png`,fullPage:true});}
-  await page.getByLabel('Productos o marcas',{exact:true}).fill('consulta sin resultados');await page.getByRole('button',{name:'Aplicar filtros'}).click();await expect(page).toHaveURL(/q=consulta/);await expect(page.getByRole('heading',{name:'No hay resultados con estos filtros.'})).toBeVisible();
-  await page.goBack();await expect(page.getByLabel('Productos o marcas',{exact:true})).toHaveValue('');
+  for(const width of widths){await page.setViewportSize({width,height:1000});await page.goto('/');await expect(page.getByRole('heading',{name:/Compra directo/})).toBeVisible();await noOverflow(page);await page.goto('/catalogo');await expect(page.getByRole('heading',{name:'Aún no hay productos publicados'})).toBeVisible();await noOverflow(page);await page.screenshot({path:`test-results/catalogo-vacio-${width}.png`,fullPage:true});}
+  await page.getByRole('searchbox',{name:'Buscar productos y marcas',exact:true}).fill('consulta sin resultados');await page.getByRole('searchbox',{name:'Buscar productos y marcas',exact:true}).press('Enter');await expect(page).toHaveURL(/q=consulta/);await expect(page.getByRole('heading',{name:'No encontramos productos'})).toBeVisible();
+  await page.goBack();await expect(page.getByRole('searchbox',{name:'Buscar productos y marcas',exact:true})).toHaveValue('');
   const unlabelled=await page.locator('input,select,textarea').evaluateAll(inputs=>inputs.filter(el=>!el.labels?.length&&!el.getAttribute('aria-label')).length);expect(unlabelled).toBe(0);
   await page.getByRole('link',{name:'Saltar al contenido'}).focus();await page.keyboard.press('Enter');await expect(page.locator('#main')).toBeFocused();
   await page.route('**/api/products?**',route=>route.abort());await page.goto('/catalogo?q=fallo');await expect(page.getByRole('heading',{name:'No pudimos completar esta vista.'})).toBeVisible();await noOverflow(page);expect(errors).toEqual([]);
@@ -19,18 +19,27 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
   const [sellerA,sellerB,buyer,admin]=await Promise.all(contexts.map(c=>c.newPage()));
   try{
     await login(sellerA,accounts.sellerA);await sellerA.goto('/panel/productos/nuevo');
-    await sellerA.getByLabel('Nombre del producto',{exact:true}).fill('DEMO Vaso editorial');await sellerA.getByLabel('SKU único e inmutable').fill('UI-A');await sellerA.getByLabel('Categoría',{exact:true}).selectOption('hogar');
-    await sellerA.getByLabel('Mayorista por unidad S/').fill('2.50');await sellerA.getByLabel('PVP sugerido S/ (opcional)').fill('5.00');await sellerA.getByLabel('MOQ en unidades').fill('6');await sellerA.getByLabel('Múltiplo de empaque').fill('6');await sellerA.getByLabel('Stock físico vendible (incluye reservas locales)').fill('60');
-    await sellerA.getByLabel('Declaro que mayorista y PVP corresponden a la misma unidad y base tributaria.').check();await sellerA.getByLabel('Solicitar revisión del catálogo al guardar').check();await sellerA.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(sellerA).toHaveURL(/\/panel\/productos$/);
+    await sellerA.getByText('Más opciones (opcional): color, características y venta por paquetes',{exact:true}).click();
+    await sellerA.getByLabel('Nombre del producto',{exact:true}).fill('DEMO Vaso editorial');await sellerA.getByLabel('Código del producto (se crea automáticamente si lo dejas vacío)').fill('UI-A');await sellerA.getByLabel('Categoría',{exact:true}).selectOption('hogar');
+    await sellerA.getByLabel('Tu precio por unidad (S/)').fill('2.50');await sellerA.getByLabel('Precio sugerido de reventa (S/, opcional)').fill('5.00');await sellerA.getByLabel('¿Desde cuántas unidades puede comprar el cliente?').fill('6');await sellerA.getByLabel('¿Se vende en grupos de cuántas unidades?').fill('6');await sellerA.getByLabel('¿Cuántas unidades tienes para vender?').fill('60');
+    await expect(sellerA.locator('#price-preview')).toContainText('2.75');
+    const photoA=await sharp({create:{width:100,height:100,channels:3,background:'#173f35'}}).png().toBuffer();
+    const photoB=await sharp({create:{width:100,height:100,channels:3,background:'#e8b366'}}).png().toBuffer();
+    await sellerA.getByLabel('Añadir fotos desde tu computadora').setInputFiles([{name:'foto-a.png',mimeType:'image/png',buffer:photoA},{name:'foto-b.png',mimeType:'image/png',buffer:photoB}]);
+    await expect(sellerA.getByText('Fotos listas. Guarda el producto para conservar los cambios.',{exact:true})).toBeVisible();
+    await expect(sellerA.locator('.photo-tile')).toHaveCount(2);
+    await sellerA.getByRole('button',{name:'Usar de portada',exact:true}).click();
+    await sellerA.getByRole('button',{name:'Añadir característica',exact:true}).click();await sellerA.getByLabel('Característica',{exact:true}).fill('Material');await sellerA.getByLabel('Detalle',{exact:true}).fill('Cerámica');
+    await sellerA.getByLabel('El precio de reventa corresponde a la misma unidad e incluye los mismos impuestos que mi precio.').check();await sellerA.getByLabel('Enviar a Lote para que revise y publique el producto').check();await sellerA.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(sellerA).toHaveURL(/\/panel\/productos$/);
     await login(sellerB,accounts.sellerB);await sellerB.goto('/panel/importaciones');
     const csv='name,sku,category_id,wholesale_cents,retail_cents,moq,pack_multiple,stock,same_tax_basis\n"DEMO Cuaderno, azul",UI-B,hogar,400,800,3,3,30,true\n';
     await sellerB.getByLabel('Archivo CSV de productos').setInputFiles({name:'demo.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});await sellerB.getByRole('button',{name:'Validar y previsualizar'}).click();await expect(sellerB.getByRole('heading',{name:/Lote [A-F0-9]{8}/})).toBeVisible();await sellerB.getByLabel('Revisé todas las filas y autorizo aplicarlas de forma atómica al catálogo de mi marca.').check();await sellerB.getByRole('button',{name:'Aplicar lote y solicitar revisión'}).click();await expect(sellerB.getByText('Lote aplicado. Los productos nuevos y los cambios sensibles siguen pendientes de revisión.')).toBeVisible();
     await login(admin,accounts.admin);await admin.goto('/administracion/catalogo');
-    for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){const card=admin.locator('.record').filter({has:admin.getByRole('heading',{name,exact:true})});await card.getByLabel('Decisión',{exact:true}).selectOption('published');await card.getByLabel('Motivo de revisión').fill('Producto de demostración revisado en la base aislada.');await card.getByRole('button',{name:'Guardar moderación'}).click();await expect(card.getByText('Publicado',{exact:true})).toBeVisible();}
+    for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){const card=admin.locator('.record').filter({has:admin.getByRole('heading',{name,exact:true})});await card.getByRole('button',{name:'Publicar producto',exact:true}).click();await expect(card.getByText('Publicado',{exact:true})).toBeVisible();}
     await login(buyer,accounts.buyerA);
     let productUrl;
-    for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){await buyer.goto('/catalogo');await buyer.getByRole('heading',{name,exact:true}).getByRole('link').click();await expect(buyer.getByRole('heading',{name,exact:true})).toBeVisible();if(!productUrl)productUrl=new URL(buyer.url()).pathname;await buyer.getByRole('button',{name:'Añadir a mi bolsa'}).click();await expect(buyer.getByRole('status')).toHaveText('Producto añadido a tu bolsa.');}
-    await buyer.goto('/carrito');await expect(buyer.getByRole('heading',{name:'Buenas elecciones, juntas.'})).toBeVisible();await expect(buyer.locator('.summary-dl .total').last()).toContainText('35.00');await buyer.getByLabel('Revisé cantidades, cobertura, precios, envío y condiciones de cada proveedor.').check();await buyer.getByRole('button',{name:'Reservar y continuar al sandbox'}).click();await expect(buyer).toHaveURL(/\/checkout\/[^/]+$/);await buyer.getByRole('button',{name:'Simular pago aprobado'}).click();await expect(buyer.getByText('Aprobado',{exact:true})).toBeVisible();
+    for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){await buyer.goto('/catalogo');await buyer.getByRole('heading',{name,exact:true}).getByRole('link').click();await expect(buyer.getByRole('heading',{name,exact:true})).toBeVisible();if(!productUrl){productUrl=new URL(buyer.url()).pathname;await expect(buyer.locator('.photo-thumbs button')).toHaveCount(2);const first=await buyer.locator('[data-photo-main]').getAttribute('src');await buyer.getByRole('button',{name:'Ver foto 2',exact:true}).click();await expect(buyer.locator('[data-photo-main]')).not.toHaveAttribute('src',first);}await buyer.getByRole('button',{name:'Añadir a mi bolsa'}).click();await expect(buyer.getByRole('status')).toHaveText('Producto añadido a tu bolsa.');}
+    await buyer.goto('/carrito');await expect(buyer.getByRole('heading',{name:'Buenas elecciones, juntas.'})).toBeVisible();await expect(buyer.locator('.summary-dl .total').last()).toContainText('37.70');await buyer.getByLabel('Revisé cantidades, cobertura, precios, envío y condiciones de cada proveedor.').check();await buyer.getByRole('button',{name:'Continuar al pago de prueba'}).click();await expect(buyer).toHaveURL(/\/checkout\/[^/]+$/);await buyer.getByRole('button',{name:'Completar compra de prueba'}).click();await expect(buyer.getByText('Aprobado',{exact:true})).toBeVisible();
     await buyer.goto('/pedidos');const links={};for(const letter of ['A','B']){const row=buyer.getByRole('row').filter({hasText:'DEMO Marca '+letter});links[letter]=await row.getByRole('link').getAttribute('href');}
     for(const [letter,seller] of [['A',sellerA],['B',sellerB]]){await seller.goto('/panel'+links[letter]);await seller.getByRole('button',{name:'Aceptar y preparar pedido'}).click();await expect(seller.getByRole('button',{name:'Registrar despacho'})).toBeVisible();await seller.getByLabel('Transportista',{exact:true}).fill('DEMO Transportista');await seller.getByLabel('Código de seguimiento').fill('DEMO-ENVIO-'+letter);await seller.getByRole('button',{name:'Registrar despacho'}).click();await expect(seller.getByText('Enviado',{exact:true})).toBeVisible();await buyer.goto(links[letter]);await buyer.getByRole('button',{name:'Confirmar que recibí el pedido'}).click();await expect(buyer.getByText('Entregado',{exact:true})).toBeVisible();}
     await buyer.goto(links.A);await buyer.getByText('Escribir una reseña',{exact:true}).click();await buyer.getByLabel('Tu experiencia de compra').fill('Producto de demostración entregado en el recorrido de pruebas.');await buyer.getByRole('button',{name:'Enviar a moderación'}).click();await expect(buyer.getByRole('status')).toHaveText('Reseña enviada a moderación.');
@@ -40,4 +49,41 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
     for(const width of widths){await buyer.setViewportSize({width,height:1000});for(const path of ['/catalogo',productUrl,'/carrito',links.A]){await buyer.goto(path);await expect(buyer.locator('h1')).toBeVisible();await expect(buyer.getByRole('heading',{name:'No pudimos completar esta vista.'})).toHaveCount(0);await noOverflow(buyer);}await sellerA.setViewportSize({width,height:1000});await sellerA.goto('/panel/productos');await expect(sellerA.getByRole('heading',{name:'Productos con toda la información.'})).toBeVisible();await noOverflow(sellerA);}
     await buyer.screenshot({path:'test-results/pedido-movil.png',fullPage:true});
   }finally{await Promise.all(contexts.map(context=>context.close().catch(()=>{})));}
+});
+
+test('registro de marca, correo y celular local, sesión persistente y cambio de contraseña',async({page})=>{
+  const email='registro-'+Date.now()+'@example.invalid',password='Registro-seguro-password-2026';
+  await page.goto('/registro?tipo=proveedor');
+  await page.getByLabel('Tu nombre',{exact:true}).fill('Prueba de registro');
+  await page.getByLabel('Nombre de tu negocio').fill('Marca de prueba');
+  await page.getByLabel('Correo electrónico',{exact:true}).fill(email);
+  await page.getByLabel('Contraseña · mínimo 12 caracteres').fill(password);
+  await page.getByRole('button',{name:'Crear mi cuenta'}).click();await expect(page).toHaveURL(/\/panel$/);
+  await page.goto('/buzon');await page.getByRole('link',{name:'Abrir enlace del mensaje'}).first().click();
+  await page.getByRole('button',{name:'Verificar correo',exact:true}).click();await expect(page).toHaveURL(/\/panel$/);
+  await page.goto('/cuenta/seguridad');await expect(page.getByText('Correo verificado.',{exact:true})).toBeVisible();
+  await page.getByLabel('Celular peruano con +51').fill('+51987654321');await page.getByRole('button',{name:'Enviar código',exact:true}).click();
+  const code=page.locator('.notice strong');await expect(code).toHaveText(/^\d{6}$/);
+  await page.getByLabel('Código de verificación',{exact:true}).fill(await code.innerText());await page.getByRole('button',{name:'Verificar celular',exact:true}).click();
+  await expect(page.getByText('Verificado: +51987654321',{exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByText('Verificado: +51987654321',{exact:true})).toBeVisible();
+  await page.setViewportSize({width:390,height:900});await noOverflow(page);
+  await page.getByLabel('Contraseña actual',{exact:true}).fill(password);await page.getByLabel('Nueva contraseña',{exact:true}).fill(password+'-nueva');await page.getByLabel('Repetir nueva contraseña',{exact:true}).fill(password+'-nueva');
+  await page.getByRole('button',{name:'Actualizar contraseña'}).click();await expect(page).toHaveURL(/\/login$/);
+});
+
+test('producto sencillo: 1100 disponibles, mínimo 1 y código automático sin opciones avanzadas',async({page})=>{
+  const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
+  await login(page,accounts.sellerA);await page.goto('/panel/productos/nuevo');
+  await page.getByLabel('Nombre del producto',{exact:true}).fill('Prueba de cantidades claras');
+  await page.getByLabel('Categoría',{exact:true}).selectOption('hogar');
+  await page.getByLabel('Tu precio por unidad (S/)',{exact:true}).fill('12');
+  await page.getByLabel('¿Cuántas unidades tienes para vender?',{exact:true}).fill('1100');
+  await expect(page.getByLabel('¿Desde cuántas unidades puede comprar el cliente?',{exact:true})).toHaveValue('1');
+  await expect(page.locator('#quantity-preview')).toContainText('Tienes 1100 unidades en total. Cada pedido empieza desde 1 unidad.');
+  await expect(page.getByLabel('Código del producto (se crea automáticamente si lo dejas vacío)')).not.toBeVisible();
+  await page.setViewportSize({width:390,height:900});await noOverflow(page);
+  await page.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(page).toHaveURL(/\/panel\/productos$/);
+  const products=await (await page.request.get('/api/seller/products')).json(),p=products.find(p=>p.name==='Prueba de cantidades claras');
+  expect(p.moq).toBe(1);expect(p.total).toBe(1100);expect(p.sku).toMatch(/^LOTE-/);expect(p.status).toBe('pending');
 });

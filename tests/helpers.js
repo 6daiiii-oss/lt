@@ -20,6 +20,7 @@ export async function fixtures(db,{withProducts=false}={}) {
   for(const [key,kind] of [['sellerA','seller'],['sellerB','seller'],['buyerA','buyer'],['buyerB','buyer'],['admin','admin']]) {
     const email=`${key.toLowerCase()}@demo.invalid`;
     const user=(await db.query('INSERT INTO users(email,name,password_hash,verified_at,is_admin) VALUES($1,$2,$3,now(),$4) RETURNING id',[email,`DEMO ${key}`,encoded,kind==='admin'])).rows[0];
+    await db.query('UPDATE users SET phone=$2,phone_verified_at=now() WHERE id=$1',[user.id,'+519'+String(Object.keys(accounts).length+1).padStart(8,'0')]);
     const account={email,password,userId:user.id};
     if(kind!=='admin') {
       const org=(await db.query(`INSERT INTO organizations(kind,name,legal_name,business_type,contact_email,phone,status) VALUES($1,$2,$2,'DEMO',$3,'000000000','approved') RETURNING id`,[kind,`DEMO ${key}`,email])).rows[0];
@@ -41,5 +42,5 @@ export async function product(db,seller,overrides={}) {
   const {upsertProduct}=await import('../server/imports.js');
   const input={name:'DEMO Producto',sku:randomUUID(),category_id:'hogar',wholesale_cents:250,retail_cents:500,same_tax_basis:true,moq:1,pack_multiple:1,stock:100,submit_for_review:true,...overrides};
   const p=await upsertProduct(db,seller.brandId,input);
-  await db.query(`UPDATE products SET status='published',published_at=now() WHERE id=$1`,[p.id]);return {...input,id:p.id};
+  await db.query(`UPDATE products SET status='published',published_at=now() WHERE id=$1`,[p.id]);return {...input,supplier_cents:input.wholesale_cents,wholesale_cents:(await import('../server/pricing.js')).priceForBuyer(input.wholesale_cents),id:p.id};
 }

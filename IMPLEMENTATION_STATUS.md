@@ -1,5 +1,29 @@
 # Estado real de implementación · Lote
 
+## Simplificación de paneles y compra — 20 de octubre de 2026
+
+- Formulario de producto con datos básicos, inventario separado de mínimo por compra y código automático. Características en filas y opciones avanzadas plegables.
+- Hasta 8 fotos: subida múltiple, vista previa, quitar y elegir portada; galería con miniaturas en producto público y revisión administrativa.
+- Aprobación directa de productos y negocios con comentarios de auditoría automáticos. Motivos personalizados disponibles para otras decisiones.
+- Pago de prueba con lenguaje sencillo, datos de factura solo cuando se solicitan y alta de dirección desde la bolsa.
+- Demo local en http://127.0.0.1:3200/prueba-compra, con cuentas preparadas y cambio de rol. Base, cookie y puerto separados; sin cobros reales. No se habilita este acceso en la base principal ni producción.
+- La lámpara reportada conserva 1100 unidades y su mínimo se corrigió a 1 mediante una operación local auditada; los datos de la base no se publican en GitHub.
+- Validación de esta revisión: 25/25 pruebas del backend y 4/4 recorridos Chromium; subida de dos fotos, cambio de portada, galería pública y formulario básico sin código manual. Demo local comprobada desde entrar sin contraseña hasta recibir el pedido. Exportación de GitHub Pages compilada correctamente.
+- GitHub Pages conserva la interfaz estática. Cuentas, fotos subidas y pedidos requieren servidor Express, PostgreSQL y almacenamiento persistente.
+
+## Actualización funcional — 19 de octubre de 2026 (Windows)
+
+Trabajo realizado en C:/Users/Rodolfo/Documents/Lote/lt, sin cambios de branding. Esta sección describe la revisión vigente; las secciones siguientes conservan el historial anterior.
+
+- Precio base de marca +10% por unidad calculado en el servidor; catálogo, carrito y checkout coherentes. Edición sin recargo compuesto. Comisión privada en listado y detalle de pedidos. Pedidos históricos conservados.
+- Verificación de celular peruano, límites persistentes, códigos de un uso, vencimiento, buzón SMS privado local y adaptador Twilio Verify. Exigida para operar; cambio de contraseña revoca sesiones.
+- Panel de marca con pedidos recientes, tienda compradora, detalles, seguimiento y desglose. Solo marcas autorizadas pueden cargar productos propios.
+- Guía de Gmail, SMS, Faire, pasarelas y comprobantes: [docs/OPERACION_PERU.md](docs/OPERACION_PERU.md).
+- Validación ejecutada: npm run check; 23/23 pruebas de integración PostgreSQL; 3/3 recorridos Chromium, con anchos de 1440/1024/768/390/360. Se instaló Chromium para Playwright. Pruebas usan bases aisladas; el adaptador Twilio se prueba con transporte simulado.
+- Migración 004 aplicada a la base local. SMTP y Twilio no tienen credenciales configuradas. No se enviaron SMS reales ni se comprobó entrega externa de correos. Sin cobros reales ni emisión SUNAT.
+- Cambios locales; no se hizo push ni despliegue en esta revisión.
+
+
 ## Revisión de descubrimiento y accesos
 
 Portada de marketplace con búsqueda compartida en la cabecera, navegación ampliada y pestañas de catálogo funcionales. Se redujeron eslóganes y párrafos, se aumentó el texto de lectura a 16–17 px y se redujo el título del catálogo a 28 px. Se conservan las dos imágenes editoriales con variantes WebP, las sugerencias reales y los filtros desplegables. Se consulta la sesión antes de renderizar espacios privados; los visitantes reciben llamadas de ingreso/registro en lugar de controles de compra. Los endpoints privados conservan sus comprobaciones del servidor. Detalles: [docs/DISCOVERY.md](docs/DISCOVERY.md).
@@ -56,7 +80,7 @@ El usuario autorizó actualizar GitHub mediante commit y push a `main`. La desca
 | Verificar/rechazar/corregir/suspender/restaurar negocios | `/administracion/verificaciones`, `/administracion/negocios` | Decisión con razón y auditoría. Una suspensión retira catálogo/compra y bloquea panel de proveedor; no elimina pedidos previos. Operación conserva resolución/reembolso y puede restaurar acceso. |
 | Moderación/categorías | `/administracion/catalogo`, `/api/admin/categories` | Primera publicación y cambios sensibles revisados; publicación de dos marcas en Chromium. |
 | Pedidos/pagos/reservas y búsqueda/filtros | `/administracion/pedidos`, `/administracion/pagos` | Implementado; filtros de preparación, pago y fechas. Acceso cruzado denegado. |
-| Comisiones con vigencia | `/administracion/comisiones` | General/por marca; prueba confirma que una tarifa nueva no modifica el pedido histórico. Solo configuración sandbox. |
+| Recargo del 10% e historial | `/administracion/comisiones` | Precio base +10% por unidad; reglas anteriores solo de consulta. Los pedidos históricos no se recalculan. |
 | Reembolsos y cancelación autorizada | `/api/admin/orders/:id/refund`, `/cancel` | Idempotentes; reembolso no repone automáticamente. Cancelación predespacho con reposición explícita una sola vez; entregados no se reponen. |
 | Libro y liquidaciones | `/administracion/liquidaciones`, `/panel/liquidaciones` | Integración: entrega, incidencias, neto, transiciones y evidencia. Referencia `sandbox:...`; ninguna transferencia real. |
 | Configuración y auditoría | `/administracion/configuracion`, `/administracion/auditoria`, `/administracion/fuentes` | Umbrales/cobertura/importación persistentes; cambios y accesos sensibles auditados; jobs con resultado. |
