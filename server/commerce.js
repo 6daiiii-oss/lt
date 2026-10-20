@@ -50,7 +50,7 @@ export async function ensureCart(db,orgId) { return (await db.query('INSERT INTO
 export const commerceRouter=Router();
 commerceRouter.use(authenticated);
 const purchasesAvailable=(req,res,next)=>{
-  requireThat(config.purchasesEnabled&&!config.production,'No disponible. Las compras aún no están habilitadas.',503,'purchases_unavailable');
+  requireThat(config.purchasesEnabled&&!config.production,'No disponible. Las compras aún no están habilitadas.',409,'purchases_unavailable');
   next();
 };
 commerceRouter.get('/cart',orgRole('buyer'),async(req,res)=>{

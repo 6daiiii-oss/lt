@@ -465,7 +465,7 @@ test('compras cerradas: no se añade al carrito, reserva ni recompra por API',as
     ['/orders/'+randomUUID()+'/reorder',{confirm:true}]
   ]) {
     const result=await post(path,body,accounts.buyerA);
-    assert.equal(result.status,503);assert.match(result.data.message,/No disponible/);
+    assert.equal(result.status,409);assert.match(result.data.message,/No disponible/);
   }
   const me=await request('GET','/me',undefined,accounts.buyerA);
   assert.equal(me.data.purchasesEnabled,false);

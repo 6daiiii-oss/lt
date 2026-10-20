@@ -1,3 +1,5 @@
+> Compras cerradas: los productos muestran «No disponible»; no se puede añadir al carrito, reservar ni recomprar. Producción mantiene el bloqueo. Solo para recorridos sandbox fuera de producción puede activarse `SANDBOX_PURCHASES_ENABLED=true`. El registro y la carga de catálogo no dependen de esta opción.
+
 > Actualización de registro: los nuevos proveedores verifican solo su celular durante el alta y pasan a `/panel/empezar` para crear varios productos. El correo no bloquea catálogo ni revisión comercial. SMS real requiere Twilio configurado; GitHub Pages sigue siendo una vista sin cuentas ni guardado. Ver [guía de registro](docs/REGISTRO_PROVEEDORES.md).
 
 # Lote · marketplace B2B en sandbox
