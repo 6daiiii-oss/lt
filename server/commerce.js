@@ -49,13 +49,17 @@ export function quoteCart(rows,address) {
 export async function ensureCart(db,orgId) { return (await db.query('INSERT INTO carts(organization_id) VALUES($1) ON CONFLICT(organization_id) DO UPDATE SET updated_at=now() RETURNING id',[orgId])).rows[0].id; }
 export const commerceRouter=Router();
 commerceRouter.use(authenticated);
+const purchasesAvailable=(req,res,next)=>{
+  requireThat(config.purchasesEnabled&&!config.production,'No disponible. Las compras aún no están habilitadas.',409,'purchases_unavailable');
+  next();
+};
 commerceRouter.get('/cart',orgRole('buyer'),async(req,res)=>{
   const addressId=req.query.address_id===undefined?null:id.parse(req.query.address_id);
   const address=addressId?(await query('SELECT id,region FROM addresses WHERE id=$1 AND organization_id=$2',[addressId,req.org.id])).rows[0]:null;
   if(addressId)requireThat(address,'Dirección no autorizada.',404);
   res.json({...quoteCart(await cartRows({query},req.org.id),address),address_id:address?.id||null,pendingCheckout:await pendingCheckout({query},req.org.id)});
 });
-commerceRouter.post('/cart/items',verified,orgRole('buyer'),async(req,res)=>{
+commerceRouter.post('/cart/items',purchasesAvailable,verified,orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({product_id:id,quantity,expected_price_cents:cents}),req.body);
   await tx(async db=>{
     await lockBuyer(db,req.org.id);requireThat(!await pendingCheckout(db,req.org.id),'Finaliza o cancela el checkout pendiente.',409);
@@ -70,7 +74,7 @@ commerceRouter.delete('/cart/items/:id',orgRole('buyer'),async(req,res)=>{
   await tx(async db=>{await lockBuyer(db,req.org.id);requireThat(!await pendingCheckout(db,req.org.id),'Cancela primero el checkout pendiente.',409);
     await db.query('DELETE FROM cart_items WHERE product_id=$1 AND cart_id IN(SELECT id FROM carts WHERE organization_id=$2)',[id.parse(req.params.id),req.org.id]);});res.json({message:'Producto eliminado.'});
 });
-commerceRouter.post('/checkout',verified,phoneVerified,orgRole('buyer',{approved:true}),async(req,res)=>{
+commerceRouter.post('/checkout',purchasesAvailable,verified,phoneVerified,orgRole('buyer',{approved:true}),async(req,res)=>{
   requireThat(!config.production,'El checkout real está deshabilitado; falta proveedor y configuración comercial aprobada.',503,'real_checkout_disabled');
   const input=parse(z.object({address_id:id,receipt:z.object({kind:z.enum(['order_summary','boleta_requested','factura_requested']),legal_name:z.string().max(300).default(''),tax_id:z.string().max(30).default('')}),reviewed_total_cents:cents,agree_to_conditions:z.literal(true),sandbox:z.literal(true)}),req.body);
   if(input.receipt.kind==='factura_requested') requireThat(input.receipt.legal_name&&input.receipt.tax_id,'Indica los datos de comprobante solicitado.');
@@ -145,7 +149,7 @@ commerceRouter.get('/orders/:id',async(req,res)=>{
   const isBuyer=!req.user.is_admin&&req.org.id===order.buyer_id;
   res.json({... (isBuyer?buyerOrder(order):order),items:items.rows,events:events.rows,shipment:shipments.rows[0]||null,incidents:incidents.rows,ledger:(!req.user.is_admin&&req.org.id===order.buyer_id)?[]:ledger.rows});
 });
-commerceRouter.post('/orders/:id/reorder',verified,orgRole('buyer'),async(req,res)=>{
+commerceRouter.post('/orders/:id/reorder',purchasesAvailable,verified,orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({confirm:z.boolean().default(false),quote_hash:z.string().optional()}),req.body);
   const result=await tx(async db=>{
     await lockBuyer(db,req.org.id);const order=await accessibleOrder(db,req,id.parse(req.params.id));requireThat(order.buyer_id===req.org.id,'Solo la tienda compradora puede recomprar.',403);

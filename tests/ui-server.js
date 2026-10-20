@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { isolatedDatabase, fixtures } from './helpers.js';
-process.env.NODE_ENV='test';process.env.APP_ORIGIN='http://127.0.0.1:3100';
+process.env.NODE_ENV='test';process.env.SANDBOX_PURCHASES_ENABLED='true';process.env.APP_ORIGIN='http://127.0.0.1:3100';
 const isolated=await isolatedDatabase('lote_ui_test');
 const db=await import('../server/db.js');await db.migrate();
 const accounts=await fixtures(db);await mkdir('.runtime',{recursive:true});
