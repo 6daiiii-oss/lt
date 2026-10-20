@@ -1,3 +1,7 @@
+## Registro por número
+
+`POST /api/auth/register` exige `phone` (nueve dígitos peruanos o +51), además de email, contraseña, nombre, nombre de negocio y tipo de cuenta. `legal_name` y `tax_id` son opcionales. Crea sesión pendiente; no envía confirmación de correo. El cliente solicita `/api/auth/phone/send` y confirma `/api/auth/phone/verify` dentro del registro. Ambos requieren sesión y CSRF. Las operaciones comerciales normales requieren celular verificado. Confirmación de celular no modifica `verified_at` del correo.
+
 ## Actualización 2026-10-20
 
 Nuevas lecturas autenticadas de marca: `GET /api/seller/shipments`, `/incidents`, `/buyers`, filtradas por la marca de la organización activa. Nuevas lecturas solo admin: `GET /api/admin/finance`, `/logistics`, `/launch-readiness`.

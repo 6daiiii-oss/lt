@@ -34,7 +34,7 @@ sellerRouter.post('/products',verified,async(req,res)=>{
 });
 sellerRouter.put('/products/:id',verified,async(req,res)=>{
   const existing=(await query('SELECT id,sku FROM products WHERE id=$1 AND brand_id=$2',[id.parse(req.params.id),req.org.brand_id])).rows[0];
-  requireThat(existing,'Producto no encontrado.',404);const input=parse(productSchema,req.body);requireThat(input.sku===existing.sku,'SKU inmutable; crea otra variante y archiva la anterior.');
+  requireThat(existing,'Producto no encontrado.',404);const input=parse(productSchema,req.body);requireThat(input.sku===existing.sku,'El código del producto no se puede cambiar. Crea otra presentación y archiva la anterior.');
   const result=await tx(async db=>{const p=await upsertProduct(db,req.org.brand_id,input);await audit(db,req,'product.updated',p.id);return p;});res.json(result);
 });
 sellerRouter.post('/products/:id/archive',verified,async(req,res)=>{

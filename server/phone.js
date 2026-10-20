@@ -3,13 +3,13 @@ import { randomInt } from 'node:crypto';
 import { z } from 'zod';
 import { config } from './config.js';
 import { query, tx } from './db.js';
-import { authenticated, verified } from './auth.js';
+import { authenticated } from './auth.js';
+import { phoneNumber } from './phone-format.js';
+export { phoneNumber } from './phone-format.js';
 import { audit, decrypt, digest, encrypt, equal, id, parse, requireThat } from './lib.js';
 
-export const phoneNumber=z.string().trim().transform(s=>s.replace(/[\s()-]/g,''))
-  .pipe(z.string().regex(/^\+519\d{8}$/,'Usa un celular peruano con +51 y 9 dígitos.'));
 export function phoneVerified(req,res,next) {
-  try {requireThat(req.user?.phone_verified_at,'Verifica tu celular en Mi cuenta → Seguridad.',403,'phone_unverified');next();}catch(e){next(e);}
+  try {requireThat(req.user?.phone_verified_at,'Verifica tu número para continuar.',403,'phone_unverified');next();}catch(e){next(e);}
 }
 async function twilioRequest(resource,body) {
   requireThat(config.smsProvider==='twilio'&&process.env.TWILIO_ACCOUNT_SID&&process.env.TWILIO_AUTH_TOKEN&&process.env.TWILIO_VERIFY_SERVICE_SID,'El servicio SMS aún no está configurado.',503,'sms_unavailable');
@@ -29,7 +29,7 @@ phoneRouter.get('/auth/phone',async(req,res)=>{
   const pending=(await query(`SELECT id,phone,expires_at,created_at FROM phone_verifications WHERE user_id=$1 AND used_at IS NULL AND expires_at>now() ORDER BY created_at DESC LIMIT 1`,[req.user.id])).rows[0];
   res.json({phone:req.user.phone||null,verified_at:req.user.phone_verified_at||null,pending:pending||null,provider:config.smsProvider,localPreview:!config.production&&config.smsProvider==='sandbox'});
 });
-phoneRouter.post('/auth/phone/send',verified,async(req,res)=>{
+phoneRouter.post('/auth/phone/send',async(req,res)=>{
   const {phone}=parse(z.object({phone:phoneNumber}),req.body);
   requireThat(!config.production||config.smsProvider==='twilio','SMS real pendiente de configuración.',503,'sms_unavailable');
   const result=await tx(async db=>{
@@ -48,7 +48,7 @@ phoneRouter.post('/auth/phone/send',verified,async(req,res)=>{
   });
   res.status(201).json({...result,message:config.smsProvider==='sandbox'?'Código generado en el buzón SMS local. No se envió un SMS real.':'Código enviado por SMS.'});
 });
-phoneRouter.post('/auth/phone/verify',verified,async(req,res)=>{
+phoneRouter.post('/auth/phone/verify',async(req,res)=>{
   const input=parse(z.object({id,code:z.string().regex(/^\d{6}$/)}),req.body);
   // Return failures after committing attempt counters, so wrong codes cannot roll them back.
   const result=await tx(async db=>{
@@ -66,6 +66,7 @@ phoneRouter.post('/auth/phone/verify',verified,async(req,res)=>{
     }
     if(!valid)return {error:'Código incorrecto. Tienes un máximo de 5 intentos.'};
     await db.query('UPDATE users SET phone=$2,phone_verified_at=now() WHERE id=$1',[req.user.id,row.phone]);
+    if(!req.user.phone_verified_at&&req.org?.role==='owner')await db.query('UPDATE organizations SET phone=$2 WHERE id=$1',[req.org.id,row.phone]);
     await db.query('UPDATE phone_verifications SET used_at=now(),sandbox_code_encrypted=NULL WHERE user_id=$1 AND used_at IS NULL',[req.user.id]);
     await audit(db,req,'phone.verified',req.user.id);
     return {message:'Celular verificado.'};

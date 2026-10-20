@@ -12,7 +12,7 @@ export const productSchema=z.object({
  moq:quantity,pack_multiple:quantity.default(1),stock:z.number().int().min(0).max(1_000_000),
  updated_at:z.iso.datetime().optional(),images:z.array(z.object({url:imageUrl,alt:text})).max(8).default([]),
  external_id:z.string().max(150).optional(),active:z.boolean().default(true),submit_for_review:z.boolean().default(false)
-}).refine(p=>p.moq%p.pack_multiple===0,{message:'MOQ debe ser múltiplo del empaque.',path:['moq']});
+}).refine(p=>p.moq%p.pack_multiple===0,{message:'El mínimo de unidades debe coincidir con las unidades de cada paquete.',path:['moq']});
 export async function upsertProduct(db,brandId,input,{sourceId=null}={}) {
   const p=parse(productSchema,input),updatedAt=p.updated_at?new Date(p.updated_at):new Date();
   requireThat(updatedAt.getTime()<=Date.now()+1000,'Timestamp de stock futuro.');

@@ -96,10 +96,10 @@ test('precio final sin recargo: edición conserva precios y compradores no ven c
 });
 test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación obligatoria',async()=>{
   const user=accounts.buyerA;
-  await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
   const p=await product(db,accounts.sellerA);await putInCart(user,p);
+  await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
   assert.equal((await checkout(user)).data.code,'phone_unverified');
-  assert.equal((await post('/auth/phone/send',{phone:'987654321'},user)).status,422);
+  assert.equal((await post('/auth/phone/send',{phone:'123456'},user)).status,422);
   const sent=await post('/auth/phone/send',{phone:'+51 987 654 321'},user);assert.equal(sent.status,201);
   assert.equal('code' in sent.data,false);
   assert.equal((await post('/auth/phone/send',{phone:'+51987654321'},user)).status,429);
@@ -326,9 +326,10 @@ test('sincronización incremental idempotente, stock antiguo no sobrescribe, aus
   config.feedOrigins=['https://127.0.0.1'];await assert.rejects(()=>fetchAuthorizedFeed({url:'https://127.0.0.1/feed'}),e=>e.status===403);
 });
 test('tokens de correo de un uso y expiración; recuperación revoca sesiones, sin exposición entre cuentas',async()=>{
-  const signup=await post('/auth/register',{email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
+  const signup=await post('/auth/register',{email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',phone:'+51987654329',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
   const cookie=signup.headers.get('set-cookie').split(';')[0];const me=await request('GET','/me',undefined,{cookie,csrf:''});
   const user={cookie,csrf:me.data.csrfToken,orgId:me.data.organizationId};
+  await post('/auth/resend',{},user);
   const mails=(await request('GET','/dev/mail',undefined,user)).data;const raw=new URL(mails[0].body.match(/http[^\s]+/)[0]).searchParams.get('token');
   const verification=await post('/auth/verify',{token:raw},user);assert.equal(verification.status,200,JSON.stringify(verification.data));assert.equal((await post('/auth/verify',{token:raw},user)).status,400);
   const other=(await request('GET','/dev/mail',undefined,accounts.buyerB)).data;assert.equal(other.length,0);
@@ -429,4 +430,28 @@ test('new seller read models require seller role and isolate buyers/shipments/in
     assert.equal((await request('GET',endpoint,undefined,accounts.sellerA)).status,403);
     assert.equal((await request('GET',endpoint,undefined,accounts.admin)).status,200);
   }
+});
+
+test('phone-only registration: unverified email can create multiple products after OTP; no shortcuts',async()=>{
+  const signup=await post('/auth/register',{email:'phoneonly@demo.invalid',password:'Phone-only-password-123',name:'Persona',businessName:'Marca nueva',phone:'987654328',kind:'seller',tax_id:'20123456789'});
+  assert.equal(signup.status,201,JSON.stringify(signup.data));
+  const cookie=signup.headers.get('set-cookie').split(';')[0],me=(await request('GET','/me',undefined,{cookie,csrf:''})).data;
+  const user={cookie,csrf:me.csrfToken,orgId:me.organizationId};
+  assert.equal(me.user.verified_at,null);assert.equal(me.user.phone_verified_at,null);
+  assert.equal((await db.query('SELECT count(*) FROM mail_outbox WHERE user_id=$1',[me.user.id])).rows[0].count,'0');
+  assert.equal((await post('/seller/products',{},user)).data.code,'phone_unverified');
+  const sent=await post('/auth/phone/send',{phone:'987654328'},user);assert.equal(sent.status,201,JSON.stringify(sent.data));
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:'000000'},user)).status,422);
+  const sms=(await request('GET','/dev/sms',undefined,user)).data[0];
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},accounts.buyerA)).status,422);
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},user)).status,200);
+  assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:sms.code},user)).status,422);
+  const updated=(await request('GET','/me',undefined,user)).data;
+  assert.equal(updated.user.verified_at,null);assert.ok(updated.user.phone_verified_at);
+  await post('/auth/forgot',{email:'phoneonly@demo.invalid'});
+  assert.equal((await db.query('SELECT count(*) FROM mail_outbox WHERE user_id=$1',[me.user.id])).rows[0].count,'0');
+  for(const n of [1,2])assert.equal((await post('/seller/products',{name:'Producto '+n,sku:'NEW-'+n,category_id:'hogar',wholesale_cents:2500,moq:2,stock:20,description:'Descripción clara del producto',submit_for_review:true},user)).status,201);
+  const own=(await request('GET','/seller/products',undefined,user)).data;assert.equal(own.length,2);assert.ok(own.every(p=>p.status==='pending'));
+  assert.equal((await request('GET','/products')).data.products.some(p=>own.some(o=>o.id===p.id)),false);
+  const org=(await request('GET','/organizations/me',undefined,user)).data;assert.equal(org.tax_id,'20123456789');
 });

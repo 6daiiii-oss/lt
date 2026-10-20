@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { phoneNumber } from './phone-format.js';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { query, tx } from './db.js';
@@ -32,7 +33,7 @@ export async function identify(req,res,next) {
   } catch(e) { next(e); }
 }
 export function authenticated(req,res,next) { try { requireThat(req.user,'Inicia sesión.',401); next(); } catch(e){next(e);} }
-export function verified(req,res,next) { try { requireThat(req.user?.verified_at,'Verifica tu correo primero.',403,'email_unverified'); next(); } catch(e){next(e);} }
+export function verified(req,res,next) { try { requireThat(req.user?.is_admin?req.user.verified_at:req.user?.phone_verified_at,'Verifica tu número para continuar.',403,'phone_unverified'); next(); } catch(e){next(e);} }
 export function orgRole(kind,{approved=false,owner=false}={}) {
   return (req,res,next)=>{ try {
     requireThat(req.user,'Inicia sesión.',401);
@@ -60,6 +61,7 @@ async function createSession(db,req,res,userId) {
   res.cookie(config.cookieName,raw,{httpOnly:true,secure:config.production,sameSite:'lax',maxAge:7*24*3600*1000,path:'/'});
 }
 async function accountEmail(db,user,purpose) {
+  requireThat(!config.production||(process.env.SMTP_HOST&&process.env.MAIL_FROM),'El envío de correos todavía no está habilitado. Contacta con soporte para recuperar el acceso.',503,'mail_unavailable');
   const raw=token();
   await db.query(`UPDATE account_tokens SET used_at=now() WHERE user_id=$1 AND purpose=$2 AND used_at IS NULL`,[user.id,purpose]);
   await db.query(`INSERT INTO account_tokens(token_hash,user_id,purpose,expires_at) VALUES($1,$2,$3,now()+interval '30 minutes')`,[digest(raw),user.id,purpose]);
@@ -77,17 +79,19 @@ authRouter.post('/demo/login',accountLimit,async(req,res)=>{
   await tx(db=>createSession(db,req,res,user.id));res.json({message:'Cuenta de ejemplo lista.'});
 });
 authRouter.post('/auth/register',accountLimit,async(req,res)=>{
-  const input=parse(z.object({email,password:z.string().min(12).max(128),name:text,businessName:text,kind:z.enum(['buyer','seller'])}),req.body);
+  const input=parse(z.object({email,password:z.string().min(12).max(128),name:text,businessName:text,phone:phoneNumber,legal_name:z.string().trim().max(500).default(''),tax_id:z.string().trim().regex(/^(?:[0-9]{11})?$/,'El RUC debe tener 11 dígitos.').default(''),kind:z.enum(['buyer','seller'])}),req.body);
   const encoded=await passwordHash(input.password);
   await tx(async db=>{
-    const user=(await db.query('INSERT INTO users(email,name,password_hash) VALUES($1,$2,$3) RETURNING id,email',[input.email,input.name,encoded])).rows[0];
-    const org=(await db.query('INSERT INTO organizations(name,kind,contact_email) VALUES($1,$2,$3) RETURNING id',[input.businessName,input.kind,input.email])).rows[0];
+    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))',[input.phone]);
+    requireThat(!(await db.query('SELECT 1 FROM users WHERE phone=$1 AND phone_verified_at IS NOT NULL',[input.phone])).rowCount,'Este número ya tiene una cuenta verificada. Inicia sesión.',409);
+    const user=(await db.query('INSERT INTO users(email,name,password_hash,phone) VALUES($1,$2,$3,$4) RETURNING id,email',[input.email,input.name,encoded,input.phone])).rows[0];
+    const org=(await db.query('INSERT INTO organizations(name,kind,contact_email,phone,legal_name,tax_id,business_type) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',[input.businessName,input.kind,input.email,input.phone,input.legal_name||input.name,input.tax_id,input.kind==='seller'?'Proveedor':'Tienda'])).rows[0];
     await db.query(`INSERT INTO memberships(user_id,organization_id,role) VALUES($1,$2,'owner')`,[user.id,org.id]);
     if(input.kind==='seller') await db.query('INSERT INTO brands(organization_id,name) VALUES($1,$2)',[org.id,input.businessName]);
-    await accountEmail(db,user,'verify'); await createSession(db,req,res,user.id);
+    await createSession(db,req,res,user.id);
     await audit(db,{user,org},'account.register',user.id,{kind:input.kind});
   });
-  res.status(201).json({message:'Cuenta creada. Revisa tu correo para verificarla.'});
+  res.status(201).json({message:'Datos guardados. Verifica tu número para completar el registro.'});
 });
 authRouter.post('/auth/login',accountLimit,async(req,res)=>{
   const input=parse(z.object({email,password:z.string().max(128)}),req.body);
@@ -103,7 +107,7 @@ authRouter.post('/auth/logout',authenticated,async(req,res)=>{
 });
 authRouter.post('/auth/forgot',accountLimit,async(req,res)=>{
   const input=parse(z.object({email}),req.body);
-  const user=(await query('SELECT id,email FROM users WHERE email=$1',[input.email])).rows[0];
+  const user=(await query('SELECT id,email FROM users WHERE email=$1 AND verified_at IS NOT NULL',[input.email])).rows[0];
   if(user) await tx(db=>accountEmail(db,user,'reset'));
   res.json({message:'Si existe la cuenta, recibirás un enlace de recuperación.'});
 });

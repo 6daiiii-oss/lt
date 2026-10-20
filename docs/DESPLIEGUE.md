@@ -18,7 +18,7 @@ Servidor con Docker y Compose v2, dominio apuntando al servidor y puertos 80/443
 - `NODE_ENV=production`, `APP_ORIGIN=https://DOMINIO`, `SITE_DOMAIN=DOMINIO`.
 - `DATABASE_URL` con host `db`, usuario/base `lote` y contraseña codificada como URL; `POSTGRES_PASSWORD` con la misma contraseña original.
 - `SESSION_SECRET` y `SANDBOX_WEBHOOK_SECRET`: valores aleatorios independientes de al menos 32 caracteres. `ENCRYPTION_KEY`: 32 bytes hexadecimales. Puede generar cada uno localmente con `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
-- SMTP y `MAIL_FROM`, Twilio Verify real y contacto comercial. `POLICIES_APPROVED=true` solo después de revisión efectiva.
+- Twilio Verify real y contacto comercial. SMTP y `MAIL_FROM` son opcionales para el registro por número; hacen falta para confirmación opcional y recuperación por correo. `POLICIES_APPROVED=true` solo después de revisión efectiva.
 - Mantener `PAYMENT_PROVIDER=sandbox`. Esto no habilita pagos de producción.
 
 ## Instalación

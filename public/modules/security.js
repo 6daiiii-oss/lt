@@ -4,10 +4,11 @@ import { pageHeader } from './layout.js';
 import { navigate, reload } from './router.js';
 export async function securityView() {
   const p=await api('/auth/phone'),messages=p.localPreview?await api('/dev/sms'):[];
-  return {html:`${pageHeader('Seguridad','Verifica y protege tu cuenta.','Confirma tu correo y celular para comprar o gestionar una marca.')}
+  return {html:`${pageHeader('Seguridad','Verifica y protege tu cuenta.','El número verificado habilita tu cuenta. El correo sirve para contacto y recuperación.')}
     <div class="panel-grid"><section class="card stack"><h2>Correo electrónico</h2><p>${esc(state.user.email)}</p>
-    ${notice(state.user.verified_at?'Correo verificado.':'Revisa tu correo para activar la cuenta.',state.user.verified_at?'info':'warning')}
-    ${!state.user.verified_at?`<form data-form="security-resend">${formEnd('Reenviar verificación')}</form>`:''}
+    ${notice(state.user.verified_at?'Correo confirmado.':'Correo de contacto. Su verificación no es necesaria para usar tu cuenta.',state.user.verified_at?'info':'warning')}
+
+    ${!state.user.verified_at?`<p class="small muted">Si quieres usar este correo para recuperar tu contraseña, puedes confirmarlo de forma opcional.</p><form data-form="security-resend">${formEnd('Activar recuperación por correo (opcional)')}</form>`:''}
     ${state.mailLocal?button('Mi buzón local','/buzon',true):''}
     <h2>Cambiar contraseña</h2><form data-form="password" class="stack">
     ${field('currentPassword','Contraseña actual','password','','required autocomplete="current-password"')}
