@@ -6,7 +6,8 @@ La apertura del catálogo no requiere contratar SMS ni configurar correo. En pro
 
 - Runtime: Node 24; rama main; directorio raíz vacío.
 - Build: `npm ci`.
-- Start: `npm run migrate && npm start`.
+- En un servicio Docker, Docker Command: `node scripts/start-render.js`. Este archivo aplica migraciones antes de iniciar el servidor y evita diferencias de comillas entre plataformas.
+- En un servicio Node, Start: `node scripts/start-render.js`.
 - Health check: `/api/health`.
 - `NODE_ENV=production`.
 - `DATABASE_URL`: conexión privada de PostgreSQL, configurada en Environment.
