@@ -11,7 +11,7 @@ export function productEditor(p,categories) {
   ${field('name','Nombre del producto','text',p.name||'','required maxlength="500"')}
   ${select('category_id','Categoría',categories.map(c=>[c.id,c.name]),p.category_id)}
   ${field('wholesale','Tu precio por unidad (S/)','number',p.id?inputMoney(p.wholesale_cents):'','min="0.01" step="0.01" required')}
-  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Incluye el 10% de Lote. El envío se suma aparte.</small></div>
+  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Lote descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
   <h2 class="full">2. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
   <div>${field('moq','¿Desde cuántas unidades puede comprar el cliente?','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
@@ -32,7 +32,7 @@ export function productEditor(p,categories) {
     const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,minimum=form.elements.moq,stock=form.elements.stock,pack=form.elements.pack_multiple;
     const explain=()=>{
       const n=Number(minimum.value),available=Number(stock.value),step=Number(pack.value);
-      try {const base=toCents(price.value);document.querySelector('#price-preview').textContent=money(base+Math.floor((base*1000+5000)/10000));}catch{document.querySelector('#price-preview').textContent='Escribe tu precio';}
+      try {const base=toCents(price.value);document.querySelector('#price-preview').textContent=money(base);}catch{document.querySelector('#price-preview').textContent='Escribe tu precio';}
       document.querySelector('#quantity-preview').textContent=`Tienes ${available} unidades en total${p.reserved?` (${p.reserved} reservadas)`:''}. Cada pedido empieza desde ${n} unidad${n===1?'':'es'}${step>1?`, en grupos de ${step}`:''}.`+(available>0&&n>available?' El mínimo supera las unidades disponibles: nadie podrá comprar todavía.':'')+(n>=100?' Revisa el mínimo: ¿es lo que debe comprar cada cliente o lo que tienes guardado?':'');
     };
     [price,minimum,stock,pack].forEach(el=>el.addEventListener('input',explain));explain();
@@ -67,3 +67,4 @@ export function productEditor(p,categories) {
     });
   }};
 }
+

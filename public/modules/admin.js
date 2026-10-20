@@ -1,3 +1,4 @@
+import { simulator, bindSimulator } from './finance.js';
 import { photoGallery } from './photos.js';
 import { api } from './api.js';
 import { area, badge, button, check, date, empty, esc, field, formEnd, inputMoney, money, notice, onAction, onForm, select, short, table, toast, toCents } from './ui.js';
@@ -5,6 +6,19 @@ import { pageHeader } from './layout.js';
 import { reload } from './router.js';
 const stat=(label,value)=>`<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
 export async function adminView(path) {
+  if(path==='/administracion/finanzas') {
+    const rows=await api('/admin/finance');
+    return {html:pageHeader('Finanzas','Ventas, comisiones y liquidaciones.','Últimos 300 pedidos cobrados en sandbox. La comisión incluye su IGV; no equivale a utilidad.')+simulator()+table(['Pedido','Marca','Productos','Comisión con IGV','Servicio sin IGV','Reembolsos'],rows.map(o=>`<tr><td><a href="/administracion/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.brand_name)}</td><td>${money(o.subtotal_cents)}</td><td>${money(o.commission_cents)}</td><td>${o.policy_snapshot.fees?money(o.policy_snapshot.fees.service_cents):'Histórico'}</td><td>${money(o.refunded_cents)}</td></tr>`)),bind:bindSimulator};
+  }
+  if(path==='/administracion/logistica') {
+    const rows=await api('/admin/logistics');
+    return {html:pageHeader('Logística','Pedidos por preparar, despachar y entregar.','Abre cada pedido para revisar su historial e incidencias.')+table(['Pedido','Marca','Estado','Transportista','Seguimiento'],rows.map(o=>`<tr><td><a href="/administracion/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.brand_name)}</td><td>${badge(o.state)}</td><td>${esc(o.carrier||'Por registrar')}</td><td>${esc(o.tracking_code||'—')}</td></tr>`))};
+  }
+  if(path==='/administracion/lanzamiento') {
+    const info=await api('/admin/launch-readiness');
+    return {html:pageHeader('Lanzamiento','Preparación para operar.','El despliegue del catálogo no habilita cobros reales.')+notice('Pagos comerciales bloqueados hasta completar la integración real.','warning')+table(['Requisito','Estado de configuración','Pendiente'],info.checks.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.ready?'Configurado; verificar':'Pendiente'}</td><td>${esc(c.detail)}</td></tr>`))};
+  }
+
   if(path==='/administracion') {
     const s=await api('/admin/summary');
     return {html:`${pageHeader('Operación de Lote','Lo que necesita atención.','Datos de esta base. Sin proyecciones ni actividad inventada.')}<div class="stats">${stat('Ventas de productos (prueba)',money(s.gmv_cents))}${stat('Pedidos',s.orders)}${stat('Verificaciones pendientes',s.verifications)}${stat('Productos por revisar',s.catalog_pending)}${stat('Incidencias abiertas',s.incidents)}${stat('Pagos en conciliación',s.reconciliation)}</div><div class="task-links">${button('Aprobar negocios','/administracion/verificaciones')}${button('Revisar productos','/administracion/catalogo')}${button('Ver pedidos','/administracion/pedidos',true)}</div>${notice('Estás en modo de prueba: puedes recorrer una compra sin mover dinero real.')} ${button('Cómo probar una compra','/prueba-compra',true)}`};
@@ -31,7 +45,7 @@ export async function adminView(path) {
   }
     if(path==='/administracion/comisiones') {
       const rules=await api('/admin/commissions');
-      return {html:pageHeader('Precios y comisión','10% sobre el precio base de la marca.','La marca ingresa S/100; el cliente paga S/110, antes del envío.')+notice('El recargo se calcula por unidad y queda fijado al crear el pedido. Los pedidos históricos conservan sus importes. Las reglas anteriores se muestran solo como historial.')+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
+      return {html:pageHeader('Precios y comisión','10% inicial · 7% recurrente','Sobre productos sin IGV ni envío; se añade IGV a la comisión. El precio del comprador no lleva recargo de Lote.')+notice('La recompra requiere una entrega previa no reembolsada totalmente entre la misma tienda y marca. El desglose queda congelado al crear el pedido. El procesamiento es una estimación hasta aprobar la integración real.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
     }
 
   if(path==='/administracion/incidencias') {

@@ -1,3 +1,11 @@
+## Actualización 2026-10-20
+
+Nuevas lecturas autenticadas de marca: `GET /api/seller/shipments`, `/incidents`, `/buyers`, filtradas por la marca de la organización activa. Nuevas lecturas solo admin: `GET /api/admin/finance`, `/logistics`, `/launch-readiness`.
+
+Nuevos pedidos guardan `policy_snapshot.fees` con base de productos sin IGV, servicio, IGV del servicio, tasa 10/7 y procesamiento **estimado**. Esa información queda restringida a marca/admin; no se serializa al comprador. `commission_cents` incluye IGV del servicio para conservar la semántica de descuento del libro contable. Se mantienen los snapshots anteriores. No existe un endpoint de cobro real.
+
+---
+
 # API y contratos de integración
 
 Base `/api`. Respuestas JSON salvo plantilla CSV y archivos. Dinero en céntimos PEN, cantidades enteras, fechas ISO 8601. Errores: `{message, code, details?}`. Las escrituras privadas y todas las lecturas privadas verifican identidad y organización en servidor.
@@ -149,3 +157,4 @@ Prefijo `/admin`, administrador verificado y CSRF en escrituras:
 - POST `/sources/:id/approve`: autorizar/habilitar fuente. PUT `/settings`: umbrales/frescura/cobertura/límites; cambios auditados.
 
 `POST /uploads?purpose=product|verification|incident` acepta cuerpo binario JPEG/PNG/WebP con sesión verificada y CSRF. Incidencias requieren `incident_id` autorizado; el resto no admite esa asociación. El archivo se decodifica, limita y normaliza antes de persistir. `/media/:id` sirve únicamente imágenes públicas; `/api/attachments/:id` exige propiedad/participación o administración. No se admiten SVG, ejecutables ni documentos PDF en esta versión.
+

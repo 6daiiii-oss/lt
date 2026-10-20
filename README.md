@@ -6,7 +6,7 @@ La instalación normal empieza con cero productos, pedidos, reseñas y actividad
 
 La portada `/` presenta el marketplace con búsqueda en la cabecera, categorías y pestañas de productos, novedades y compras de pocas unidades. El catálogo público se explora sin cuenta; para guardar, comprar y gestionar un negocio hay que iniciar sesión. Detalles de búsqueda, filtros y accesos: [docs/DISCOVERY.md](docs/DISCOVERY.md).
 
-Guía actual de cuentas, Gmail, SMS, recargo del 10%, Faire, pasarelas y comprobantes: [docs/OPERACION_PERU.md](docs/OPERACION_PERU.md).
+Guía histórica de cuentas, Gmail, SMS, Faire, pasarelas y comprobantes (precios actualizados en DESPLIEGUE.md): [docs/OPERACION_PERU.md](docs/OPERACION_PERU.md).
 
 ## Windows / VS Code
 
@@ -95,9 +95,9 @@ Los importes son enteros en céntimos; cantidades y múltiplos son enteros. El s
 
 El checkout crea una compra padre y pedidos por marca, guarda snapshots y reserva inventario dentro de transacciones. El adaptador sandbox entrega eventos HMAC con cuerpo original, timestamp e ID único. Una URL del navegador no confirma pagos. Un pago tardío sin reserva válida queda en excepción para conciliación, sin sobreventa.
 
-La marca ingresa su precio base y el servidor añade 10% por unidad, redondeado al céntimo (mitad hacia arriba). Base S/100 → precio comprador S/110. La comisión es la diferencia de precios multiplicada por unidades, no 10% del total cobrado. Solo marca/administración ven el desglose. Los pedidos históricos conservan sus importes; las reglas de comisión anteriores son de consulta y no se aplican a nuevos pedidos. El margen bruto requiere PVP positivo y declaración de igual unidad/base tributaria; en otro caso muestra “Sin referencia”. No equivale a rentabilidad neta.
+La marca ingresa el precio final con IGV, sin recargo al comprador. Lote aplica 10% inicial / 7% recurrente sobre productos sin IGV ni envío, más IGV de la comisión. Recompra: misma tienda y marca con entrega previa no totalmente reembolsada. Se guarda el desglose en el pedido; no se recalcula el historial. El procesamiento es estimado y no se descuenta de las liquidaciones sandbox. Los detalles tributarios y de despliegue están en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
 
-Se usan los precios declarados sin inventar impuestos adicionales. El snapshot indica `tax_applied:null` y `sandbox_unconfigured`. Solicitar boleta/factura no emite un comprobante fiscal; la política tributaria y la emisión electrónica están pendientes de definición/integración.
+Los precios suponen bienes gravados al 18%; no hay emisión fiscal ni cobros reales. El simulador separa servicio, IGV y procesamiento. Revisar impuestos por categoría antes de habilitar ventas.
 
 GMV administrativo: subtotal bruto de productos de compras confirmadas, antes de reembolsos, sin envío. Pedidos operativos: todos los pedidos creados, incluidos pendientes/cancelados. Analítica de marca: venta y unidades brutas de pedidos pagados del período, antes de reembolsos; ticket = subtotal bruto / pedidos; recompra = tiendas con más de un pedido en ese período. Los reembolsos se muestran por separado. Fechas y períodos operativos se presentan en `America/Lima`.
 
@@ -143,3 +143,8 @@ Resultados reales: [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Arquite
 `server/`: API y worker. `migrations/`: esquema versionado. `public/modules/`: router, vistas y componentes. `scripts/`: configuración, administrador y demo. `tests/`: integración PostgreSQL y navegador.
 
 La portada original se conserva en `docs/reference/original/`. No se recibieron `Prototipo_Lote.html`, `01_Guia_de_marca_y_producto.md` ni un archivo de tokens previo. El nuevo `design-tokens.json` recoge los valores enviados en la solicitud.
+
+
+## Servidor y nueva política comercial
+
+Ver [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y `compose.production.yaml`. La preparación de infraestructura no habilita ventas reales.

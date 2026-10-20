@@ -101,3 +101,13 @@ sellerRouter.post('/orders/:id/fulfillment',verified,async(req,res)=>{
     await audit(db,req,'order.fulfillment',o.id,{state:input.state});
   });res.json({message:'Estado logístico actualizado.'});
 });
+
+
+sellerRouter.get('/shipments',async(req,res)=>res.json((await query(`SELECT o.id,o.state,o.created_at,b.name AS buyer_name,s.carrier,s.tracking_code,s.delivered_at
+ FROM orders o JOIN organizations b ON b.id=o.buyer_id LEFT JOIN shipments s ON s.order_id=o.id
+ WHERE o.brand_id=$1 AND o.state IN ('confirmed','preparing','shipped','delivered') ORDER BY o.created_at DESC LIMIT 300`,[req.org.brand_id])).rows));
+sellerRouter.get('/incidents',async(req,res)=>res.json((await query(`SELECT i.*,o.buyer_id FROM incidents i JOIN orders o ON o.id=i.order_id WHERE o.brand_id=$1 ORDER BY i.created_at DESC LIMIT 300`,[req.org.brand_id])).rows));
+sellerRouter.get('/buyers',async(req,res)=>res.json((await query(`SELECT b.id,b.name,count(*)::int AS orders,sum(o.subtotal_cents)::bigint AS gross_cents,max(o.created_at) AS latest_order
+ FROM orders o JOIN organizations b ON b.id=o.buyer_id JOIN purchases p ON p.id=o.purchase_id
+ WHERE o.brand_id=$1 AND p.payment_state IN ('approved','partially_refunded','refunded')
+ GROUP BY b.id,b.name ORDER BY max(o.created_at) DESC LIMIT 300`,[req.org.brand_id])).rows));

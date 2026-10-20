@@ -63,7 +63,7 @@ adminRouter.get('/orders',async(req,res)=>{
 adminRouter.get('/payments',async(req,res)=>res.json((await query(`SELECT pa.*,c.state AS checkout_state,c.expires_at,(SELECT json_agg(json_build_object('product_id',product_id,'quantity',quantity,'state',state)) FROM inventory_reservations WHERE checkout_id=c.id) AS reservations FROM payment_attempts pa JOIN checkouts c ON c.id=pa.checkout_id ORDER BY pa.created_at DESC LIMIT 300`)).rows));
 adminRouter.get('/commissions',async(req,res)=>res.json((await query('SELECT * FROM commission_rules ORDER BY effective_at DESC LIMIT 200')).rows));
 adminRouter.post('/commissions',async(req,res)=>{
-  requireThat(false,'El precio usa un recargo fijo del 10% sobre la base de la marca. Las reglas anteriores solo se conservan como historial.',409,'fixed_markup');
+  requireThat(false,'La política vigente es 10% inicial / 7% recurrente sobre productos sin IGV ni envío. Los pedidos conservan su desglose congelado.',409,'fixed_markup');
 });
 adminRouter.get('/incidents',async(req,res)=>res.json((await query(`SELECT i.*,b.name AS brand_name FROM incidents i JOIN orders o ON o.id=i.order_id JOIN brands b ON b.id=o.brand_id ORDER BY i.created_at DESC LIMIT 300`)).rows));
 adminRouter.post('/incidents/:id/resolve',async(req,res)=>{
@@ -126,3 +126,19 @@ adminRouter.post('/sources/:id/approve',async(req,res)=>{
   requireThat(config.feedOrigins.includes(new URL(source.url).origin),'Origen no autorizado por el operador.');
   await query('UPDATE catalog_sources SET approved=$2,enabled=$3 WHERE id=$1',[source.id,input.approved,input.approved&&input.enabled]);await audit({query},req,'source.approved',source.id,input);res.json({message:'Fuente revisada.'});
 });
+
+
+adminRouter.get('/finance',async(req,res)=>res.json((await query(`SELECT o.id,o.brand_id,b.name AS brand_name,o.subtotal_cents,o.shipping_cents,o.commission_cents,o.refunded_cents,o.policy_snapshot,o.state,p.payment_state
+ FROM orders o JOIN brands b ON b.id=o.brand_id JOIN purchases p ON p.id=o.purchase_id
+ WHERE p.payment_state IN ('approved','partially_refunded','refunded') ORDER BY o.created_at DESC LIMIT 300`)).rows));
+adminRouter.get('/logistics',async(req,res)=>res.json((await query(`SELECT o.id,b.name AS brand_name,o.state,o.created_at,s.carrier,s.tracking_code,s.delivered_at
+ FROM orders o JOIN brands b ON b.id=o.brand_id LEFT JOIN shipments s ON s.order_id=o.id
+ WHERE o.state IN ('confirmed','preparing','shipped','delivered') ORDER BY o.created_at DESC LIMIT 300`)).rows));
+adminRouter.get('/launch-readiness',async(req,res)=>res.json({real_payments_enabled:false,
+ checks:[{name:'Pasarela y split para Perú',ready:false,detail:'Falta contrato, tarifa confirmada, credenciales y adaptador con webhooks y reembolsos reales.'},
+ {name:'Emisión fiscal',ready:false,detail:'La solicitud de factura no emite comprobantes SUNAT.'},
+ {name:'Correo operativo',ready:!!process.env.SMTP_HOST&&!!process.env.MAIL_FROM,detail:'Requiere probar entrega de verificación y recuperación.'},
+ {name:'SMS',ready:config.smsProvider==='twilio',detail:'Verificar credenciales y entrega antes de operar.'},
+ {name:'Políticas revisadas',ready:process.env.POLICIES_APPROVED==='true',detail:'Completar razón social, RUC, privacidad, contratos y reclamos.'},
+ {name:'Origen HTTPS',ready:config.origin.startsWith('https://'),detail:'Configurar dominio y certificado del servidor.'},
+ {name:'Respaldo y restauración',ready:false,detail:'Validar restauración de PostgreSQL, archivos privados y clave de cifrado en el servidor elegido.'}]}));

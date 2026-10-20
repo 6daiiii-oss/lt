@@ -1,3 +1,19 @@
+# Actualización · 20 de octubre de 2026
+
+La política anterior de recargo al comprador queda reemplazada por comisión al proveedor: 10% inicial / 7% recurrente, sobre productos sin IGV ni envío, más IGV del servicio. Se asume producto gravado al 18%; no habilitar ventas de otras categorías tributarias sin adaptar la base.
+
+Implementado: migración incremental sin recalcular pedidos históricos, precio final sin recargo, relación tienda/marca basada en entrega previa no totalmente reembolsada, snapshot financiero privado, simulador con procesamiento estimado, paneles de inventario/envíos/incidencias/tiendas/finanzas, vistas admin de finanzas/logística/preparación del lanzamiento. Añadidos Dockerfile, Compose de servidor con HTTPS y guía de despliegue.
+
+Validación local: sintaxis de módulos; 31 pruebas de dominio/cálculos sobre PostgreSQL 18.4 en base aislada; recorrido Chromium de 9 rutas nuevas a 1440 y 390 px, ambos roles y simulador 10/7 sin errores JS ni desbordes. YAML validado. El pipeline agregado utiliza PostgreSQL 17 y Chromium estándar; sus resultados deben revisarse en GitHub. No se construyó la imagen Docker en este entorno.
+
+**Pendiente para operación comercial:** adaptador Mercado Pago real y split aprobado, tarifas/IGV del procesador confirmados, comprobantes, revisión tributaria por categoría, datos legales, políticas, credenciales externas y prueba de backup/restauración. El procesamiento estimado no genera movimientos en el libro sandbox. No se ha publicado un servidor ni habilitado dinero real.
+
+Detalle: [DESPLIEGUE.md](docs/DESPLIEGUE.md).
+
+---
+
+## Registro anterior (contexto histórico)
+
 # Estado real de implementación · Lote
 
 ## Corrección de envío en checkout — 20 de octubre de 2026
@@ -132,3 +148,4 @@ Guardados en el borrador **`install_script` y `start_skill`** para Node/PostgreS
 - **Operación comercial:** almacenamiento persistente, backups, retención, monitorización, accesibilidad asistiva y revisión legal/seguridad operativa necesitan su validación específica. No se declaró listo para producción.
 
 Las exclusiones expresas del producto están en [ROADMAP.md](ROADMAP.md). Ninguna de estas dependencias se sustituyó por productos, reseñas, pagos o estadísticas ficticias en la base principal.
+
