@@ -2,7 +2,7 @@ import { demoView } from './demo.js';
 import { bindPhotoGalleries } from './photos.js';
 import { api, currentOrg, refreshMe, state } from './api.js';
 import { errorText, empty, button, onAction } from './ui.js';
-import { privateShell, publicShell } from './layout.js';
+import { privateShell, publicShell, brandSignupShell } from './layout.js';
 import { publicView } from './public.js';
 import { accountView, authView } from './account.js';
 import { sellerView } from './seller.js';
@@ -25,6 +25,7 @@ async function render() {
       root.innerHTML='<main id="main" class="container loading" tabindex="-1" aria-live="polite">Abriendo tu espacio…</main>';
     }
     let view=await authView(path,url)||await demoView(path)||await publicView(path,url);
+    if((path==='/registro'&&url.searchParams.get('tipo')==='proveedor')||(path==='/registro/celular'&&currentOrg()?.kind==='seller'))shell=brandSignupShell;
     if(!view) {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       const admin=path.startsWith('/administracion'),seller=path.startsWith('/panel'),shopping=path==='/carrito'||path.startsWith('/checkout/');

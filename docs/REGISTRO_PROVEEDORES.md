@@ -1,3 +1,7 @@
+## Entrada de marca
+
+`/registro?tipo=proveedor` abre un registro exclusivo para marcas: cabecera reducida, presentación de beneficios en escritorio y tres pasos visibles (marca, celular, catálogo). En móvil se prioriza el formulario. Los datos legales quedan plegados como opcionales, y el tipo de cuenta se fija como proveedor. La confirmación SMS usa el mismo diseño y conserva los controles existentes. El registro general de compradores se mantiene separado.
+
 # Registro de proveedores por celular
 
 1. Datos: nombre, negocio, celular peruano, correo de contacto y contraseña; razón social y RUC opcionales. Se aceptan nueve dígitos o +51.

@@ -20,3 +20,7 @@ export function privateShell(body,type='buyer') {
 }
 export function pageHeader(kicker,title,copy='',actions='') {return `<div class="page-heading"><div><p class="eyebrow">${esc(kicker)}</p><h1>${esc(title)}</h1>${copy?`<p class="muted">${esc(copy)}</p>`:''}</div>${actions}</div>`;}
 
+
+export function brandSignupShell(body) {
+ return `<div class="brand-signup-shell"><header class="brand-signup-header">${logo}<div><span>¿Ya tienes cuenta?</span><a href="/login">Ingresar ${arrow}</a></div></header><main id="main" tabindex="-1">${body}</main><footer class="brand-signup-footer"><span>Lote · Marcas y proveedores en Perú</span><a href="/ayuda">¿Necesitas ayuda?</a></footer></div>`;
+}

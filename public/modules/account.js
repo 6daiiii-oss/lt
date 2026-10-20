@@ -1,4 +1,5 @@
 import { registrationPhoneView } from './registration.js';
+import { brandSignupView } from './brand-signup.js';
 import { feeSummary } from './finance.js';
 import { normalizeRegion, regionOptions } from './regions.js';
 import { securityView } from './security.js';
@@ -8,6 +9,7 @@ import { pageHeader } from './layout.js';
 import { navigate, reload } from './router.js';
 const safeNext=value=>{try{const url=new URL(value,location.origin);return value?.startsWith('/')&&url.origin===location.origin&&!['/login','/registro'].includes(url.pathname.replace(/\/$/,''))?url.pathname+url.search:null;}catch{return null;}};
 export async function authView(path,url) {
+  if(path==='/registro'&&url.searchParams.get('tipo')==='proveedor')return brandSignupView();
   if(path==='/registro/celular')return registrationPhoneView();
   if(!['/login','/registro','/recuperar','/verificar','/restablecer'].includes(path))return null;
   const signup=path==='/registro',login=path==='/login',verify=path==='/verificar',reset=path==='/restablecer';
