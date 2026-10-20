@@ -29,6 +29,7 @@ async function render() {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       const admin=path.startsWith('/administracion'),seller=path.startsWith('/panel'),shopping=path==='/carrito'||path.startsWith('/checkout/');
       if(admin&&!state.user.is_admin)throw new Error('Esta cuenta no tiene acceso administrativo.');
+      if(seller&&!state.user.phone_verified_at){navigate('/registro/celular',{replace:true});return;}
       if(seller&&currentOrg()?.kind!=='seller')throw new Error('Este espacio pertenece a las marcas y proveedores.');
       shell=shopping?publicShell:body=>privateShell(body,admin?'admin':seller?'seller':currentOrg()?.kind==='seller'?'seller':'buyer');
       view=admin?await adminView(path,url):seller?await sellerView(path,url):null;

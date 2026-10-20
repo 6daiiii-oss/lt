@@ -3,7 +3,7 @@ import { area, check, esc, field, formEnd, inputMoney, money, notice, onForm, se
 import { pageHeader } from './layout.js';
 import { navigate } from './router.js';
 
-export function productEditor(p,categories) {
+export function productEditor(p,categories,{onboarding=false}={}) {
   const photos=(p.images||[]).map(im=>({...im}));
   return {html:`${pageHeader('Productos',p.id?'Editar producto':'Añadir un producto','Empieza con el nombre, el precio y cuántas unidades tienes. Lo demás es opcional.')}
   <section class="card"><form data-form="product" class="form-grid">
@@ -14,12 +14,12 @@ export function productEditor(p,categories) {
   <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Lote descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
   <h2 class="full">2. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
-  <div>${field('moq','¿Desde cuántas unidades puede comprar el cliente?','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
+  <div>${field('moq','Mínimo de unidades por compra','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
   <p class="notice full" id="quantity-preview" aria-live="polite"></p>
   <h2 class="full">3. Fotos del producto</h2>
   <div class="full stack"><p class="small">Añade hasta 8 fotos. La primera será la portada. Puedes cambiarla o quitar fotos antes de guardar.</p><label class="field"><span>Añadir fotos desde tu computadora</span><input id="product-files" type="file" accept="image/png,image/jpeg,image/webp" multiple></label><p id="upload-state" class="small" role="status"></p><div id="photo-editor" class="photo-editor"></div>
   <details><summary>También puedes añadir una foto desde un enlace</summary><div class="actions">${field('photo_url','Enlace de la foto','url','','placeholder="https://…"')}<button type="button" class="button secondary" id="add-photo-url">Añadir foto del enlace</button></div></details></div>
-  <div class="full">${area('description','Descripción (opcional)',p.description||'')}</div>
+  <div class="full">${area('description','Descripción del producto',p.description||'','placeholder="Describe qué incluye, material, tamaño, colores y presentación. Ejemplo: caja de 6 tazas de cerámica de 250 ml, color blanco."')}</div>
   <details class="full card"><summary>Más opciones (opcional): color, características y venta por paquetes</summary><div class="form-grid">
   ${field('variant','Color, tamaño o presentación (opcional)','text',p.variant||'')}
   ${field('sku','Código del producto (se crea automáticamente si lo dejas vacío)','text',p.sku||'',`maxlength="100" ${p.id?'readonly':''}`)}
@@ -27,7 +27,7 @@ export function productEditor(p,categories) {
   <div>${field('pack_multiple','¿Se vende en grupos de cuántas unidades?','number',p.pack_multiple??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 para vender unidades sueltas. Si solo vendes cajas de 6, escribe 6.</p></div>
   <div class="full"><h3>Características (opcional)</h3><p class="small">Escribe una característica y su detalle, por ejemplo Material y Algodón.</p><div id="spec-rows" class="stack"></div><button type="button" class="text-button" id="add-spec">Añadir característica</button></div>
   <div class="full">${check('same_tax_basis','El precio de reventa corresponde a la misma unidad e incluye los mismos impuestos que mi precio.',p.same_tax_basis)}${check('active','Mantener este producto disponible',p.id?p.status!=='archived':true)}</div></div></details>
-  <div class="full">${check('submit_for_review','Enviar a Lote para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd('Guardar producto')}</div>
+  <div class="full">${check('submit_for_review','Enviar a Lote para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd(onboarding?'Guardar y seguir con mi catálogo':'Guardar producto')}</div>
   </form></section>`,bind(){
     const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,minimum=form.elements.moq,stock=form.elements.stock,pack=form.elements.pack_multiple;
     const explain=()=>{
@@ -63,7 +63,7 @@ export function productEditor(p,categories) {
       const specs=Object.create(null);
       for(const row of document.querySelectorAll('.spec-row')){const key=row.querySelector('[name=spec_key]').value.trim(),value=row.querySelector('[name=spec_value]').value.trim();if(!key&&!value)continue;if(!key||!value)throw new Error('Completa la característica y su detalle, o quita esa fila.');if(Object.hasOwn(specs,key))throw new Error('Cada característica debe tener un nombre diferente.');specs[key]=value;}
       const body={name:d.name,sku:d.sku.trim()||'LOTE-'+crypto.randomUUID().slice(0,8).toUpperCase(),variant:d.variant,category_id:d.category_id,description:d.description,specifications:specs,wholesale_cents:toCents(d.wholesale),retail_cents:d.retail?toCents(d.retail):null,moq:Number(d.moq),pack_multiple:Number(d.pack_multiple),stock:Number(d.stock),same_tax_basis:!!d.same_tax_basis,active:!!d.active,submit_for_review:!!d.submit_for_review,images:photos.map(im=>({url:im.url,alt:d.name}))};
-      await api('/seller/products'+(p.id?'/'+p.id:''),{method:p.id?'PUT':'POST',body});toast('Producto guardado.');navigate('/panel/productos');
+      await api('/seller/products'+(p.id?'/'+p.id:''),{method:p.id?'PUT':'POST',body});toast('Producto guardado. Puedes añadir otro cuando quieras.');navigate(onboarding?'/panel/empezar':'/panel/productos');
     });
   }};
 }

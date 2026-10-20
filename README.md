@@ -1,3 +1,5 @@
+> Actualización de registro: los nuevos proveedores verifican solo su celular durante el alta y pasan a `/panel/empezar` para crear varios productos. El correo no bloquea catálogo ni revisión comercial. SMS real requiere Twilio configurado; GitHub Pages sigue siendo una vista sin cuentas ni guardado. Ver [guía de registro](docs/REGISTRO_PROVEEDORES.md).
+
 # Lote · marketplace B2B en sandbox
 
 Lote conecta marcas y proveedores revisados con tiendas independientes para reventa. Perú, español y PEN (S/). Frontend modular HTML/CSS/JavaScript, API Express 5 y PostgreSQL 17. **No hay cobros, transferencias ni comprobantes fiscales reales habilitados.**

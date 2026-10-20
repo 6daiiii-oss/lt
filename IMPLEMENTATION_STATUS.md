@@ -1,3 +1,13 @@
+# Actualización · Registro por número y carga inicial de catálogo
+
+Se implementa alta con número obligatorio y confirmación SMS dentro del registro. No se exige confirmar correo para gestionar productos ni solicitar revisión de negocio. El proveedor entra directamente a Crear mi catálogo y puede añadir productos sucesivos con descripciones y cantidades claras. El correo sigue sin confirmar hasta que el titular lo confirme opcionalmente; solo entonces puede usarse para recuperación de contraseña.
+
+Validación local: 32 pruebas de dominio/cálculos y un recorrido de registro con dos productos guardados sin confirmación de correo. La suite completa se ejecuta también en GitHub Actions antes de integrar. No hay servidor público de backend ni SMS real configurado en esta entrega. GitHub Pages muestra únicamente la interfaz.
+
+Guía: [REGISTRO_PROVEEDORES.md](docs/REGISTRO_PROVEEDORES.md).
+
+---
+
 # Actualización · 20 de octubre de 2026
 
 La política anterior de recargo al comprador queda reemplazada por comisión al proveedor: 10% inicial / 7% recurrente, sobre productos sin IGV ni envío, más IGV del servicio. Se asume producto gravado al 18%; no habilitar ventas de otras categorías tributarias sin adaptar la base.

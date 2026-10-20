@@ -21,7 +21,7 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
     await login(sellerA,accounts.sellerA);await sellerA.goto('/panel/productos/nuevo');
     await sellerA.getByText('Más opciones (opcional): color, características y venta por paquetes',{exact:true}).click();
     await sellerA.getByLabel('Nombre del producto',{exact:true}).fill('DEMO Vaso editorial');await sellerA.getByLabel('Código del producto (se crea automáticamente si lo dejas vacío)').fill('UI-A');await sellerA.getByLabel('Categoría',{exact:true}).selectOption('hogar');
-    await sellerA.getByLabel('Tu precio por unidad (S/)').fill('2.50');await sellerA.getByLabel('Precio sugerido de reventa (S/, opcional)').fill('5.00');await sellerA.getByLabel('¿Desde cuántas unidades puede comprar el cliente?').fill('6');await sellerA.getByLabel('¿Se vende en grupos de cuántas unidades?').fill('6');await sellerA.getByLabel('¿Cuántas unidades tienes para vender?').fill('60');
+    await sellerA.getByLabel('Tu precio por unidad (S/)').fill('2.50');await sellerA.getByLabel('Precio sugerido de reventa (S/, opcional)').fill('5.00');await sellerA.getByLabel('Mínimo de unidades por compra').fill('6');await sellerA.getByLabel('¿Se vende en grupos de cuántas unidades?').fill('6');await sellerA.getByLabel('¿Cuántas unidades tienes para vender?').fill('60');
     await expect(sellerA.locator('#price-preview')).toContainText('2.50');
     const photoA=await sharp({create:{width:100,height:100,channels:3,background:'#173f35'}}).png().toBuffer();
     const photoB=await sharp({create:{width:100,height:100,channels:3,background:'#e8b366'}}).png().toBuffer();
@@ -51,23 +51,38 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
   }finally{await Promise.all(contexts.map(context=>context.close().catch(()=>{})));}
 });
 
-test('registro de marca, correo y celular local, sesión persistente y cambio de contraseña',async({page})=>{
+test('registro de proveedor: solo número, acceso directo y dos productos sin verificar correo',async({page})=>{
   const email='registro-'+Date.now()+'@example.invalid',password='Registro-seguro-password-2026';
   await page.goto('/registro?tipo=proveedor');
   await page.getByLabel('Tu nombre',{exact:true}).fill('Prueba de registro');
   await page.getByLabel('Nombre de tu negocio').fill('Marca de prueba');
+  await page.getByLabel('Tu número de celular',{exact:true}).fill('987654321');
   await page.getByLabel('Correo electrónico',{exact:true}).fill(email);
   await page.getByLabel('Contraseña · mínimo 12 caracteres').fill(password);
-  await page.getByRole('button',{name:'Crear mi cuenta'}).click();await expect(page).toHaveURL(/\/panel$/);
-  await page.goto('/buzon');await page.getByRole('link',{name:'Abrir enlace del mensaje'}).first().click();
-  await page.getByRole('button',{name:'Verificar correo',exact:true}).click();await expect(page).toHaveURL(/\/panel$/);
-  await page.goto('/cuenta/seguridad');await expect(page.getByText('Correo verificado.',{exact:true})).toBeVisible();
-  await page.getByLabel('Celular peruano con +51').fill('+51987654321');await page.getByRole('button',{name:'Enviar código',exact:true}).click();
+  await page.getByRole('button',{name:'Continuar y verificar mi número',exact:true}).click();
+  await expect(page).toHaveURL(/\/registro\/celular$/);
   const code=page.locator('.notice strong');await expect(code).toHaveText(/^\d{6}$/);
-  await page.getByLabel('Código de verificación',{exact:true}).fill(await code.innerText());await page.getByRole('button',{name:'Verificar celular',exact:true}).click();
-  await expect(page.getByText('Verificado: +51987654321',{exact:true})).toBeVisible();
-  await page.reload();await expect(page.getByText('Verificado: +51987654321',{exact:true})).toBeVisible();
+  await page.getByLabel('Código de 6 dígitos',{exact:true}).fill(await code.innerText());
+  await page.getByRole('button',{name:'Verificar y continuar',exact:true}).click();
+  await expect(page).toHaveURL(/\/panel\/empezar$/);
+  await expect(page.getByRole('heading',{name:'Crea tu primer producto',exact:true})).toBeVisible();
   await page.setViewportSize({width:390,height:900});await noOverflow(page);
+  for(const number of [1,2]) {
+    await page.getByRole('link',{name:number===1?'Crear mi primer producto':'Añadir otro producto',exact:true}).click();
+    await page.getByLabel('Nombre del producto',{exact:true}).fill('Producto de registro '+number);
+    await page.getByLabel('Categoría',{exact:true}).selectOption('hogar');
+    await page.getByLabel('Tu precio por unidad (S/)',{exact:true}).fill('25');
+    await page.getByLabel('¿Cuántas unidades tienes para vender?',{exact:true}).fill('20');
+    await page.getByLabel('Mínimo de unidades por compra',{exact:true}).fill('2');
+    await page.getByLabel('Descripción del producto',{exact:true}).fill('Caja de cerámica con presentación y cantidades descritas.');
+    await page.getByRole('button',{name:'Guardar y seguir con mi catálogo',exact:true}).click();
+    await expect(page).toHaveURL(/\/panel\/empezar$/);
+    await expect(page.getByRole('link',{name:'Producto de registro '+number,exact:true})).toBeVisible();
+  }
+  await page.reload();await expect(page.getByRole('link',{name:'Producto de registro 2',exact:true})).toBeVisible();
+  await page.screenshot({path:'test-results/registro-catalogo-390.png',fullPage:true});
+  await page.goto('/cuenta/seguridad');await expect(page.getByText('Verificado: +51987654321',{exact:true})).toBeVisible();
+  await expect(page.getByText('Correo de contacto. Su verificación no es necesaria para usar tu cuenta.',{exact:true})).toBeVisible();
   await page.getByLabel('Contraseña actual',{exact:true}).fill(password);await page.getByLabel('Nueva contraseña',{exact:true}).fill(password+'-nueva');await page.getByLabel('Repetir nueva contraseña',{exact:true}).fill(password+'-nueva');
   await page.getByRole('button',{name:'Actualizar contraseña'}).click();await expect(page).toHaveURL(/\/login$/);
 });
@@ -79,7 +94,7 @@ test('producto sencillo: 1100 disponibles, mínimo 1 y código automático sin o
   await page.getByLabel('Categoría',{exact:true}).selectOption('hogar');
   await page.getByLabel('Tu precio por unidad (S/)',{exact:true}).fill('12');
   await page.getByLabel('¿Cuántas unidades tienes para vender?',{exact:true}).fill('1100');
-  await expect(page.getByLabel('¿Desde cuántas unidades puede comprar el cliente?',{exact:true})).toHaveValue('1');
+  await expect(page.getByLabel('Mínimo de unidades por compra',{exact:true})).toHaveValue('1');
   await expect(page.locator('#quantity-preview')).toContainText('Tienes 1100 unidades en total. Cada pedido empieza desde 1 unidad.');
   await expect(page.getByLabel('Código del producto (se crea automáticamente si lo dejas vacío)')).not.toBeVisible();
   await page.setViewportSize({width:390,height:900});await noOverflow(page);

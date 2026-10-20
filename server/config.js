@@ -38,7 +38,8 @@ export function validateConfig() {
   if(config.smsProvider==='twilio'&&(!/^AC[a-f0-9]{32}$/i.test(process.env.TWILIO_ACCOUNT_SID||'')||!/^VA[a-f0-9]{32}$/i.test(process.env.TWILIO_VERIFY_SERVICE_SID||'')||!process.env.TWILIO_AUTH_TOKEN)) throw new Error('Faltan credenciales de Twilio Verify.');
   if (config.production) {
     if(config.smsProvider!=='twilio') throw new Error('Producción requiere SMS real configurado.');
-    if (!config.origin.startsWith('https://') || !process.env.SMTP_HOST || !process.env.MAIL_FROM || !process.env.BUSINESS_CONTACT_EMAIL) throw new Error('Producción requiere HTTPS, SMTP y contacto operativo.');
+    if (!config.origin.startsWith('https://') || !process.env.BUSINESS_CONTACT_EMAIL) throw new Error('Producción requiere HTTPS y contacto operativo.');
+    if(process.env.SMTP_HOST&&!process.env.MAIL_FROM)throw new Error('Configura MAIL_FROM para enviar correos.');
     if (process.env.POLICIES_APPROVED !== 'true') throw new Error('Producción requiere políticas revisadas.');
     if (config.paymentProvider !== 'sandbox') throw new Error('No hay adaptador de pagos real habilitado; usar sandbox con checkout real deshabilitado.');
   }
