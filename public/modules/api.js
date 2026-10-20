@@ -1,4 +1,4 @@
-export const state={user:null,organizations:[],organizationId:null,csrfToken:null,sandbox:true};
+export const state={user:null,organizations:[],organizationId:null,csrfToken:null,sandbox:true,purchasesEnabled:false};
 export async function api(path,{method='GET',body,headers={}}={}) {
   const options={method,credentials:'same-origin',headers:{...(state.organizationId?{'X-Organization-Id':state.organizationId}:{}),...(state.csrfToken?{'X-CSRF-Token':state.csrfToken}:{}),...headers}};
   if(body!==undefined) {

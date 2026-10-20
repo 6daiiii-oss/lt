@@ -14,7 +14,7 @@ before(async()=>{
 });
 beforeEach(async()=>{
   await db.query('TRUNCATE users,organizations RESTART IDENTITY CASCADE');
-  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;config.smsProvider='sandbox';config.production=false;
+  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;config.smsProvider='sandbox';config.production=false;config.purchasesEnabled=true;
   accounts=await fixtures(db);
 });
 after(async()=>{if(server){await new Promise(resolve=>server.close(resolve));}if(db)await db.pool.end();if(isolated)await isolated.drop();});
@@ -454,4 +454,21 @@ test('phone-only registration: unverified email can create multiple products aft
   const own=(await request('GET','/seller/products',undefined,user)).data;assert.equal(own.length,2);assert.ok(own.every(p=>p.status==='pending'));
   assert.equal((await request('GET','/products')).data.products.some(p=>own.some(o=>o.id===p.id)),false);
   const org=(await request('GET','/organizations/me',undefined,user)).data;assert.equal(org.tax_id,'20123456789');
+});
+
+test('compras cerradas: no se añade al carrito, reserva ni recompra por API',async()=>{
+  config.purchasesEnabled=false;
+  const p=await product(db,accounts.sellerA);
+  for(const [path,body] of [
+    ['/cart/items',{product_id:p.id,quantity:1,expected_price_cents:p.wholesale_cents}],
+    ['/checkout',{}],
+    ['/orders/'+randomUUID()+'/reorder',{confirm:true}]
+  ]) {
+    const result=await post(path,body,accounts.buyerA);
+    assert.equal(result.status,503);assert.match(result.data.message,/No disponible/);
+  }
+  const me=await request('GET','/me',undefined,accounts.buyerA);
+  assert.equal(me.data.purchasesEnabled,false);
+  assert.equal((await db.query('SELECT count(*) FROM cart_items')).rows[0].count,'0');
+  assert.equal((await db.query('SELECT count(*) FROM checkouts')).rows[0].count,'0');
 });

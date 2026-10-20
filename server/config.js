@@ -3,6 +3,8 @@ export const config = {
   demo: process.env.LOTE_DEMO_MODE === 'true',
   cookieName: process.env.LOTE_DEMO_MODE === 'true' ? 'lote_demo_session' : 'lote_session',
   production: process.env.NODE_ENV === 'production',
+  // Opt-in is only for isolated sandbox exercises; public purchases remain closed.
+  purchasesEnabled: process.env.NODE_ENV !== 'production' && process.env.SANDBOX_PURCHASES_ENABLED === 'true',
   port: Number(process.env.PORT || 3000),
   origin: process.env.APP_ORIGIN || 'http://localhost:3000',
   databaseUrl: process.env.DATABASE_URL,

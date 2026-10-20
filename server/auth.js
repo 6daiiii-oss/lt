@@ -144,7 +144,7 @@ authRouter.post('/auth/password',authenticated,accountLimit,async(req,res)=>{
   res.clearCookie(config.cookieName,{path:'/'});res.json({message:'Contraseña actualizada. Inicia sesión de nuevo en tus dispositivos.'});
 });
 authRouter.get('/me',async(req,res)=>{
-  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,demo:demoEnabled(),mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
+  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,purchasesEnabled:config.purchasesEnabled&&!config.production,demo:demoEnabled(),mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
 });
 authRouter.get('/dev/mail',authenticated,async(req,res)=>{
   requireThat(!config.production&&!process.env.SMTP_HOST,'Buzón sandbox no disponible.',404);

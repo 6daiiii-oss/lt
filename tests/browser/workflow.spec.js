@@ -161,3 +161,30 @@ test('registro de marca dedicado: diseño adaptable, pasos y datos opcionales',a
   await expect(page.getByLabel('RUC (opcional)',{exact:true})).toBeVisible();
   await noOverflow(page);expect(errors).toEqual([]);
 });
+
+test('compras cerradas: producto, bolsa y enlace de pago muestran No disponible',async({page})=>{
+  const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
+  await page.route('**/api/me',async route=>{
+    const response=await route.fetch(),data=await response.json();
+    await route.fulfill({response,json:{...data,purchasesEnabled:false}});
+  });
+  await page.route(/\/api\/products\/closed-product$/,route=>route.fulfill({json:{
+    id:'closed-product',name:'Producto de prueba',brand_id:'brand',brand_name:'Marca',
+    sku:'PRUEBA',images:[],specifications:{},description:'Descripción',
+    wholesale_cents:1000,retail_cents:2000,margin_percent:50,moq:1,pack_multiple:1,
+    available:100,source_updated_at:new Date().toISOString(),stockMaxAgeHours:48,
+    min_order_cents:0,shipping_cents:0,shipping_regions:['lima'],preparation_days:1,
+    shipping_policy:'Despacho',return_policy:'Condiciones'
+  }}));
+  await page.route('**/api/products/closed-product/reviews',route=>route.fulfill({json:[]}));
+  await page.goto('/productos/closed-product');
+  await expect(page.getByRole('button',{name:'No disponible',exact:true})).toBeDisabled();
+  await expect(page.locator('[data-form=add-cart]')).toHaveCount(0);
+  await login(page,accounts.buyerA);
+  for(const path of ['/productos/closed-product','/carrito','/checkout/reserva-anterior']) {
+    await page.goto(path);
+    await expect(page.getByRole('button',{name:'No disponible',exact:true})).toBeDisabled();
+    await expect(page.locator('[data-form=checkout],[data-form=add-cart],[data-action=simulate]')).toHaveCount(0);
+    await page.setViewportSize({width:390,height:900});await noOverflow(page);
+  }
+});
