@@ -22,7 +22,7 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
     await sellerA.getByText('Más opciones (opcional): color, características y venta por paquetes',{exact:true}).click();
     await sellerA.getByLabel('Nombre del producto',{exact:true}).fill('DEMO Vaso editorial');await sellerA.getByLabel('Código del producto (se crea automáticamente si lo dejas vacío)').fill('UI-A');await sellerA.getByLabel('Categoría',{exact:true}).selectOption('hogar');
     await sellerA.getByLabel('Tu precio por unidad (S/)').fill('2.50');await sellerA.getByLabel('Precio sugerido de reventa (S/, opcional)').fill('5.00');await sellerA.getByLabel('¿Desde cuántas unidades puede comprar el cliente?').fill('6');await sellerA.getByLabel('¿Se vende en grupos de cuántas unidades?').fill('6');await sellerA.getByLabel('¿Cuántas unidades tienes para vender?').fill('60');
-    await expect(sellerA.locator('#price-preview')).toContainText('2.75');
+    await expect(sellerA.locator('#price-preview')).toContainText('2.50');
     const photoA=await sharp({create:{width:100,height:100,channels:3,background:'#173f35'}}).png().toBuffer();
     const photoB=await sharp({create:{width:100,height:100,channels:3,background:'#e8b366'}}).png().toBuffer();
     await sellerA.getByLabel('Añadir fotos desde tu computadora').setInputFiles([{name:'foto-a.png',mimeType:'image/png',buffer:photoA},{name:'foto-b.png',mimeType:'image/png',buffer:photoB}]);
@@ -39,7 +39,7 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
     await login(buyer,accounts.buyerA);
     let productUrl;
     for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){await buyer.goto('/catalogo');await buyer.getByRole('heading',{name,exact:true}).getByRole('link').click();await expect(buyer.getByRole('heading',{name,exact:true})).toBeVisible();if(!productUrl){productUrl=new URL(buyer.url()).pathname;await expect(buyer.locator('.photo-thumbs button')).toHaveCount(2);const first=await buyer.locator('[data-photo-main]').getAttribute('src');await buyer.getByRole('button',{name:'Ver foto 2',exact:true}).click();await expect(buyer.locator('[data-photo-main]')).not.toHaveAttribute('src',first);}await buyer.getByRole('button',{name:'Añadir a mi bolsa'}).click();await expect(buyer.getByRole('status')).toHaveText('Producto añadido a tu bolsa.');}
-    await buyer.goto('/carrito');await expect(buyer.getByRole('heading',{name:'Buenas elecciones, juntas.'})).toBeVisible();await expect(buyer.locator('.summary-dl .total').last()).toContainText('37.70');await buyer.getByLabel('Revisé cantidades, cobertura, precios, envío y condiciones de cada proveedor.').check();await buyer.getByRole('button',{name:'Continuar al pago de prueba'}).click();await expect(buyer).toHaveURL(/\/checkout\/[^/]+$/);await buyer.getByRole('button',{name:'Completar compra de prueba'}).click();await expect(buyer.getByText('Aprobado',{exact:true})).toBeVisible();
+    await buyer.goto('/carrito');await expect(buyer.getByRole('heading',{name:'Buenas elecciones, juntas.'})).toBeVisible();await expect(buyer.locator('.summary-dl .total').last()).toContainText('35.00');await buyer.getByLabel('Revisé cantidades, cobertura, precios, envío y condiciones de cada proveedor.').check();await buyer.getByRole('button',{name:'Continuar al pago de prueba'}).click();await expect(buyer).toHaveURL(/\/checkout\/[^/]+$/);await buyer.getByRole('button',{name:'Completar compra de prueba'}).click();await expect(buyer.getByText('Aprobado',{exact:true})).toBeVisible();
     await buyer.goto('/pedidos');const links={};for(const letter of ['A','B']){const row=buyer.getByRole('row').filter({hasText:'DEMO Marca '+letter});links[letter]=await row.getByRole('link').getAttribute('href');}
     for(const [letter,seller] of [['A',sellerA],['B',sellerB]]){await seller.goto('/panel'+links[letter]);await seller.getByRole('button',{name:'Aceptar y preparar pedido'}).click();await expect(seller.getByRole('button',{name:'Registrar despacho'})).toBeVisible();await seller.getByLabel('Transportista',{exact:true}).fill('DEMO Transportista');await seller.getByLabel('Código de seguimiento').fill('DEMO-ENVIO-'+letter);await seller.getByRole('button',{name:'Registrar despacho'}).click();await expect(seller.getByText('Enviado',{exact:true})).toBeVisible();await buyer.goto(links[letter]);await buyer.getByRole('button',{name:'Confirmar que recibí el pedido'}).click();await expect(buyer.getByText('Entregado',{exact:true})).toBeVisible();}
     await buyer.goto(links.A);await buyer.getByText('Escribir una reseña',{exact:true}).click();await buyer.getByLabel('Tu experiencia de compra').fill('Producto de demostración entregado en el recorrido de pruebas.');await buyer.getByRole('button',{name:'Enviar a moderación'}).click();await expect(buyer.getByRole('status')).toHaveText('Reseña enviada a moderación.');
@@ -100,4 +100,27 @@ test('la marca selecciona regiones con casillas y las conserva al guardar',async
   const organization=await (await page.request.get('/api/organizations/me')).json();
   expect(organization.brand.shipping_regions).toEqual(expect.arrayContaining(['ancash','lima']));
   await page.setViewportSize({width:390,height:900});await noOverflow(page);
+});
+
+
+test('paneles operativos y simulador 10/7: sin errores ni desbordes en móvil',async({browser})=>{
+  const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
+  for(const [role,paths] of [['sellerA',['/panel/inventario','/panel/envios','/panel/incidencias','/panel/tiendas','/panel/finanzas']],['admin',['/administracion/finanzas','/administracion/logistica','/administracion/lanzamiento']]]) {
+    const context=await browser.newContext(),page=await context.newPage(),errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    try {
+      await login(page,accounts[role]);
+      for(const path of paths) {
+        await page.goto(path);await expect(page.locator('h1')).toBeVisible();
+        await expect(page.getByRole('heading',{name:'No pudimos completar esta vista.'})).toHaveCount(0);
+        await page.setViewportSize({width:390,height:900});await noOverflow(page);
+      }
+      await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');
+      await expect(page.locator('#fee-simulation')).toContainText('100.01');
+      await page.getByLabel('Recompra de la misma tienda a la misma marca',{exact:true}).check();
+      await expect(page.locator('#fee-simulation')).toContainText('70.00');
+      await page.screenshot({path:`test-results/finanzas-${role}-390.png`,fullPage:true});
+      expect(errors).toEqual([]);
+    } finally {await context.close();}
+  }
 });

@@ -1,3 +1,4 @@
+import { simulator, bindSimulator } from './finance.js';
 import { normalizeRegion, peruRegions } from './regions.js';
 import { productEditor } from './product-editor.js';
 import { api, currentOrg, state } from './api.js';
@@ -6,13 +7,31 @@ import { pageHeader } from './layout.js';
 import { navigate, reload } from './router.js';
 const stat=(label,value)=>`<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
 export async function sellerView(path,url) {
+  if(path==='/panel/finanzas')return {html:pageHeader('Finanzas','Conoce lo que recibes.','10% inicial y 7% recurrente sobre productos sin IGV ni envío, más IGV del servicio.')+simulator()+button('Ver liquidaciones','/panel/liquidaciones',true),bind:bindSimulator};
+  if(path==='/panel/inventario') {
+    const list=await api('/seller/products');
+    return {html:pageHeader('Inventario','Stock disponible y reservado.','Edita el producto para actualizar existencias.')+table(['Producto','Total','Reservado','Disponible','Última actualización'],list.map(p=>`<tr><td><a href="/panel/productos/${p.id}">${esc(p.name)}</a></td><td>${p.total}</td><td>${p.reserved}</td><td>${p.available}</td><td>${date(p.source_updated_at)}</td></tr>`))};
+  }
+  if(path==='/panel/envios') {
+    const list=await api('/seller/shipments');
+    return {html:pageHeader('Envíos','Preparación y seguimiento.','Abre el pedido para registrar transportista y código de despacho.')+table(['Pedido','Tienda','Estado','Transportista','Seguimiento'],list.map(o=>`<tr><td><a href="/panel/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.buyer_name)}</td><td>${badge(o.state)}</td><td>${esc(o.carrier||'Por registrar')}</td><td>${esc(o.tracking_code||'—')}</td></tr>`))};
+  }
+  if(path==='/panel/incidencias') {
+    const list=await api('/seller/incidents');
+    return {html:pageHeader('Posventa','Devoluciones e incidencias.','Responde desde el caso y adjunta evidencias. Resolver el caso no ejecuta automáticamente un reembolso.')+(list.length?table(['Caso','Pedido','Estado','Fecha'],list.map(i=>`<tr><td><a href="/incidencias/${i.id}">${esc(i.reason)}</a></td><td><a href="/panel/pedidos/${i.order_id}">${short(i.order_id)}</a></td><td>${badge(i.state)}</td><td>${date(i.created_at)}</td></tr>`)):empty('Sin incidencias.','Los casos abiertos desde pedidos aparecerán aquí.'))};
+  }
+  if(path==='/panel/tiendas') {
+    const list=await api('/seller/buyers');
+    return {html:pageHeader('Tiendas','Tus relaciones comerciales.','Compras confirmadas de tu marca. Importes brutos antes de devoluciones; no son ganancias.')+table(['Tienda','Pedidos','Productos vendidos','Última compra'],list.map(b=>`<tr><td>${esc(b.name)}</td><td>${b.orders}</td><td>${money(Number(b.gross_cents))}</td><td>${date(b.latest_order)}</td></tr>`))};
+  }
+
   if(path==='/panel') {
     const s=await api('/seller/summary'),org=currentOrg();
     return {html:`${pageHeader('Espacio de marca','Tu marca, lista para el próximo pedido.',org.name)}${org.status!=='approved'?notice('Completa tu perfil y solicita verificación antes de publicar tu primer catálogo.','warning')+button('Completar mi perfil','/cuenta/perfil',true):''}${!state.user.phone_verified_at?notice('Verifica tu celular antes de guardar productos y operar.','warning')+button('Verificar celular','/cuenta/seguridad',true):''}<div class="stats">${stat('Pedidos por preparar',s.pending_orders)}${stat('Productos',s.products)}${stat('Productos con stock bajo',s.low_stock)}${stat('Fuentes con errores',s.failed_syncs)}</div><div class="panel-grid"><article class="card"><h2>Un catálogo que te represente.</h2><p>Añade productos con precios, mínimos y stock. Revisa cada lote antes de solicitar publicación.</p>${button('Gestionar productos','/panel/productos')} ${button('Añadir producto','/panel/productos/nuevo',true)}</article><article class="card"><h2>Envío y devoluciones.</h2><p>Define tu compra mínima, cobertura y despacho. Tus tiendas los verán antes de confirmar.</p>${button('Revisar mi marca','/panel/marca',true)}</article><article class="card"><h2>Pedidos de tu marca</h2><p>Consulta la tienda, productos, cantidades, dirección, pago y envío de cada pedido.</p>${button('Ver pedidos','/panel/pedidos')}${s.latest_orders?.length?table(['Pedido','Tienda','Total','Estado'],s.latest_orders.map(o=>`<tr><td><a href="/panel/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.buyer_name)}</td><td>${money(o.total_cents)}</td><td>${badge(o.state)}</td></tr>`)):''}</article></div>`};
   }
   if(path==='/panel/productos') {
     const products=await api('/seller/products');
-    return {html:`${pageHeader('Catálogo','Productos con toda la información.','Cada producto tiene su propio código. Las unidades disponibles descuentan las reservadas en pedidos.',button('Añadir producto','/panel/productos/nuevo'))}<div class="actions">${button('Importar CSV','/panel/importaciones',true)}</div>${products.length?table(['Producto / variante','SKU','Tu precio base','Precio al cliente','Mínimo por compra / grupo','Unidades: total / reservadas / disponibles','Estado','Acciones'],products.map(p=>`<tr><td><a href="/panel/productos/${p.id}">${esc(p.name)} ${esc(p.variant)}</a></td><td>${esc(p.sku)}</td><td>${money(p.wholesale_cents)}</td><td>${money(p.customer_price_cents)}</td><td>${p.moq} / ${p.pack_multiple}</td><td>${p.total} / ${p.reserved} / ${p.available}</td><td>${badge(p.status)}</td><td><button class="text-button" data-action="archive-product" data-id="${p.id}">Archivar</button></td></tr>`)):empty('Tu próxima gran selección empieza aquí.','Añade tu primer producto o importa un CSV para previsualizarlo. El catálogo público seguirá vacío hasta la revisión.')}`,bind(){onAction('archive-product',async el=>{await api('/seller/products/'+el.dataset.id+'/archive',{method:'POST',body:{}});reload();});}};
+    return {html:`${pageHeader('Catálogo','Productos con toda la información.','Cada producto tiene su propio código. Las unidades disponibles descuentan las reservadas en pedidos.',button('Añadir producto','/panel/productos/nuevo'))}<div class="actions">${button('Importar CSV','/panel/importaciones',true)}</div>${products.length?table(['Producto / variante','SKU','Precio con IGV','Precio al cliente','Mínimo por compra / grupo','Unidades: total / reservadas / disponibles','Estado','Acciones'],products.map(p=>`<tr><td><a href="/panel/productos/${p.id}">${esc(p.name)} ${esc(p.variant)}</a></td><td>${esc(p.sku)}</td><td>${money(p.wholesale_cents)}</td><td>${money(p.customer_price_cents)}</td><td>${p.moq} / ${p.pack_multiple}</td><td>${p.total} / ${p.reserved} / ${p.available}</td><td>${badge(p.status)}</td><td><button class="text-button" data-action="archive-product" data-id="${p.id}">Archivar</button></td></tr>`)):empty('Tu próxima gran selección empieza aquí.','Añade tu primer producto o importa un CSV para previsualizarlo. El catálogo público seguirá vacío hasta la revisión.')}`,bind(){onAction('archive-product',async el=>{await api('/seller/products/'+el.dataset.id+'/archive',{method:'POST',body:{}});reload();});}};
   }
   const productId=path.match(/^\/panel\/productos\/([^/]+)$/)?.[1];
   if(productId) {
@@ -27,7 +46,7 @@ export async function sellerView(path,url) {
   }
   if(path==='/panel/importaciones') {
     const jobs=await api('/seller/imports');
-    return {html:`${pageHeader('Carga de catálogo','Primero revisar. Después aplicar.','CSV UTF-8. wholesale_cents es tu precio base en céntimos; Lote añade 10% al precio del cliente.')}${notice('La política de lote es atómica: todas las filas deben ser válidas. Previsualizar no modifica el catálogo.')}<section class="card"><div class="actions"><a class="button secondary" href="/api/seller/imports/template.csv" download>Descargar plantilla CSV</a></div><form data-form="csv" class="stack"><label class="field"><span>Archivo CSV de productos</span><input type="file" name="file" accept=".csv,text/csv" required></label>${formEnd('Validar y previsualizar')}</form></section>${jobs.length?table(['Lote','Fecha','Filas','Estado'],jobs.map(j=>`<tr><td><a href="/panel/importaciones/${j.id}">${short(j.id)}</a></td><td>${date(j.created_at)}</td><td>${j.row_count}</td><td>${badge(j.state)}</td></tr>`)):''}`,bind(){onForm('csv',async(d,form)=>{const file=form.elements.file.files[0];const job=await api('/seller/imports',{method:'POST',body:await file.text(),headers:{'Content-Type':'text/csv; charset=utf-8'}});navigate('/panel/importaciones/'+job.id);});}};
+    return {html:`${pageHeader('Carga de catálogo','Primero revisar. Después aplicar.','CSV UTF-8. wholesale_cents es el precio final con IGV en céntimos. Comisión al proveedor: 10% inicial / 7% recurrente, más IGV, sobre productos sin IGV ni envío.')}${notice('La política de lote es atómica: todas las filas deben ser válidas. Previsualizar no modifica el catálogo.')}<section class="card"><div class="actions"><a class="button secondary" href="/api/seller/imports/template.csv" download>Descargar plantilla CSV</a></div><form data-form="csv" class="stack"><label class="field"><span>Archivo CSV de productos</span><input type="file" name="file" accept=".csv,text/csv" required></label>${formEnd('Validar y previsualizar')}</form></section>${jobs.length?table(['Lote','Fecha','Filas','Estado'],jobs.map(j=>`<tr><td><a href="/panel/importaciones/${j.id}">${short(j.id)}</a></td><td>${date(j.created_at)}</td><td>${j.row_count}</td><td>${badge(j.state)}</td></tr>`)):''}`,bind(){onForm('csv',async(d,form)=>{const file=form.elements.file.files[0];const job=await api('/seller/imports',{method:'POST',body:await file.text(),headers:{'Content-Type':'text/csv; charset=utf-8'}});navigate('/panel/importaciones/'+job.id);});}};
   }
   const jobId=path.match(/^\/panel\/importaciones\/([^/]+)$/)?.[1];
   if(jobId) {
@@ -48,3 +67,4 @@ export async function sellerView(path,url) {
   }
   return null;
 }
+

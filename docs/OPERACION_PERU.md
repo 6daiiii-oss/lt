@@ -1,3 +1,5 @@
+> Actualización 2026-10-20: las referencias al recargo del 10% de esta guía quedaron reemplazadas por [DESPLIEGUE.md](DESPLIEGUE.md): comisión al proveedor 10% inicial / 7% recurrente, sin recargo al comprador.
+
 # Operación de Lote: cuentas, Faire, pagos y comprobantes
 
 Revisión: 19 de octubre de 2026, Perú. El código se implementó en el checkout Windows `C:/Users/Rodolfo/Documents/Lote/lt`. Los servicios externos no están contratados ni activados por esta entrega.
@@ -97,3 +99,4 @@ Actualmente el checkout guarda la solicitud de boleta/factura y declara `fiscal_
 - Liquidaciones bancarias y comprobantes electrónicos automatizados, una vez contratados sus proveedores.
 
 Ya existen favoritos, recompra, incidencias, control de stock/reservas, notificaciones y auditoría; no se presentan como funciones nuevas por contratar.
+

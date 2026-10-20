@@ -1,6 +1,6 @@
 import { normalizeRegion, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
-import { MARKUP_BPS, buyerOrder } from './pricing.js';
+import { feeBreakdown, buyerOrder } from './pricing.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, tx } from './db.js';
@@ -91,17 +91,22 @@ commerceRouter.post('/checkout',verified,phoneVerified,orgRole('buyer',{approved
       VALUES($1,$2,$3,$4,$5,$6,$7,now()+$8*interval '1 minute') RETURNING *`,[req.org.id,req.user.id,key,requestHash,quote.total_cents,address,{...input.receipt,fiscal_document_issued:false},config.reservationMinutes])).rows[0];
     const purchase=(await db.query('INSERT INTO purchases(checkout_id,organization_id,total_cents) VALUES($1,$2,$3) RETURNING id',[checkout.id,req.org.id,quote.total_cents])).rows[0];
     for(const g of quote.groups) {
-      const bps=MARKUP_BPS;
-      const markupCents=sumMoney(rows.filter(p=>p.brand_id===g.brand_id).map(p=>(p.wholesale_cents-p.supplier_cents)*p.quantity));
+      // Buyer row lock serializes checkouts. Only delivered, non-fully-refunded
+      // orders establish a relationship; failed/cancelled/reserved orders do not.
+      const recurrent=(await db.query(`SELECT 1 FROM orders o JOIN purchases p ON p.id=o.purchase_id
+        WHERE o.buyer_id=$1 AND o.brand_id=$2 AND o.state='delivered'
+        AND o.refunded_cents<o.total_cents AND p.payment_state IN ('approved','partially_refunded') LIMIT 1`,[req.org.id,g.brand_id])).rowCount>0;
+      const fees=feeBreakdown(g.subtotal_cents,g.shipping_cents,recurrent);
+      const bps=fees.basis_points,markupCents=fees.service_total_cents;
       const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'sandbox_unconfigured',pricing:'supplier_plus_10_percent_per_unit',commission:'10_percent_of_supplier_base'}])).rows[0];
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'first_10_repeat_7_excluding_product_igv_and_shipping',fees}])).rows[0];
       for(const item of g.items) {
         const p=rows.find(p=>p.id===item.product_id);
         const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);
         requireThat(updated.rowCount,'Otra tienda acaba de reservar este stock.',409,'stock_conflict');
         await db.query('INSERT INTO inventory_reservations(checkout_id,product_id,quantity,expires_at) VALUES($1,$2,$3,$4)',[checkout.id,p.id,p.quantity,checkout.expires_at]);
         await db.query('INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,$3,$4,$5)',[p.id,checkout.id,'reserved',p.quantity,`reserve:${checkout.id}:${p.id}`]);
-        await db.query(`INSERT INTO order_items(order_id,product_id,quantity,unit_price_cents,snapshot) VALUES($1,$2,$3,$4,$5)`,[order.id,p.id,p.quantity,p.wholesale_cents,{name:p.name,variant:p.variant,sku:p.sku,brand_name:p.brand_name,retail_cents:p.retail_cents,moq:p.moq,pack_multiple:p.pack_multiple,tax_applied:null,same_tax_basis:p.same_tax_basis,wholesale_cents:p.wholesale_cents}]);
+        await db.query(`INSERT INTO order_items(order_id,product_id,quantity,unit_price_cents,snapshot) VALUES($1,$2,$3,$4,$5)`,[order.id,p.id,p.quantity,p.wholesale_cents,{name:p.name,variant:p.variant,sku:p.sku,brand_name:p.brand_name,retail_cents:p.retail_cents,moq:p.moq,pack_multiple:p.pack_multiple,tax_applied:'included_18_percent_assumed',same_tax_basis:p.same_tax_basis,wholesale_cents:p.wholesale_cents}]);
       }
       await db.query(`INSERT INTO order_events(order_id,actor_id,event) VALUES($1,$2,'checkout.reserved')`,[order.id,req.user.id]);
     }
@@ -158,3 +163,4 @@ commerceRouter.post('/orders/:id/reorder',verified,orgRole('buyer'),async(req,re
     return {items:quote,quote_hash:quoteHash,added:input.confirm};
   });res.json(result);
 });
+
