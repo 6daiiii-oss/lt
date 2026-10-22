@@ -76,9 +76,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/4000090/pexels-photo-4000090.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/7879984/pexels-photo-7879984.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Botella reutilizable de acero (Pexels)",
-        "source": "https://www.pexels.com/photo/4000090/"
+        "source": "https://www.pexels.com/photo/7879984/"
       },
       {
         "url": "https://images.pexels.com/photos/7879895/pexels-photo-7879895.jpeg?auto=compress&cs=tinysrgb&w=900",
@@ -123,9 +123,9 @@ export const demoProducts=[
         "source": "https://www.pexels.com/photo/9869067/"
       },
       {
-        "url": "https://images.pexels.com/photos/6786901/pexels-photo-6786901.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/30382341/pexels-photo-30382341.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Bolsa tote de tela color natural (Pexels)",
-        "source": "https://www.pexels.com/photo/6786901/"
+        "source": "https://www.pexels.com/photo/30382341/"
       }
     ]
   },
@@ -165,9 +165,9 @@ export const demoProducts=[
         "source": "https://www.pexels.com/photo/6193142/"
       },
       {
-        "url": "https://images.pexels.com/photos/6368838/pexels-photo-6368838.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/8251036/pexels-photo-8251036.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Cuaderno de espiral para notas (Pexels)",
-        "source": "https://www.pexels.com/photo/6368838/"
+        "source": "https://www.pexels.com/photo/8251036/"
       }
     ]
   },
@@ -202,14 +202,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/1499511/pexels-photo-1499511.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/29611519/pexels-photo-29611519.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Set de brochas de maquillaje (Pexels)",
-        "source": "https://www.pexels.com/photo/1499511/"
+        "source": "https://www.pexels.com/photo/29611519/"
       },
       {
-        "url": "https://images.pexels.com/photos/7446417/pexels-photo-7446417.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/4620872/pexels-photo-4620872.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Set de brochas de maquillaje (Pexels)",
-        "source": "https://www.pexels.com/photo/7446417/"
+        "source": "https://www.pexels.com/photo/4620872/"
       }
     ]
   },
@@ -244,9 +244,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/17810093/pexels-photo-17810093.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/33307532/pexels-photo-33307532.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Auriculares inalámbricos compactos (Pexels)",
-        "source": "https://www.pexels.com/photo/17810093/"
+        "source": "https://www.pexels.com/photo/33307532/"
       },
       {
         "url": "https://images.pexels.com/photos/33444591/pexels-photo-33444591.jpeg?auto=compress&cs=tinysrgb&w=900",
@@ -291,9 +291,9 @@ export const demoProducts=[
         "source": "https://www.pexels.com/photo/7796695/"
       },
       {
-        "url": "https://images.pexels.com/photos/7797454/pexels-photo-7797454.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/7796988/pexels-photo-7796988.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Vela decorativa en frasco ámbar (Pexels)",
-        "source": "https://www.pexels.com/photo/7797454/"
+        "source": "https://www.pexels.com/photo/7796988/"
       }
     ]
   },
@@ -333,9 +333,9 @@ export const demoProducts=[
         "source": "https://www.pexels.com/photo/34846770/"
       },
       {
-        "url": "https://images.pexels.com/photos/31390661/pexels-photo-31390661.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/31390644/pexels-photo-31390644.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Cesta organizadora de fibra tejida (Pexels)",
-        "source": "https://www.pexels.com/photo/31390661/"
+        "source": "https://www.pexels.com/photo/31390644/"
       }
     ]
   },
@@ -370,14 +370,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/13464195/pexels-photo-13464195.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/3639207/pexels-photo-3639207.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Guirnalda de luces decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/13464195/"
+        "source": "https://www.pexels.com/photo/3639207/"
       },
       {
-        "url": "https://images.pexels.com/photos/1400136/pexels-photo-1400136.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/11705903/pexels-photo-11705903.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Guirnalda de luces decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/1400136/"
+        "source": "https://www.pexels.com/photo/11705903/"
       }
     ]
   },
@@ -412,9 +412,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/7410461/pexels-photo-7410461.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/5485173/pexels-photo-5485173.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Cajas de regalo con cintas decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/7410461/"
+        "source": "https://www.pexels.com/photo/5485173/"
       },
       {
         "url": "https://images.pexels.com/photos/6102479/pexels-photo-6102479.jpeg?auto=compress&cs=tinysrgb&w=900",
