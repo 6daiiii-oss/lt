@@ -6,7 +6,7 @@
 
 Nuevas lecturas autenticadas de marca: `GET /api/seller/shipments`, `/incidents`, `/buyers`, filtradas por la marca de la organización activa. Nuevas lecturas solo admin: `GET /api/admin/finance`, `/logistics`, `/launch-readiness`.
 
-Nuevos pedidos guardan `policy_snapshot.fees` con base de productos sin IGV, servicio, IGV del servicio, tasa 10/7 y procesamiento **estimado**. Esa información queda restringida a marca/admin; no se serializa al comprador. `commission_cents` incluye IGV del servicio para conservar la semántica de descuento del libro contable. Se mantienen los snapshots anteriores. No existe un endpoint de cobro real.
+Los nuevos pedidos guardan `policy_snapshot.fees` con comisión fija total del 7% (IGV del servicio incluido) y el recargo al comprador por procesamiento **estimado**. Esa información queda restringida a marca/admin; no se serializa al comprador. `commission_cents` incluye IGV del servicio para conservar la semántica de descuento del libro contable. Se mantienen los snapshots anteriores. No existe un endpoint de cobro real.
 
 ---
 
@@ -35,7 +35,7 @@ GET `/demo/info` informa si está habilitada. POST `/demo/login` admite `{role: 
 | GET `/dev/sms` | Solo desarrollo con SMS sandbox: códigos pendientes propios. |
 | GET `/dev/mail` | Solo desarrollo sin SMTP y con sesión: mensajes de ese usuario. |
 
-Los endpoints de vendedor reciben `wholesale_cents` como base de marca; sus lecturas incluyen `customer_price_cents`. Los endpoints públicos y de comprador usan `wholesale_cents` como precio final con 10% añadido. Los pedidos de comprador omiten comisión y reglas internas. La configuración histórica de comisiones es solo de consulta; POST `/admin/commissions` devuelve 409 `fixed_markup`.
+Los endpoints de vendedor reciben `wholesale_cents` como base de marca; sus lecturas incluyen `customer_price_cents`. Los endpoints públicos y de comprador usan `wholesale_cents` como precio establecido por la marca, sin recargo de Vendo; el procesamiento estimado se añade separadamente en el carrito. Los pedidos de comprador omiten comisión y reglas internas. La configuración histórica de comisiones es solo de consulta; POST `/admin/commissions` devuelve 409 `fixed_markup`.
 
 ## Público y cuenta
 
