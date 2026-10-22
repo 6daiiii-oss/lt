@@ -63,7 +63,7 @@ adminRouter.get('/orders',async(req,res)=>{
 adminRouter.get('/payments',async(req,res)=>res.json((await query(`SELECT pa.*,c.state AS checkout_state,c.expires_at,(SELECT json_agg(json_build_object('product_id',product_id,'quantity',quantity,'state',state)) FROM inventory_reservations WHERE checkout_id=c.id) AS reservations FROM payment_attempts pa JOIN checkouts c ON c.id=pa.checkout_id ORDER BY pa.created_at DESC LIMIT 300`)).rows));
 adminRouter.get('/commissions',async(req,res)=>res.json((await query('SELECT * FROM commission_rules ORDER BY effective_at DESC LIMIT 200')).rows));
 adminRouter.post('/commissions',async(req,res)=>{
-  requireThat(false,'La política vigente es 10% inicial / 7% recurrente sobre productos sin IGV ni envío. Los pedidos conservan su desglose congelado.',409,'fixed_markup');
+  requireThat(false,'La política vigente es 7% total de comisión con IGV incluido; comprador asume procesamiento estimado. Los pedidos conservan su desglose congelado.',409,'fixed_markup');
 });
 adminRouter.get('/incidents',async(req,res)=>res.json((await query(`SELECT i.*,b.name AS brand_name FROM incidents i JOIN orders o ON o.id=i.order_id JOIN brands b ON b.id=o.brand_id ORDER BY i.created_at DESC LIMIT 300`)).rows));
 adminRouter.post('/incidents/:id/resolve',async(req,res)=>{
@@ -81,14 +81,14 @@ adminRouter.post('/reviews/:id/moderate',async(req,res)=>{
   await query('UPDATE reviews SET status=$2,moderation_reason=$3 WHERE id=$1',[id.parse(req.params.id),input.status,input.reason]);await audit({query},req,'review.moderated',req.params.id,input);res.json({message:'Moderación guardada.'});
 });
 adminRouter.get('/settlements',async(req,res)=>res.json((await query(`SELECT s.*,b.name AS brand_name FROM settlements s JOIN brands b ON b.id=s.brand_id ORDER BY s.created_at DESC LIMIT 300`)).rows));
-adminRouter.get('/settlements/candidates',async(req,res)=>res.json((await query(`SELECT o.*,b.name AS brand_name,(SELECT sum(amount_cents) FROM ledger_entries WHERE order_id=o.id)::bigint AS net_cents FROM orders o JOIN brands b ON b.id=o.brand_id JOIN purchases p ON p.id=o.purchase_id
+adminRouter.get('/settlements/candidates',async(req,res)=>res.json((await query(`SELECT o.*,b.name AS brand_name,(SELECT sum(amount_cents) FROM ledger_entries WHERE kind<>'processing_refund' AND order_id=o.id)::bigint AS net_cents FROM orders o JOIN brands b ON b.id=o.brand_id JOIN purchases p ON p.id=o.purchase_id
   WHERE o.state='delivered' AND p.payment_state IN ('approved','partially_refunded','refunded') AND NOT EXISTS(SELECT 1 FROM settlement_orders WHERE order_id=o.id) AND NOT EXISTS(SELECT 1 FROM incidents WHERE order_id=o.id AND state IN ('open','in_review')) ORDER BY o.created_at`)).rows));
 adminRouter.post('/settlements',async(req,res)=>{
   const input=parse(z.object({brand_id:id,order_ids:z.array(id).min(1).max(100)}),req.body);requireThat(new Set(input.order_ids).size===input.order_ids.length,'Pedidos duplicados.');
   const result=await tx(async db=>{
     const orders=(await db.query(`SELECT o.* FROM orders o JOIN purchases p ON p.id=o.purchase_id WHERE o.id=ANY($1::uuid[]) AND o.brand_id=$2 AND o.state='delivered' AND p.payment_state IN ('approved','partially_refunded','refunded') AND NOT EXISTS(SELECT 1 FROM incidents WHERE order_id=o.id AND state IN ('open','in_review')) ORDER BY o.id FOR UPDATE OF o`,[input.order_ids,input.brand_id])).rows;
     requireThat(orders.length===input.order_ids.length,'Pedidos no elegibles para liquidación.',422);
-    const amount=Number((await db.query('SELECT coalesce(sum(amount_cents),0) AS n FROM ledger_entries WHERE order_id=ANY($1::uuid[])',[input.order_ids])).rows[0].n);sumMoney([amount]);
+    const amount=Number((await db.query('SELECT coalesce(sum(amount_cents),0) AS n FROM ledger_entries WHERE kind<>'processing_refund' AND order_id=ANY($1::uuid[])',[input.order_ids])).rows[0].n);sumMoney([amount]);
     const row=(await db.query('INSERT INTO settlements(brand_id,amount_cents,orders_snapshot) VALUES($1,$2,$3) RETURNING *',[input.brand_id,amount,JSON.stringify(orders.map(o=>({id:o.id,total_cents:o.total_cents,commission_cents:o.commission_cents,refunded_cents:o.refunded_cents})))])).rows[0];
     for(const o of orders) await db.query('INSERT INTO settlement_orders(settlement_id,order_id) VALUES($1,$2)',[row.id,o.id]);await audit(db,req,'settlement.created',row.id,{amount_cents:amount,orders:input.order_ids,sandbox:true});return row;
   });res.status(201).json(result);
