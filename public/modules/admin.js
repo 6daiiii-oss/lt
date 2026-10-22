@@ -45,7 +45,7 @@ export async function adminView(path) {
   }
     if(path==='/administracion/comisiones') {
       const rules=await api('/admin/commissions');
-      return {html:pageHeader('Precios y comisión','10% inicial · 7% recurrente','Sobre productos sin IGV ni envío; se añade IGV a la comisión. El precio del comprador no lleva recargo de Vendo.')+notice('La recompra requiere una entrega previa no reembolsada totalmente entre la misma tienda y marca. El desglose queda congelado al crear el pedido. El procesamiento es una estimación hasta aprobar la integración real.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
+      return {html:pageHeader('Precios y comisión','7% total, con IGV incluido','La comisión del proveedor incluye el IGV de Vendo. El comprador asume el procesamiento estimado por separado.')+notice('La comisión no cambia por recompra en esta política. El desglose queda congelado al crear el pedido. El procesamiento es una estimación hasta aprobar la integración real.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
     }
 
   if(path==='/administracion/incidencias') {
