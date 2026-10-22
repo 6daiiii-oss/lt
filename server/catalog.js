@@ -50,7 +50,7 @@ catalogRouter.get('/products',async(req,res)=>{
   let rows=[];
   if(realTake) {
     const argumentsForPage=[...values,realTake,offset];
-    rows=(await query(`SELECT ${catalogColumns} ${base} ORDER BY ${order},p.id LIMIT ${values.length+1} OFFSET ${values.length+2}`,argumentsForPage)).rows;
+    rows=(await query(`SELECT ${catalogColumns} ${base} ORDER BY ${order},p.id LIMIT $${values.length+1} OFFSET $${values.length+2}`,argumentsForPage)).rows;
   }
   const demoStart=Math.max(0,offset-realTotal);
   if(rows.length<f.limit)rows.push(...examples.slice(demoStart,demoStart+f.limit-rows.length));
