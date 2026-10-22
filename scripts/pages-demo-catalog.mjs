@@ -34,9 +34,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/6312237/pexels-photo-6312237.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/11075707/pexels-photo-11075707.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Taza de cerámica blanca minimalista (Pexels)",
-        "source": "https://www.pexels.com/photo/6312237/"
+        "source": "https://www.pexels.com/photo/11075707/"
       },
       {
         "url": "https://images.pexels.com/photos/8533397/pexels-photo-8533397.jpeg?auto=compress&cs=tinysrgb&w=900",
@@ -76,14 +76,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/7879984/pexels-photo-7879984.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/34140882/pexels-photo-34140882.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Botella reutilizable de acero (Pexels)",
-        "source": "https://www.pexels.com/photo/7879984/"
+        "source": "https://www.pexels.com/photo/34140882/"
       },
       {
-        "url": "https://images.pexels.com/photos/7879895/pexels-photo-7879895.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/7879860/pexels-photo-7879860.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Botella reutilizable de acero (Pexels)",
-        "source": "https://www.pexels.com/photo/7879895/"
+        "source": "https://www.pexels.com/photo/7879860/"
       }
     ]
   },
@@ -118,9 +118,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/9869067/pexels-photo-9869067.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/35087619/pexels-photo-35087619.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Bolsa tote de tela color natural (Pexels)",
-        "source": "https://www.pexels.com/photo/9869067/"
+        "source": "https://www.pexels.com/photo/35087619/"
       },
       {
         "url": "https://images.pexels.com/photos/30382341/pexels-photo-30382341.jpeg?auto=compress&cs=tinysrgb&w=900",
@@ -160,9 +160,9 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/6193142/pexels-photo-6193142.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/8091212/pexels-photo-8091212.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Cuaderno de espiral para notas (Pexels)",
-        "source": "https://www.pexels.com/photo/6193142/"
+        "source": "https://www.pexels.com/photo/8091212/"
       },
       {
         "url": "https://images.pexels.com/photos/8251036/pexels-photo-8251036.jpeg?auto=compress&cs=tinysrgb&w=900",
@@ -202,14 +202,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/29611519/pexels-photo-29611519.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/324657/pexels-photo-324657.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Set de brochas de maquillaje (Pexels)",
-        "source": "https://www.pexels.com/photo/29611519/"
+        "source": "https://www.pexels.com/photo/324657/"
       },
       {
-        "url": "https://images.pexels.com/photos/4620872/pexels-photo-4620872.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/7256107/pexels-photo-7256107.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Set de brochas de maquillaje (Pexels)",
-        "source": "https://www.pexels.com/photo/4620872/"
+        "source": "https://www.pexels.com/photo/7256107/"
       }
     ]
   },
@@ -291,9 +291,9 @@ export const demoProducts=[
         "source": "https://www.pexels.com/photo/7796695/"
       },
       {
-        "url": "https://images.pexels.com/photos/7796988/pexels-photo-7796988.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/7795651/pexels-photo-7795651.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Vela decorativa en frasco ámbar (Pexels)",
-        "source": "https://www.pexels.com/photo/7796988/"
+        "source": "https://www.pexels.com/photo/7795651/"
       }
     ]
   },
@@ -328,14 +328,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/34846770/pexels-photo-34846770.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/9787531/pexels-photo-9787531.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Cesta organizadora de fibra tejida (Pexels)",
-        "source": "https://www.pexels.com/photo/34846770/"
+        "source": "https://www.pexels.com/photo/9787531/"
       },
       {
-        "url": "https://images.pexels.com/photos/31390644/pexels-photo-31390644.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/6952490/pexels-photo-6952490.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Cesta organizadora de fibra tejida (Pexels)",
-        "source": "https://www.pexels.com/photo/31390644/"
+        "source": "https://www.pexels.com/photo/6952490/"
       }
     ]
   },
@@ -370,14 +370,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/3639207/pexels-photo-3639207.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/6212480/pexels-photo-6212480.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Guirnalda de luces decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/3639207/"
+        "source": "https://www.pexels.com/photo/6212480/"
       },
       {
-        "url": "https://images.pexels.com/photos/11705903/pexels-photo-11705903.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/14897460/pexels-photo-14897460.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Guirnalda de luces decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/11705903/"
+        "source": "https://www.pexels.com/photo/14897460/"
       }
     ]
   },
@@ -412,14 +412,14 @@ export const demoProducts=[
     "is_demo": true,
     "images": [
       {
-        "url": "https://images.pexels.com/photos/5485173/pexels-photo-5485173.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/1303096/pexels-photo-1303096.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 1 de Cajas de regalo con cintas decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/5485173/"
+        "source": "https://www.pexels.com/photo/1303096/"
       },
       {
-        "url": "https://images.pexels.com/photos/6102479/pexels-photo-6102479.jpeg?auto=compress&cs=tinysrgb&w=900",
+        "url": "https://images.pexels.com/photos/20192214/pexels-photo-20192214.jpeg?auto=compress&cs=tinysrgb&w=900",
         "alt": "Foto ilustrativa 2 de Cajas de regalo con cintas decorativas (Pexels)",
-        "source": "https://www.pexels.com/photo/6102479/"
+        "source": "https://www.pexels.com/photo/20192214/"
       }
     ]
   }
