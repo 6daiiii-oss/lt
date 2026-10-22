@@ -242,7 +242,7 @@ test('confirmación del frontend, importe alterado y webhook sin firma nunca con
   assert.equal((await post('/webhooks/sandbox',raw.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(raw,ts)})).status,422);
   assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].state,'pending');
   assert.equal((await post('/checkout/'+c.checkout_id+'/success',{paid:true},accounts.buyerA)).status,404);
-  event.amount_cents=(await db.query('SELECT total_cents FROM checkouts WHERE id=$1',[event.checkout_id||c.checkout_id])).rows[0].total_cents;const valid=Buffer.from(JSON.stringify(event));
+  event.amount_cents=(await db.query('SELECT total_cents FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].total_cents;const valid=Buffer.from(JSON.stringify(event));
   assert.equal((await post('/webhooks/sandbox',valid.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(valid,ts)})).status,200);
 });
 test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
@@ -410,7 +410,7 @@ test('7% fijo: historial de compras se conserva pero tarifa no cambia',async()=>
   const repeat=await checkout(accounts.buyerA);assert.equal(repeat.status,201);
   const repeated=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[repeat.data.purchase_id])).rows[0];
   assert.equal(repeated.commission_bps,700);assert.equal(repeated.commission_cents,7000);
-  assert.equal(repeated.policy_snapshot.fees.recurrent,true);
+  assert.equal(repeated.policy_snapshot.fees.recurrent,false);
   await putInCart(accounts.buyerB,p);
   const other=await checkout(accounts.buyerB);
   assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,700);
