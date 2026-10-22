@@ -92,7 +92,7 @@ test('precio final sin recargo: edición conserva precios y compradores no ven c
     assert.equal(JSON.stringify(data).includes('supplier_'),false);assert.equal(JSON.stringify(data).includes('commission'),false);
   }
   const seller=(await request('GET','/orders/'+oid,undefined,accounts.sellerA)).data;
-  assert.equal(seller.commission_cents,1001);assert.equal(seller.subtotal_cents,10000);
+  assert.equal(seller.commission_cents,700);assert.equal(seller.subtotal_cents,10000);
 });
 test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación obligatoria',async()=>{
   const user=accounts.buyerA;
@@ -196,7 +196,7 @@ test('carrito de dos marcas: compra padre, pedidos hijos, envío y suma exacta; 
   const replay=await checkout(accounts.buyerA,key);assert.equal(replay.status,200);assert.equal(replay.data.checkout_id,result.data.checkout_id);
   const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[result.data.purchase_id])).rows;assert.equal(orders.length,2);
   const total=orders.reduce((s,o)=>s+o.total_cents,0);assert.equal(total,3500);
-  assert.equal((await db.query('SELECT total_cents FROM purchases WHERE id=$1',[result.data.purchase_id])).rows[0].total_cents,total);
+  assert.equal((await db.query('SELECT total_cents FROM purchases WHERE id=$1',[result.data.purchase_id])).rows[0].total_cents,total+127);
   assert.equal((await db.query('SELECT count(*) FROM inventory_reservations')).rows[0].count,'2');
 });
 test('dos checkouts concurrentes sobre el último stock: solo una reserva elegible',async()=>{
@@ -210,7 +210,7 @@ test('dos checkouts concurrentes sobre el último stock: solo una reserva elegib
 test('pago fallido/caducado libera stock una sola vez y un pago tardío entra en excepción sin sobreventa',async()=>{
   const p=await product(db,accounts.sellerA,{stock:10,moq:5});await putInCart(accounts.buyerA,p);
   const c=(await checkout(accounts.buyerA)).data;
-  const failed={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'failed',amount_cents:1550,occurred_at:new Date().toISOString()};
+  const failed={event_id:randomUUID(),attempt_id:c.payment_attempt_id,kind:'failed',amount_cents:(await db.query('SELECT total_cents FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].total_cents,occurred_at:new Date().toISOString()};
   const first=await services.applyPaymentEvent(failed);assert.equal(first.state,'failed');
   assert.equal((await services.applyPaymentEvent(failed)).duplicate,true);
   await services.expireCheckout(c.checkout_id,{force:true});
@@ -242,14 +242,14 @@ test('confirmación del frontend, importe alterado y webhook sin firma nunca con
   assert.equal((await post('/webhooks/sandbox',raw.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(raw,ts)})).status,422);
   assert.equal((await db.query('SELECT state FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].state,'pending');
   assert.equal((await post('/checkout/'+c.checkout_id+'/success',{paid:true},accounts.buyerA)).status,404);
-  event.amount_cents=550;const valid=Buffer.from(JSON.stringify(event));
+  event.amount_cents=(await db.query('SELECT total_cents FROM checkouts WHERE id=$1',[c.checkout_id])).rows[0].total_cents;const valid=Buffer.from(JSON.stringify(event));
   assert.equal((await post('/webhooks/sandbox',valid.toString(),undefined,{'X-Lote-Timestamp':ts,'X-Lote-Signature':services.signWebhook(valid,ts)})).status,200);
 });
 test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
   await db.query(`INSERT INTO commission_rules(basis_points,effective_at,approved_by) VALUES(350,now()-interval '1 day',$1)`,[accounts.admin.userId]);
-  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,1000);assert.equal(orders[0].commission_cents,150);
+  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,700);assert.equal(orders[0].commission_cents,105);
   await post('/admin/commissions',{brand_id:null,basis_points:1500,effective_at:new Date().toISOString()},accounts.admin);
-  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:1000,commission_cents:150});
+  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:700,commission_cents:105});
 });
 test('aislamiento: dos marcas y dos tiendas; CSRF y origen; API de proveedor queda ligada a su organización',async()=>{
   const p=await product(db,accounts.sellerA);const {orders}=await paidOrder();
@@ -398,27 +398,27 @@ test('imágenes se decodifican, normalizan y mantienen privadas; otra organizaci
 });
 
 
-test('10/7: only an eligible delivery establishes same-buyer same-brand recurrence',async()=>{
+test('7% fijo: historial de compras se conserva pero tarifa no cambia',async()=>{
   const p=await product(db,accounts.sellerA,{wholesale_cents:100000,moq:1,stock:20});
   await putInCart(accounts.buyerA,p);
   const first=await checkout(accounts.buyerA);assert.equal(first.status,201);
   const firstOrder=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[first.data.purchase_id])).rows[0];
-  assert.equal(firstOrder.commission_bps,1000);assert.equal(firstOrder.commission_cents,10001);
-  await services.applyPaymentEvent({event_id:randomUUID(),attempt_id:first.data.payment_attempt_id,kind:'approved',amount_cents:firstOrder.total_cents,occurred_at:new Date().toISOString()});
+  assert.equal(firstOrder.commission_bps,700);assert.equal(firstOrder.commission_cents,7000);
+  await services.applyPaymentEvent({event_id:randomUUID(),attempt_id:first.data.payment_attempt_id,kind:'approved',amount_cents:(await db.query('SELECT total_cents FROM purchases WHERE id=$1',[first.data.purchase_id])).rows[0].total_cents,occurred_at:new Date().toISOString()});
   await db.query("UPDATE orders SET state='delivered' WHERE id=$1",[firstOrder.id]);
   await putInCart(accounts.buyerA,p);
   const repeat=await checkout(accounts.buyerA);assert.equal(repeat.status,201);
   const repeated=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[repeat.data.purchase_id])).rows[0];
   assert.equal(repeated.commission_bps,700);assert.equal(repeated.commission_cents,7000);
-  assert.equal(repeated.policy_snapshot.fees.recurrent,true);
+  assert.equal(repeated.policy_snapshot.fees.recurrent,false);
   await putInCart(accounts.buyerB,p);
   const other=await checkout(accounts.buyerB);
-  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,1000);
+  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,700);
   // Cancel pending repeat and fully refund original: it must no longer qualify.
   await services.expireCheckout(repeat.data.checkout_id,{force:true});
   await db.query('UPDATE orders SET refunded_cents=total_cents WHERE id=$1',[firstOrder.id]);
   const fresh=await checkout(accounts.buyerA);assert.equal(fresh.status,201);
-  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[fresh.data.purchase_id])).rows[0].commission_bps,1000);
+  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[fresh.data.purchase_id])).rows[0].commission_bps,700);
 });
 
 test('new seller read models require seller role and isolate buyers/shipments/incidents',async()=>{

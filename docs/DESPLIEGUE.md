@@ -5,10 +5,10 @@ Esta entrega permite preparar alojamiento del catálogo y paneles. **No habilita
 ## Condiciones implementadas
 
 - La marca declara precio final por unidad con IGV incluido. Sin recargo al comprador.
-- Comisión inicial 10%; recompra 7% solo tras pedido entregado no totalmente reembolsado entre la misma tienda y marca.
-- Base: productos sin IGV (supuesto 18%), excluyendo transporte. Comisión más IGV del servicio, redondeados por separado a céntimos. En S/1.000 el descuento inicial resulta S/100,01 por redondeo; recompra S/70,00.
+- Comisión fija del 7% total, IGV de Vendo incluido, sobre productos del proveedor (sin comisión sobre envío), sin variación por recompra.
+- En S/1.000 de productos, el proveedor soporta S/70 de comisión total: S/59,32 del servicio y S/10,68 de IGV; percibe S/930 antes de otras deducciones.
 - Desglose congelado por pedido; historial sin recalcular. Si una entrega se anula posteriormente, los pedidos ya creados no cambian.
-- Procesamiento mostrado solo como estimación de 3,49% + S/1 + IGV. No es cotización de split ni gasto registrado. Las liquidaciones sandbox descuentan la comisión, pero no el procesamiento estimado.
+- El comprador soporta en el simulador una tarifa estimada de procesamiento de 3,5% **con IGV incluido** sobre el importe realmente capturado (gross-up). Sobre S/1.000, recargo de S/36,27 y pago total S/1.036,27. En compras con varias marcas se calcula una sola vez y se distribuye por marca. No es cotización ni cargo real autorizado; el procesamiento no afecta al neto de los proveedores. Su devolución se registra por separado en sandbox.
 - Categorías exoneradas, descuentos, detracciones/retenciones, tributación específica y comprobantes electrónicos requieren definición antes del lanzamiento comercial. No usar este supuesto para todo producto sin validación.
 
 ## Preparación

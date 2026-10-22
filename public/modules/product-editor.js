@@ -11,7 +11,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   ${field('name','Nombre del producto','text',p.name||'','required maxlength="500"')}
   ${select('category_id','Categoría',categories.map(c=>[c.id,c.name]),p.category_id)}
   ${field('wholesale','Tu precio por unidad (S/)','number',p.id?inputMoney(p.wholesale_cents):'','min="0.01" step="0.01" required')}
-  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Vendo descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
+  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Vendo descuenta el 7% total de los productos, con IGV incluido; el procesamiento estimado corresponde al comprador.</small></div>
   <h2 class="full">2. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
   <div>${field('moq','Mínimo de unidades por compra','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
