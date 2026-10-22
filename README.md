@@ -149,6 +149,12 @@ Resultados reales: [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Arquite
 La portada original se conserva en `docs/reference/original/`. No se recibieron `Prototipo_Lote.html`, `01_Guia_de_marca_y_producto.md` ni un archivo de tokens previo. El nuevo `design-tokens.json` recoge los valores enviados en la solicitud.
 
 
+## Catálogo de demostración en Render
+
+Al arrancar en Render o en producción se agregan **10 fichas de demostración a las respuestas públicas del catálogo** (cada una tiene dos fotos ilustrativas, descripciones y precios simulados). Se muestra visiblemente «Demostración» y **No disponible**. Son ejemplos de interfaz: no crean marcas, stock, publicaciones de proveedores, pedidos ni ventas en la base de datos. Las fichas reales siguen teniendo prioridad en los listados y aparecen sin etiqueta.
+
+Se desactiva configurando `PUBLIC_DEMO_CATALOG=false` en el servicio de Render. Si se activa explícitamente `PUBLIC_DEMO_CATALOG=true` puede probarse en entornos no productivos. Antes de habilitar pagos, comprobar que las muestras no participan en el flujo de pedidos. El modo de GitHub Pages es independiente del servidor de Render.
+
 ## Servidor y nueva política comercial
 
 Ver [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y `compose.production.yaml`. La preparación de infraestructura no habilita ventas reales.
