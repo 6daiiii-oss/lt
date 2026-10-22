@@ -81,6 +81,11 @@ export async function applyPaymentEvent(untrusted) {
       const refunded=order.refunded_cents+event.amount_cents;
       const commissionReturn=Math.floor(order.commission_cents*refunded/order.total_cents)-Math.floor(order.commission_cents*order.refunded_cents/order.total_cents);
       await db.query('UPDATE orders SET refunded_cents=$2 WHERE id=$1',[order.id,refunded]);
+      // Provider processing surcharge is outside the seller ledger. Record its refund
+      // separately for the buyer; no external processor refund is executed in sandbox.
+      const processing=Number(order.policy_snapshot?.processing?.amount_cents||0);
+      const processingReturn=Math.floor(processing*refunded/order.total_cents)-Math.floor(processing*order.refunded_cents/order.total_cents);
+      if(processingReturn)await db.query("INSERT INTO ledger_entries(order_id,kind,amount_cents,reference) VALUES($1,'processing_refund',$2,$3)",[order.id,-processingReturn,`processing-refund:${event.refund_id}`]);
       await db.query(`INSERT INTO ledger_entries(order_id,kind,amount_cents,reference) VALUES($1,'refund',$2,$3),($1,'adjustment',$4,$5)`,[order.id,-event.amount_cents,`refund:${event.refund_id}`,commissionReturn,`commission-return:${event.refund_id}`]);
       await db.query(`INSERT INTO order_events(order_id,event,details) VALUES($1,'payment.refunded',$2)`,[order.id,{amount_cents:event.amount_cents,reason:event.reason||'',reference:event.refund_id,sandbox:true,restocked:false}]);
       if(event.cancel_order) {
@@ -95,7 +100,8 @@ export async function applyPaymentEvent(untrusted) {
         await db.query(`INSERT INTO order_events(order_id,event,details) VALUES($1,'fulfillment.cancelled',$2)`,[order.id,{reason:event.reason,restocked:!!event.restock,sandbox:true}]);
       }
       const total=Number((await db.query('SELECT coalesce(sum(refunded_cents),0) AS n FROM orders WHERE purchase_id=$1',[order.purchase_id])).rows[0].n);
-      const state=total===c.total_cents?'refunded':'partially_refunded';
+      const goodsTotal=Number((await db.query('SELECT coalesce(sum(total_cents),0) AS n FROM orders WHERE purchase_id=$1',[order.purchase_id])).rows[0].n);
+      const state=total===goodsTotal?'refunded':'partially_refunded';
       await db.query('UPDATE checkouts SET state=$2 WHERE id=$1',[c.id,state]);
       await db.query('UPDATE purchases SET payment_state=$2 WHERE checkout_id=$1',[c.id,state]);
       await notify(db,c.organization_id,'refund','Se registró un reembolso sandbox.',`/pedidos/${order.id}`);
