@@ -1,6 +1,7 @@
 import { normalizeRegion, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
 import { feeBreakdown, buyerOrder } from './pricing.js';
+import { paymentSurchargeCents } from '../public/modules/fees.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, tx } from './db.js';
@@ -42,9 +43,17 @@ export function quoteCart(rows,address) {
     if(address&&!g.shipping_regions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push(`Esta marca no envía a ${regionName(address.region)}. Zonas de envío: ${g.shipping_regions.map(regionName).join(', ')||'sin configurar'}. Elige otra dirección o consulta con la marca.`);
     if(address&&config.coverageRegions.length&&!config.coverageRegions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push('La dirección está fuera de la cobertura de Lote.');
     g.total_cents=sumMoney([g.subtotal_cents,g.shipping_cents]);
+    g.commission_total_cents=feeBreakdown(g.subtotal_cents).service_total_cents;
   }
-  const array=[...groups.values()],total=sumMoney(array.map(g=>g.total_cents));
-  return {groups:array,total_cents:total,eligible:rows.length>0&&array.every(g=>!g.issues.length&&g.items.every(p=>!p.issues.length)),currency:'PEN',sandbox:true,tax_notice:'Prueba sin cobro. El resumen no es una boleta ni una factura.'};
+  const array=[...groups.values()],productsAndShipping=sumMoney(array.map(g=>g.total_cents));
+  const processing=paymentSurchargeCents(productsAndShipping);
+  // Allocate a single payment processing charge across brands (largest remainder, stable brand order).
+  const weights=array.map(g=>({g,weight:g.total_cents,share:productsAndShipping?Number(BigInt(processing)*BigInt(g.total_cents)/BigInt(productsAndShipping)):0}));
+  let remainder=processing-weights.reduce((n,w)=>n+w.share,0);
+  for(const w of [...weights].sort((a,b)=>a.g.brand_id.localeCompare(b.g.brand_id)))if(remainder-->0)w.share++;
+  for(const w of weights){w.g.processing_cents=w.share;w.g.buyer_total_cents=w.g.total_cents+w.share;}
+  const total=sumMoney([productsAndShipping,processing]);
+  return {groups:array,products_total_cents:productsAndShipping,processing_cents:processing,processing_estimated:true,total_cents:total,eligible:rows.length>0&&array.every(g=>!g.issues.length&&g.items.every(p=>!p.issues.length)),currency:'PEN',sandbox:true,tax_notice:'Prueba sin cobro. El resumen no es una boleta ni una factura.'};
 }
 export async function ensureCart(db,orgId) { return (await db.query('INSERT INTO carts(organization_id) VALUES($1) ON CONFLICT(organization_id) DO UPDATE SET updated_at=now() RETURNING id',[orgId])).rows[0].id; }
 export const commerceRouter=Router();
@@ -103,7 +112,7 @@ commerceRouter.post('/checkout',purchasesAvailable,verified,phoneVerified,orgRol
       const fees=feeBreakdown(g.subtotal_cents,g.shipping_cents,recurrent);
       const bps=fees.basis_points,markupCents=fees.service_total_cents;
       const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'first_10_repeat_7_excluding_product_igv_and_shipping',fees}])).rows[0];
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'7_percent_total_igv_included_on_products',processing:{amount_cents:g.processing_cents,payer:'buyer',estimated:true},fees}])).rows[0];
       for(const item of g.items) {
         const p=rows.find(p=>p.id===item.product_id);
         const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);
