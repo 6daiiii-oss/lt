@@ -37,14 +37,14 @@ async function render() {
       if(!view)view=await accountView(path,url);
     }
     if(current!==generation)return;
-    root.innerHTML=shell(view?.html||`<section class="container page">${empty('Esta página no está disponible.','Revisa la dirección o vuelve al inicio.',button('Volver a Lote','/'))}</section>`);
+    root.innerHTML=shell(view?.html||`<section class="container page">${empty('Esta página no está disponible.','Revisa la dirección o vuelve al inicio.',button('Volver a Vendo','/'))}</section>`);
     view?.bind?.();
     bindPhotoGalleries();
     bindSearch('global-search',{params:location.pathname==='/catalogo'?new URLSearchParams(location.search):new URLSearchParams(),destination:location.pathname==='/marcas'?'/marcas':'/catalogo'});
     onAction('logout',async()=>{await api('/auth/logout',{method:'POST',body:{}});state.organizationId=null;await refreshMe();navigate('/');});
     document.querySelector('#org-switch')?.addEventListener('change',async event=>{state.organizationId=event.target.value;await refreshMe();reload();});
     document.querySelectorAll('img:not(.photo-main)').forEach(image=>image.addEventListener('error',()=>{const span=document.createElement('span');span.className='image-placeholder';span.textContent='Imagen no disponible';image.replaceWith(span);},{once:true}));
-    const h1=document.querySelector('h1');document.title=h1?`${h1.innerText.replace(/\s+/g,' ').trim()} — Lote`:'Lote';
+    const h1=document.querySelector('h1');document.title=h1?`${h1.innerText.replace(/\s+/g,' ').trim()} — Vendo`:'Vendo';
     document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:scrollTop});
   }catch(error) {
     if(current!==generation)return;

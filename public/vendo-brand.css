@@ -1,0 +1,45 @@
+/* Vendo 1.0: negro cálido, cobre y marfil. Visual layer only. */
+:root{
+  --brand:#282626;--brand-hover:#1c1a19;--background:#f6f3ec;--surface:#fff;
+  --text:#282626;--muted:#68615c;--soft:#e8ddd2;--accent:#a86649;
+  --terracotta:#874a34;--peach:#e8ddd2;--border:#d8cfc5;--error:#b33832;
+  --body:Inter,Arial,sans-serif;--display:Inter,Arial,sans-serif;
+}
+body{background:var(--background);color:var(--text)}
+:focus-visible{outline-color:#874a34}
+::selection{background:#e8ddd2;color:#282626}
+.logo{color:#282626;letter-spacing:0}
+.logo img{display:block;width:160px;height:auto;max-height:32px;object-fit:contain}
+.sidebar .logo img{width:150px;max-height:30px}
+.button{background:#874a34;border-color:#874a34;border-radius:8px}
+.button:hover{background:#713c29;border-color:#713c29}
+.button.secondary{color:#282626;border-color:#d8cfc5;background:#fff}
+.button.secondary:hover{background:#f6f3ec}
+.button.light{background:#e8ddd2;color:#282626;border-color:#e8ddd2}
+.topline,.sidebar,.supplier-invite{background:#282626}
+.topline a,.supplier-invite .eyebrow{color:#d89b7e}
+.sidebar nav a:hover,.sidebar nav a[aria-current]{background:#413936}
+.panel-label{color:#d8cfc5}
+.sidebar .back-store{color:#e8ddd2}
+.hero h1 span,.trade-data .number,.step .step-number{color:#874a34}
+.category-card:nth-child(2n) .category-icon{background:#e8ddd2;color:#874a34}
+.selection-card:nth-child(2){background:#e8ddd2}
+.selection-card:nth-child(3){background:#f6f3ec}
+.section.soft,.trade-strip,.footer{background:#f0ebe3}
+.supplier-invite .button.light{background:#f6f3ec;border-color:#f6f3ec;color:#282626}
+.supplier-type{color:#d89b7e}
+.global-search form,.catalog-empty,.empty{background:#f0ebe3;border-color:#d8cfc5}
+.category-icon,.brand-monogram{background:#e8ddd2;color:#874a34}
+.product-art{background:#f0ebe3}
+.market-nav a[aria-current]{border-color:#874a34;color:#282626}
+.market-nav a:hover,.market-nav a:focus-visible{color:#874a34}
+.market-header{background:#f6f3ec}
+.brand-story{background:#282626}
+.brand-story .eyebrow{color:#d89b7e}
+.brand-benefits li:before{color:#d89b7e}
+.brand-steps li[aria-current=step] span,.brand-steps .complete span{background:#874a34;border-color:#874a34}
+.brand-steps li[aria-current=step]{color:#874a34}
+.brand-fee-note{background:#f0ebe3}
+.badge.positive,.notice{background:#e8ddd2;color:#282626}
+.toast{background:#282626}
+@media(max-width:700px){.logo img{width:138px;max-height:28px}.sidebar .logo img{width:138px}}

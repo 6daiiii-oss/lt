@@ -11,7 +11,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   ${field('name','Nombre del producto','text',p.name||'','required maxlength="500"')}
   ${select('category_id','Categoría',categories.map(c=>[c.id,c.name]),p.category_id)}
   ${field('wholesale','Tu precio por unidad (S/)','number',p.id?inputMoney(p.wholesale_cents):'','min="0.01" step="0.01" required')}
-  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Lote descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
+  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Vendo descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
   <h2 class="full">2. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
   <div>${field('moq','Mínimo de unidades por compra','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
@@ -27,7 +27,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   <div>${field('pack_multiple','¿Se vende en grupos de cuántas unidades?','number',p.pack_multiple??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 para vender unidades sueltas. Si solo vendes cajas de 6, escribe 6.</p></div>
   <div class="full"><h3>Características (opcional)</h3><p class="small">Escribe una característica y su detalle, por ejemplo Material y Algodón.</p><div id="spec-rows" class="stack"></div><button type="button" class="text-button" id="add-spec">Añadir característica</button></div>
   <div class="full">${check('same_tax_basis','El precio de reventa corresponde a la misma unidad e incluye los mismos impuestos que mi precio.',p.same_tax_basis)}${check('active','Mantener este producto disponible',p.id?p.status!=='archived':true)}</div></div></details>
-  <div class="full">${check('submit_for_review','Enviar a Lote para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd(onboarding?'Guardar y seguir con mi catálogo':'Guardar producto')}</div>
+  <div class="full">${check('submit_for_review','Enviar a Vendo para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd(onboarding?'Guardar y seguir con mi catálogo':'Guardar producto')}</div>
   </form></section>`,bind(){
     const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,minimum=form.elements.moq,stock=form.elements.stock,pack=form.elements.pack_multiple;
     const explain=()=>{

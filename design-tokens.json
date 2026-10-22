@@ -1,8 +1,41 @@
 {
-  "source": "Tokens suministrados en la solicitud; referencias adicionales no adjuntadas",
-  "colors": { "brand": "#173F35", "brandHover": "#0E3028", "background": "#F7F6F0", "surface": "#FFFFFF", "text": "#192D27", "textSecondary": "#58645E", "surfaceSoft": "#E4EBDF", "accent": "#DBEF86", "terracotta": "#B74424", "peach": "#F5E3D8", "border": "#D8DDD5", "error": "#A02D31" },
-  "fonts": { "display": "Manrope, Segoe UI, sans-serif", "body": "Inter, Segoe UI, sans-serif" },
-  "spacing": [4, 8, 12, 16, 24, 32, 48, 64],
-  "radii": { "control": 8, "card": 16, "block": 22 },
-  "container": { "outer": 1328, "inner": 1248, "desktopGutter": 40, "mobileGutter": 20 }
+  "source": "Manual de marca Vendo 1.0 adjunto · octubre 2026",
+  "colors": {
+    "brand": "#282626",
+    "brandHover": "#1C1A19",
+    "background": "#F6F3EC",
+    "surface": "#FFFFFF",
+    "text": "#282626",
+    "textSecondary": "#68615C",
+    "surfaceSoft": "#E8DDD2",
+    "accent": "#A86649",
+    "copperDark": "#874A34",
+    "border": "#D8CFC5",
+    "error": "#B33832"
+  },
+  "fonts": {
+    "display": "Inter, Arial, sans-serif",
+    "body": "Inter, Arial, sans-serif"
+  },
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "radii": {
+    "control": 8,
+    "card": 12,
+    "block": 18
+  },
+  "container": {
+    "outer": 1328,
+    "inner": 1248,
+    "desktopGutter": 40,
+    "mobileGutter": 20
+  }
 }
