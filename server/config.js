@@ -3,8 +3,6 @@ export const config = {
   demo: process.env.LOTE_DEMO_MODE === 'true',
   cookieName: process.env.LOTE_DEMO_MODE === 'true' ? 'lote_demo_session' : 'lote_session',
   production: process.env.NODE_ENV === 'production',
-  // Catálogo de referencia solo visual: en Render/producción, nunca se guarda como inventario.
-  publicDemoCatalog: process.env.PUBLIC_DEMO_CATALOG === 'true' || ((process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' || Boolean(process.env.RENDER_EXTERNAL_URL)) && process.env.PUBLIC_DEMO_CATALOG !== 'false'),
   // Opt-in is only for isolated sandbox exercises; public purchases remain closed.
   purchasesEnabled: process.env.NODE_ENV !== 'production' && process.env.SANDBOX_PURCHASES_ENABLED === 'true',
   port: Number(process.env.PORT || 3000),
