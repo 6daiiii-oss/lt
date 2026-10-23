@@ -92,7 +92,7 @@ test('precio final sin recargo: edición conserva precios y compradores no ven c
     assert.equal(JSON.stringify(data).includes('supplier_'),false);assert.equal(JSON.stringify(data).includes('commission'),false);
   }
   const seller=(await request('GET','/orders/'+oid,undefined,accounts.sellerA)).data;
-  assert.equal(seller.commission_cents,1001);assert.equal(seller.subtotal_cents,10000);
+  assert.equal(seller.commission_cents,700);assert.equal(seller.subtotal_cents,10000);
 });
 test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación obligatoria',async()=>{
   const user=accounts.buyerA;
@@ -247,9 +247,9 @@ test('confirmación del frontend, importe alterado y webhook sin firma nunca con
 });
 test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
   await db.query(`INSERT INTO commission_rules(basis_points,effective_at,approved_by) VALUES(350,now()-interval '1 day',$1)`,[accounts.admin.userId]);
-  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,1000);assert.equal(orders[0].commission_cents,150);
+  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,700);assert.equal(orders[0].commission_cents,105);
   await post('/admin/commissions',{brand_id:null,basis_points:1500,effective_at:new Date().toISOString()},accounts.admin);
-  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:1000,commission_cents:150});
+  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:700,commission_cents:105});
 });
 test('aislamiento: dos marcas y dos tiendas; CSRF y origen; API de proveedor queda ligada a su organización',async()=>{
   const p=await product(db,accounts.sellerA);const {orders}=await paidOrder();
@@ -326,7 +326,7 @@ test('sincronización incremental idempotente, stock antiguo no sobrescribe, aus
   config.feedOrigins=['https://127.0.0.1'];await assert.rejects(()=>fetchAuthorizedFeed({url:'https://127.0.0.1/feed'}),e=>e.status===403);
 });
 test('tokens de correo de un uso y expiración; recuperación revoca sesiones, sin exposición entre cuentas',async()=>{
-  const signup=await post('/auth/register',{email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',phone:'+51987654329',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
+  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-10-22.1',email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',phone:'+51987654329',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
   const cookie=signup.headers.get('set-cookie').split(';')[0];const me=await request('GET','/me',undefined,{cookie,csrf:''});
   const user={cookie,csrf:me.data.csrfToken,orgId:me.data.organizationId};
   await post('/auth/resend',{},user);
@@ -398,12 +398,12 @@ test('imágenes se decodifican, normalizan y mantienen privadas; otra organizaci
 });
 
 
-test('10/7: only an eligible delivery establishes same-buyer same-brand recurrence',async()=>{
+test('7%: only an eligible delivery establishes same-buyer same-brand recurrence',async()=>{
   const p=await product(db,accounts.sellerA,{wholesale_cents:100000,moq:1,stock:20});
   await putInCart(accounts.buyerA,p);
   const first=await checkout(accounts.buyerA);assert.equal(first.status,201);
   const firstOrder=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[first.data.purchase_id])).rows[0];
-  assert.equal(firstOrder.commission_bps,1000);assert.equal(firstOrder.commission_cents,10001);
+  assert.equal(firstOrder.commission_bps,700);assert.equal(firstOrder.commission_cents,7000);
   await services.applyPaymentEvent({event_id:randomUUID(),attempt_id:first.data.payment_attempt_id,kind:'approved',amount_cents:firstOrder.total_cents,occurred_at:new Date().toISOString()});
   await db.query("UPDATE orders SET state='delivered' WHERE id=$1",[firstOrder.id]);
   await putInCart(accounts.buyerA,p);
@@ -413,12 +413,13 @@ test('10/7: only an eligible delivery establishes same-buyer same-brand recurren
   assert.equal(repeated.policy_snapshot.fees.recurrent,true);
   await putInCart(accounts.buyerB,p);
   const other=await checkout(accounts.buyerB);
-  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,1000);
+  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,700);
   // Cancel pending repeat and fully refund original: it must no longer qualify.
   await services.expireCheckout(repeat.data.checkout_id,{force:true});
   await db.query('UPDATE orders SET refunded_cents=total_cents WHERE id=$1',[firstOrder.id]);
   const fresh=await checkout(accounts.buyerA);assert.equal(fresh.status,201);
-  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[fresh.data.purchase_id])).rows[0].commission_bps,1000);
+  const freshOrder=(await db.query('SELECT commission_bps,policy_snapshot FROM orders WHERE purchase_id=$1',[fresh.data.purchase_id])).rows[0];
+  assert.equal(freshOrder.commission_bps,700);assert.equal(freshOrder.policy_snapshot.fees.recurrent,false);
 });
 
 test('new seller read models require seller role and isolate buyers/shipments/incidents',async()=>{
@@ -433,7 +434,7 @@ test('new seller read models require seller role and isolate buyers/shipments/in
 });
 
 test('phone-only registration: unverified email can create multiple products after OTP; no shortcuts',async()=>{
-  const signup=await post('/auth/register',{email:'phoneonly@demo.invalid',password:'Phone-only-password-123',name:'Persona',businessName:'Marca nueva',phone:'987654328',kind:'seller',tax_id:'20123456789'});
+  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-10-22.1',email:'phoneonly@demo.invalid',password:'Phone-only-password-123',name:'Persona',businessName:'Marca nueva',phone:'987654328',kind:'seller',tax_id:'20123456789'});
   assert.equal(signup.status,201,JSON.stringify(signup.data));
   const cookie=signup.headers.get('set-cookie').split(';')[0],me=(await request('GET','/me',undefined,{cookie,csrf:''})).data;
   const user={cookie,csrf:me.csrfToken,orgId:me.organizationId};

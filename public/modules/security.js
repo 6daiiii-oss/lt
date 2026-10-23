@@ -1,5 +1,5 @@
 import { api, refreshMe, state } from './api.js';
-import { button, date, esc, field, formEnd, notice, onForm, toast } from './ui.js';
+import { button, date, esc, field, formEnd, notice, onAction, onForm, toast } from './ui.js';
 import { pageHeader } from './layout.js';
 import { navigate, reload } from './router.js';
 export async function securityView() {
@@ -21,7 +21,8 @@ export async function securityView() {
     <form data-form="phone-send" class="stack">${field('phone','Celular peruano con +51','tel',p.pending?.phone||p.phone||'+51','required autocomplete="tel" placeholder="+51987654321"')}${formEnd('Enviar código')}</form>
     <p class="small muted">Espera 60 segundos entre envíos. Hasta 5 solicitudes por hora. El número anterior sigue verificado hasta confirmar el nuevo.</p>
     ${p.pending?`<form data-form="phone-verify" class="stack">${field('code','Código de verificación','text','','required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"')}<p class="small">Caduca: ${date(p.pending.expires_at)}. Máximo 5 intentos.</p>${formEnd('Verificar celular')}</form>`:''}
-    ${messages.map(m=>`<p class="notice">SMS local para ${esc(m.phone)}: <strong>${esc(m.code)}</strong></p>`).join('')}</section></div>`,bind(){
+    ${messages.map(m=>`<p class="notice">SMS local para ${esc(m.phone)}: <strong>${esc(m.code)}</strong></p>`).join('')}</section></div><section class="card section"><h2>Tus datos personales</h2><p>Descarga una copia de tus datos de cuenta y del registro de aceptación de condiciones. No incluye contraseñas, códigos ni datos de otras cuentas.</p><button class="button secondary" data-action="export-data">Descargar mis datos</button><p class="small"><a class="link-under" href="/privacidad">Consultar privacidad y derechos</a></p></section>`,bind(){
+    onAction('export-data',async()=>{const data=await api('/account/data-export');const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='vendo-mis-datos.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
     onForm('security-resend',async()=>toast((await api('/auth/resend',{method:'POST',body:{}})).message));
     onForm('phone-send',async d=>{await api('/auth/phone/send',{method:'POST',body:d});toast(p.localPreview?'Código disponible en el buzón SMS local.':'Código enviado.');reload();});
     onForm('phone-verify',async d=>{await api('/auth/phone/verify',{method:'POST',body:{id:p.pending.id,code:d.code}});await refreshMe();toast('Celular verificado.');reload();});

@@ -1,14 +1,14 @@
 # Despliegue en servidor
 
-Esta entrega permite preparar alojamiento del catálogo y paneles. **No habilita operación comercial con cobros reales.** La aplicación bloquea checkout, simulaciones y reembolsos en producción. Mercado Pago Split requiere aprobación comercial e integración posterior; no hay credenciales de pago en este repositorio.
+Esta entrega permite publicar el catálogo y utilizar sus paneles. **No habilita operación comercial con cobros reales.** La aplicación bloquea checkout y reembolsos en producción. El administrador puede calcular un reparto sin ejecutar pagos ni registrar liquidaciones. No hay pasarela contratada ni credenciales de pago en este repositorio.
 
 ## Condiciones implementadas
 
-- La marca declara precio final por unidad con IGV incluido. Sin recargo al comprador.
-- Comisión inicial 10%; recompra 7% solo tras pedido entregado no totalmente reembolsado entre la misma tienda y marca.
-- Base: productos sin IGV (supuesto 18%), excluyendo transporte. Comisión más IGV del servicio, redondeados por separado a céntimos. En S/1.000 el descuento inicial resulta S/100,01 por redondeo; recompra S/70,00.
+- La marca declara precio final por unidad con IGV incluido. El precio publicado no recibe un recargo de Vendo.
+- Comisión del 7% sobre el total de productos, con el IGV del servicio incluido, tanto en primer pedido como en recompra. El transporte no genera comisión.
+- En productos por S/1.000, la comisión total es S/70: servicio S/59,32 e IGV S/10,68. El proveedor recibe S/930 más el envío que le corresponda.
 - Desglose congelado por pedido; historial sin recalcular. Si una entrega se anula posteriormente, los pedidos ya creados no cambian.
-- Procesamiento mostrado solo como estimación de 3,49% + S/1 + IGV. No es cotización de split ni gasto registrado. Las liquidaciones sandbox descuentan la comisión, pero no el procesamiento estimado.
+- El comprador asumiría el procesamiento de la pasarela, sujeto a contrato y condiciones legales. El simulador admite una cotización explícita; no inventa una tarifa. Por ejemplo, con productos por S/1.000 y una cotización de S/35, el comprador pagaría S/1.035 y el proveedor conservaría S/930. El simulador administrativo reparte importes en céntimos y no mueve dinero.
 - Categorías exoneradas, descuentos, detracciones/retenciones, tributación específica y comprobantes electrónicos requieren definición antes del lanzamiento comercial. No usar este supuesto para todo producto sin validación.
 
 ## Preparación
@@ -43,7 +43,7 @@ Respaldar PostgreSQL con `pg_dump` y el volumen `uploads`, además de guardar `E
 
 1. Contrato y tarifa de Mercado Pago, alta KYC/OAuth por proveedor y split 1:N si se desea un solo pago multimarcas.
 2. Adaptador de pago real, firma de webhooks, conciliación, contracargos, reembolsos y registros reales de procesamiento probados en sandbox oficial.
-3. Confirmar impuestos por producto, comprobantes de cada parte y quién paga procesamiento.
+3. Confirmar impuestos por producto, comprobantes de cada parte y que el contrato permita la tarifa al comprador prevista en la política.
 4. Completar identidad legal, contratos, privacidad, atención de reclamos y políticas operativas.
 5. Validar seguridad, entrega de correo/SMS, backups y restauración en el servidor elegido.
 

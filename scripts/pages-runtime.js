@@ -12,7 +12,7 @@ function adaptLinksAndForms(){
     auth.dataset.disconnected='true';
     const message=document.createElement('p');
     message.className='notice warning';
-    message.textContent='El acceso y el registro requieren conectar el servidor de Lote. Esta publicación no guarda datos ni crea cuentas.';
+    message.textContent='Esta vista no crea cuentas. Regístrate en el sitio oficial: https://vendo-peru.onrender.com.';
     auth.before(message);
     auth.querySelectorAll('input,select,button').forEach(control=>control.disabled=true);
   }
@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const banner=document.createElement('div');
   banner.setAttribute('role','note');
   banner.style.cssText='padding:10px 20px;text-align:center;background:#fff3d8;color:#514225;font:12px/1.5 Arial,sans-serif;border-bottom:1px solid #e4cf9d';
-  banner.textContent='Interfaz original de Lote · Servidor y base de datos pendientes de conexión. Cuentas, inventario y pedidos no están disponibles en esta publicación.';
+  banner.append('Vista estática de Vendo. Para ver productos y utilizar tu cuenta, abre ');
+  const official=document.createElement('a');official.href='https://vendo-peru.onrender.com';official.textContent='el sitio oficial de Vendo';banner.append(official,'.');
   document.body.prepend(banner);
   new MutationObserver(adaptLinksAndForms).observe(document.querySelector('#app'),{childList:true,subtree:true});
   adaptLinksAndForms();

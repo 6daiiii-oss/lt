@@ -103,7 +103,7 @@ commerceRouter.post('/checkout',purchasesAvailable,verified,phoneVerified,orgRol
       const fees=feeBreakdown(g.subtotal_cents,g.shipping_cents,recurrent);
       const bps=fees.basis_points,markupCents=fees.service_total_cents;
       const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'first_10_repeat_7_excluding_product_igv_and_shipping',fees}])).rows[0];
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'seven_percent_product_gross_service_igv_included_processing_buyer',fees}])).rows[0];
       for(const item of g.items) {
         const p=rows.find(p=>p.id===item.product_id);
         const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);

@@ -2,18 +2,18 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { feeBreakdown } from '../public/modules/fees.js';
 import { priceForBuyer, buyerOrder } from '../server/pricing.js';
-test('S/1000: first/repeat fees exclude product IGV and shipping',()=>{
+test('S/1000: 7% incluye IGV y procesamiento corresponde al comprador',()=>{
   const first=feeBreakdown(100000),repeat=feeBreakdown(100000,0,true);
   assert.equal(first.products_base_cents,84746);
-  assert.equal(first.service_cents,8475);assert.equal(first.service_tax_cents,1526);
-  // Independent cent rounding gives S/100.01, not a hidden balance correction.
-  assert.equal(first.service_total_cents,10001);
-  assert.equal(first.processing_estimate_cents,4236);
-  assert.equal(first.seller_estimate_cents,85763);
+  assert.equal(first.service_cents,5932);assert.equal(first.service_tax_cents,1068);
+  assert.equal(first.service_total_cents,7000);
+  assert.equal(first.processing_estimate_cents,0);assert.equal(first.processing_quoted,false);
+  assert.equal(first.seller_estimate_cents,93000);
   assert.equal(repeat.service_cents,5932);assert.equal(repeat.service_tax_cents,1068);
-  assert.equal(repeat.service_total_cents,7000);assert.equal(repeat.seller_estimate_cents,88764);
+  assert.equal(repeat.service_total_cents,7000);assert.equal(repeat.seller_estimate_cents,93000);
   assert.equal(feeBreakdown(100000,5000).service_total_cents,first.service_total_cents);
-  assert.equal(feeBreakdown(100000,5000).processing_estimate_cents,4443);
+  const quoted=feeBreakdown(100000,5000,false,3500);
+  assert.equal(quoted.processing_estimate_cents,3500);assert.equal(quoted.seller_estimate_cents,98000);assert.equal(quoted.buyer_total_estimate_cents,108500);
 });
 test('money conservation, no buyer markup, no supplier fee leakage',()=>{
   for(const n of [1,105,10000,100000,99999999])for(const repeat of [true,false]) {

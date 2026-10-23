@@ -5,7 +5,16 @@ import { config } from './config.js';
 import { admin, authenticated } from './auth.js';
 import { audit, decrypt, id, notify, parse, requireThat, sumMoney, text } from './lib.js';
 import { settingsSchema } from './settings.js';
+import { planSplit } from './split.js';
 export const adminRouter=Router();adminRouter.use(authenticated,admin);
+adminRouter.post('/split-preview',async(req,res)=>{
+ const input=parse(z.object({processing_cents:z.number().int().min(0).max(100_000_000),sellers:z.array(z.object({seller_id:id,products_cents:z.number().int().positive().max(100_000_000),shipping_cents:z.number().int().nonnegative().max(100_000_000)})).min(1).max(100)}),req.body);
+ requireThat(new Set(input.sellers.map(s=>s.seller_id)).size===input.sellers.length,'Añade cada proveedor una sola vez.');
+ const known=(await query("SELECT id FROM organizations WHERE kind='seller' AND id=ANY($1::uuid[])",[input.sellers.map(s=>s.seller_id)])).rows;
+ requireThat(known.length===input.sellers.length,'Selecciona proveedores registrados.');
+ requireThat(input.sellers.reduce((n,s)=>n+s.products_cents+s.shipping_cents,0)<=100_000_000,'El total supera el límite de la simulación.');
+ res.json(planSplit(input.sellers,input.processing_cents));
+});
 adminRouter.get('/summary',async(req,res)=>{
   const counts=(await query(`SELECT (SELECT count(*) FROM business_verifications WHERE status='pending')::int AS verifications,
    (SELECT count(*) FROM products WHERE status='pending')::int AS catalog_pending,(SELECT count(*) FROM incidents WHERE state IN ('open','in_review'))::int AS incidents,
@@ -139,6 +148,6 @@ adminRouter.get('/launch-readiness',async(req,res)=>res.json({real_payments_enab
  {name:'Emisión fiscal',ready:false,detail:'La solicitud de factura no emite comprobantes SUNAT.'},
  {name:'Correo operativo',ready:!!process.env.SMTP_HOST&&!!process.env.MAIL_FROM,detail:'Requiere probar entrega de verificación y recuperación.'},
  {name:'SMS',ready:config.smsProvider==='twilio',detail:'Verificar credenciales y entrega antes de operar.'},
- {name:'Políticas revisadas',ready:process.env.POLICIES_APPROVED==='true',detail:'Completar razón social, RUC, privacidad, contratos y reclamos.'},
+ {name:'Políticas revisadas',ready:process.env.POLICIES_APPROVED==='true'&&process.env.LEGAL_APPROVED==='true'&&['LEGAL_OPERATOR_NAME','LEGAL_OPERATOR_RUC','LEGAL_OPERATOR_ADDRESS','BUSINESS_CONTACT_EMAIL'].every(key=>!!process.env[key]),detail:'Completar razón social, RUC, privacidad, contratos y reclamos.'},
  {name:'Origen HTTPS',ready:config.origin.startsWith('https://'),detail:'Configurar dominio y certificado del servidor.'},
  {name:'Respaldo y restauración',ready:false,detail:'Validar restauración de PostgreSQL, archivos privados y clave de cifrado en el servidor elegido.'}]}));

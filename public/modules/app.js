@@ -9,6 +9,7 @@ import { sellerView } from './seller.js';
 import { adminView } from './admin.js';
 import { navigate, reload } from './router.js';
 import { bindSearch, disposeSearch } from './search.js';
+import { legalView } from './legal.js';
 let generation=0,nextScrollTop=0;
 async function render() {
   const current=++generation,root=document.querySelector('#app'),path=location.pathname.replace(/\/$/,'')||'/',url=new URL(location.href);
@@ -24,7 +25,7 @@ async function render() {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       root.innerHTML='<main id="main" class="container loading" tabindex="-1" aria-live="polite">Abriendo tu espacio…</main>';
     }
-    let view=await authView(path,url)||await demoView(path)||await publicView(path,url);
+    let view=await legalView(path)||await authView(path,url)||await demoView(path)||await publicView(path,url);
     if((path==='/registro'&&url.searchParams.get('tipo')==='proveedor')||(path==='/registro/celular'&&currentOrg()?.kind==='seller'))shell=brandSignupShell;
     if(!view) {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
@@ -61,6 +62,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();navigate(url.pathname+url.search);
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const filters=document.querySelector('.filter-popover[open]');if(filters){filters.open=false;filters.querySelector('summary')?.focus();}}});
+matchMedia('(max-width:800px)').addEventListener('change',event=>{const menu=document.querySelector('.panel-navigation');if(menu)menu.open=!event.matches;});
 window.addEventListener('popstate',render);window.addEventListener('lote:navigate',render);
 try{await refreshMe();}catch(error){console.error('No se pudo consultar la sesión.');}
 await render();

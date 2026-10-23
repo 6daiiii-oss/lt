@@ -2,6 +2,7 @@
 import { cp, mkdir, readFile, readdir, writeFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { LEGAL_VERSION } from '../public/modules/legal-content.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const output=path.join(root,'_site');
 await rm(output,{recursive:true,force:true});
@@ -12,8 +13,8 @@ async function adapt(directory){
     if(entry.isDirectory()){await adapt(filename);continue;}
     if(!/\.(html|css|js)$/.test(filename))continue;
     let text=await readFile(filename,'utf8');
-    text=text.replace(/(["'(\s,])\/(images|fonts|modules)\//g,'$1./$2/')
-      .replace(/(["'])\/(styles\.css|discovery\.css|brand-signup\.css|mark\.svg|packaging\.svg)/g,'$1./$2')
+    text=text.replace(/(["'(\s,])\/(images|fonts|modules|brand)\//g,'$1./$2/')
+      .replace(/(["'])\/(styles\.css|discovery\.css|brand-signup\.css|vendo-brand\.css|usability\.css|mark\.svg|packaging\.svg)/g,'$1./$2')
       .replaceAll('location.pathname','window.loteRoute().pathname')
       .replaceAll('location.search','window.loteRoute().search')
       .replaceAll('new URL(location.href)','window.loteRoute()');
@@ -40,12 +41,13 @@ export async function api(path,{method='GET'}={}){
   const endpoint=new URL(path,'https://lote.invalid');
   if(method==='GET'){
     if(endpoint.pathname==='/me')return {...state};
+    if(endpoint.pathname==='/legal')return {version:${JSON.stringify(LEGAL_VERSION)},approved:false,operator:{name:null,taxId:null,address:null,email:null}};
     if(endpoint.pathname==='/demo/info')return {enabled:false,available:false};
     if(endpoint.pathname==='/categories')return categories;
     if(endpoint.pathname==='/products')return {products:[],total:0,page:1,pages:0,newDays:30};
     if(endpoint.pathname==='/brands')return [];
   }
-  const error=new Error('El servidor de Lote aún no está conectado a esta publicación. Esta acción requiere el servidor y la base de datos originales.');error.status=503;throw error;
+  const error=new Error('Esta es una vista estática. Abre https://vendo-peru.onrender.com para utilizar tu cuenta y el catálogo actualizado.');error.status=503;throw error;
 }
 export async function refreshMe(){return state;}
 export const currentOrg=()=>state.organizations.find(o=>o.id===state.organizationId);

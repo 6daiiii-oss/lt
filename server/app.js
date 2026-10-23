@@ -15,8 +15,12 @@ import { adminRouter } from './admin.js';
 import { aftercareRouter } from './aftercare.js';
 import { phoneRouter } from './phone.js';
 import { mediaRouter, servePublicImage } from './media.js';
+import { privacyRouter } from './privacy.js';
 export function createApp({testing=false}={}) {
   const app=express();app.disable('x-powered-by');
+  // Render terminates HTTPS at its single reverse proxy; keep client limits per IP.
+  if(config.production&&process.env.RENDER==='true')app.set('trust proxy',1);
+  app.use((req,res,next)=>{res.set('Permissions-Policy','camera=(), microphone=(), geolocation=()');next();});
   app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],scriptSrc:["'self'"],styleSrc:["'self'"],fontSrc:["'self'"],imgSrc:["'self'",'https:','blob:'],connectSrc:["'self'"],upgradeInsecureRequests:config.production?[]:null}},referrerPolicy:{policy:'no-referrer'}}));
   if(!testing) app.use('/api',rateLimit({windowMs:60000,limit:300,standardHeaders:'draft-8',legacyHeaders:false}));
   app.use('/api/webhooks',express.raw({type:'application/json',limit:'64kb'}));
@@ -24,7 +28,7 @@ export function createApp({testing=false}={}) {
   app.use(express.json({limit:'2mb'}));app.use(express.text({type:'text/csv',limit:config.importMaxBytes}));
   app.get('/api/health',async(req,res)=>{await query('SELECT 1');res.json({status:'ok',database:true});});
   app.use('/api',(req,res,next)=>{res.set('Cache-Control','no-store');next();},identify,csrf);
-  app.use('/api',authRouter,catalogRouter,paymentRouter);
+  app.use('/api',privacyRouter,authRouter,catalogRouter,paymentRouter);
   app.use('/api/seller',sellerRouter);
   app.use('/api/admin',adminRouter);
   app.use('/api',phoneRouter,mediaRouter,accountRouter,commerceRouter,aftercareRouter);

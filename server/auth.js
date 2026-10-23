@@ -2,9 +2,10 @@ import { Router } from 'express';
 import { phoneNumber } from './phone-format.js';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
+import { LEGAL_VERSION,legalDocuments } from '../public/modules/legal-content.js';
 import { query, tx } from './db.js';
 import { config, demoEnabled } from './config.js';
-import { audit, digest, email, equal, id, parse, passwordHash, passwordMatches, requireThat, text, token } from './lib.js';
+import { audit, digest, email, equal, hash, id, parse, passwordHash, passwordMatches, requireThat, text, token } from './lib.js';
 
 export async function identify(req,res,next) {
   try {
@@ -79,6 +80,7 @@ authRouter.post('/demo/login',accountLimit,async(req,res)=>{
   await tx(db=>createSession(db,req,res,user.id));res.json({message:'Cuenta de ejemplo lista.'});
 });
 authRouter.post('/auth/register',accountLimit,async(req,res)=>{
+  parse(z.object({terms_accepted:z.literal(true,{error:'Acepta las condiciones para crear tu cuenta.'}),terms_version:z.literal(LEGAL_VERSION,{error:'Actualiza la página para leer la versión vigente de las condiciones.'})}),req.body);
   const input=parse(z.object({email,password:z.string().min(12).max(128),name:text,businessName:text,phone:phoneNumber,legal_name:z.string().trim().max(500).default(''),tax_id:z.string().trim().regex(/^(?:[0-9]{11})?$/,'El RUC debe tener 11 dígitos.').default(''),kind:z.enum(['buyer','seller'])}),req.body);
   const encoded=await passwordHash(input.password);
   await tx(async db=>{
@@ -90,6 +92,7 @@ authRouter.post('/auth/register',accountLimit,async(req,res)=>{
     if(input.kind==='seller') await db.query('INSERT INTO brands(organization_id,name) VALUES($1,$2)',[org.id,input.businessName]);
     await createSession(db,req,res,user.id);
     await audit(db,{user,org},'account.register',user.id,{kind:input.kind});
+    await audit(db,{user,org},'legal.accepted',user.id,{version:LEGAL_VERSION,terms_sha256:hash(JSON.stringify(legalDocuments.terms)),privacy_sha256:hash(JSON.stringify(legalDocuments.privacy)),purpose:'account_and_catalog',marketing:false});
   });
   res.status(201).json({message:'Datos guardados. Verifica tu número para completar el registro.'});
 });

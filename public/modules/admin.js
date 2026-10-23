@@ -1,3 +1,4 @@
+import { splitPreview,bindSplitPreview } from './split-preview.js';
 import { simulator, bindSimulator } from './finance.js';
 import { photoGallery } from './photos.js';
 import { api } from './api.js';
@@ -7,8 +8,8 @@ import { reload } from './router.js';
 const stat=(label,value)=>`<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
 export async function adminView(path) {
   if(path==='/administracion/finanzas') {
-    const rows=await api('/admin/finance');
-    return {html:pageHeader('Finanzas','Ventas, comisiones y liquidaciones.','Últimos 300 pedidos cobrados en sandbox. La comisión incluye su IGV; no equivale a utilidad.')+simulator()+table(['Pedido','Marca','Productos','Comisión con IGV','Servicio sin IGV','Reembolsos'],rows.map(o=>`<tr><td><a href="/administracion/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.brand_name)}</td><td>${money(o.subtotal_cents)}</td><td>${money(o.commission_cents)}</td><td>${o.policy_snapshot.fees?money(o.policy_snapshot.fees.service_cents):'Histórico'}</td><td>${money(o.refunded_cents)}</td></tr>`)),bind:bindSimulator};
+    const [rows,organizations]=await Promise.all([api('/admin/finance'),api('/admin/organizations')]);const brands=organizations.filter(o=>o.kind==='seller');
+    return {html:pageHeader('Finanzas','Ventas, comisiones y liquidaciones.','Últimos 300 pedidos cobrados en sandbox. La comisión incluye su IGV; no equivale a utilidad.')+simulator()+table(['Pedido','Marca','Productos','Comisión con IGV','Servicio sin IGV','Reembolsos'],rows.map(o=>`<tr><td><a href="/administracion/pedidos/${o.id}">${short(o.id)}</a></td><td>${esc(o.brand_name)}</td><td>${money(o.subtotal_cents)}</td><td>${money(o.commission_cents)}</td><td>${o.policy_snapshot.fees?money(o.policy_snapshot.fees.service_cents):'Histórico'}</td><td>${money(o.refunded_cents)}</td></tr>`))+splitPreview(brands),bind(){bindSimulator();bindSplitPreview(brands);}};
   }
   if(path==='/administracion/logistica') {
     const rows=await api('/admin/logistics');
@@ -45,7 +46,7 @@ export async function adminView(path) {
   }
     if(path==='/administracion/comisiones') {
       const rules=await api('/admin/commissions');
-      return {html:pageHeader('Precios y comisión','10% inicial · 7% recurrente','Sobre productos sin IGV ni envío; se añade IGV a la comisión. El precio del comprador no lleva recargo de Vendo.')+notice('La recompra requiere una entrega previa no reembolsada totalmente entre la misma tienda y marca. El desglose queda congelado al crear el pedido. El procesamiento es una estimación hasta aprobar la integración real.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
+      return {html:pageHeader('Precios y comisión','Comisión del 7%, IGV incluido','Sobre el precio de los productos, sin comisión sobre envío. El costo contratado de procesamiento se informará al comprador antes de pagar.')+notice('La misma comisión se aplica a primeras compras y recompras. Cada pedido conserva su versión y desglose. El procesamiento requiere cotización e integración real antes de habilitar cobros.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
     }
 
   if(path==='/administracion/incidencias') {

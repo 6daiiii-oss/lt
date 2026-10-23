@@ -31,9 +31,10 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
     await sellerA.getByRole('button',{name:'Usar de portada',exact:true}).click();
     await sellerA.getByRole('button',{name:'Añadir característica',exact:true}).click();await sellerA.getByLabel('Característica',{exact:true}).fill('Material');await sellerA.getByLabel('Detalle',{exact:true}).fill('Cerámica');
     await sellerA.getByLabel('El precio de reventa corresponde a la misma unidad e incluye los mismos impuestos que mi precio.').check();await sellerA.getByLabel('Enviar a Vendo para que revise y publique el producto').check();await sellerA.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(sellerA).toHaveURL(/\/panel\/productos$/);
-    await login(sellerB,accounts.sellerB);await sellerB.goto('/panel/importaciones');
-    const csv='name,sku,category_id,wholesale_cents,retail_cents,moq,pack_multiple,stock,same_tax_basis\n"DEMO Cuaderno, azul",UI-B,hogar,400,800,3,3,30,true\n';
-    await sellerB.getByLabel('Archivo CSV de productos').setInputFiles({name:'demo.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});await sellerB.getByRole('button',{name:'Validar y previsualizar'}).click();await expect(sellerB.getByRole('heading',{name:/Lote [A-F0-9]{8}/})).toBeVisible();await sellerB.getByLabel('Revisé todas las filas y autorizo aplicarlas de forma atómica al catálogo de mi marca.').check();await sellerB.getByRole('button',{name:'Aplicar lote y solicitar revisión'}).click();await expect(sellerB.getByText('Lote aplicado. Los productos nuevos y los cambios sensibles siguen pendientes de revisión.')).toBeVisible();
+    await login(sellerB,accounts.sellerB);await sellerB.goto('/panel/productos/nuevo');
+    await sellerB.getByLabel('Nombre del producto',{exact:true}).fill('DEMO Cuaderno, azul');await sellerB.getByLabel('Categoría',{exact:true}).selectOption('hogar');
+    await sellerB.getByLabel('Tu precio por unidad (S/)').fill('4.00');await sellerB.getByLabel('Mínimo de unidades por compra').fill('3');await sellerB.getByLabel('¿Cuántas unidades tienes para vender?').fill('30');
+    await sellerB.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(sellerB).toHaveURL(/\/panel\/productos$/);
     await login(admin,accounts.admin);await admin.goto('/administracion/catalogo');
     for(const name of ['DEMO Vaso editorial','DEMO Cuaderno, azul']){const card=admin.locator('.record').filter({has:admin.getByRole('heading',{name,exact:true})});await card.getByRole('button',{name:'Publicar producto',exact:true}).click();await expect(card.getByText('Publicado',{exact:true})).toBeVisible();}
     await login(buyer,accounts.buyerA);
@@ -59,6 +60,7 @@ test('registro de proveedor: solo número, acceso directo y dos productos sin ve
   await page.getByLabel('Tu número de celular',{exact:true}).fill('987654321');
   await page.getByLabel('Correo electrónico',{exact:true}).fill(email);
   await page.getByLabel('Contraseña · mínimo 12 caracteres').fill(password);
+  await page.locator('[name=terms_accepted]').check();
   await page.getByRole('button',{name:'Continuar y verificar mi número',exact:true}).click();
   await expect(page).toHaveURL(/\/registro\/celular$/);
   const code=page.locator('.notice strong');await expect(code).toHaveText(/^\d{6}$/);
@@ -118,7 +120,7 @@ test('la marca selecciona regiones con casillas y las conserva al guardar',async
 });
 
 
-test('paneles operativos y simulador 10/7: sin errores ni desbordes en móvil',async({browser})=>{
+test('paneles operativos y simulador 7%: sin errores ni desbordes en móvil',async({browser})=>{
   const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
   for(const [role,paths] of [['sellerA',['/panel/inventario','/panel/envios','/panel/incidencias','/panel/tiendas','/panel/finanzas']],['admin',['/administracion/finanzas','/administracion/logistica','/administracion/lanzamiento']]]) {
     const context=await browser.newContext(),page=await context.newPage(),errors=[];
@@ -131,8 +133,8 @@ test('paneles operativos y simulador 10/7: sin errores ni desbordes en móvil',a
         await page.setViewportSize({width:390,height:900});await noOverflow(page);
       }
       await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');
-      await expect(page.locator('#fee-simulation')).toContainText('100.01');
-      await page.getByLabel('Recompra de la misma tienda a la misma marca',{exact:true}).check();
+      await expect(page.locator('#fee-simulation')).toContainText('70.00');
+      await page.getByLabel('Procesamiento cotizado al comprador (S/, opcional)',{exact:true}).fill('35');
       await expect(page.locator('#fee-simulation')).toContainText('70.00');
       await page.screenshot({path:`test-results/finanzas-${role}-390.png`,fullPage:true});
       expect(errors).toEqual([]);
