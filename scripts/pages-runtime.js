@@ -12,7 +12,7 @@ function adaptLinksAndForms(){
     auth.dataset.disconnected='true';
     const message=document.createElement('p');
     message.className='notice warning';
-    message.textContent='El acceso y el registro requieren conectar el servidor de Vendo. Esta publicación no guarda datos ni crea cuentas.';
+    message.textContent='El acceso y el registro requieren conectar el servidor de Lote. Esta publicación no guarda datos ni crea cuentas.';
     auth.before(message);
     auth.querySelectorAll('input,select,button').forEach(control=>control.disabled=true);
   }
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const banner=document.createElement('div');
   banner.setAttribute('role','note');
   banner.style.cssText='padding:10px 20px;text-align:center;background:#fff3d8;color:#514225;font:12px/1.5 Arial,sans-serif;border-bottom:1px solid #e4cf9d';
-  banner.textContent='Vendo · vista de demostración con 10 productos ilustrativos. No hay proveedores ni stock reales en esta versión; compras, registro y guardado requieren conectar el servidor.';
+  banner.textContent='Interfaz original de Lote · Servidor y base de datos pendientes de conexión. Cuentas, inventario y pedidos no están disponibles en esta publicación.';
   document.body.prepend(banner);
   new MutationObserver(adaptLinksAndForms).observe(document.querySelector('#app'),{childList:true,subtree:true});
   adaptLinksAndForms();
