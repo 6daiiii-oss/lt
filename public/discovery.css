@@ -162,21 +162,3 @@
 }
 @media(max-width:370px){.marketplace .header-actions{gap:9px}.marketplace .header-actions .header-signup{padding-inline:10px}.market-brand>span{font-size:13px}.market-categories .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.market-hero-copy{padding:22px}.marketplace .section-title>a{font-size:14px}.catalog-sort select{max-width:176px}}
 @media(prefers-reduced-motion:reduce){.market-categories .category-card{transition:none}.market-categories .category-card:hover{transform:none}}
-
-/* Muestras visibles y transparentes: solo presentación, nunca inventario. */
-.demo-catalog-banner{
-  padding:16px 19px;margin:12px 0 25px;border-radius:10px;border:1px solid #e3d2a7;
-  background:#fff9e9;color:#483d24;font-size:15px;line-height:1.65;
-}
-.demo-catalog-banner b{font-weight:750}
-.product-card .product-art{position:relative}
-.product-card .demo-pill{
-  position:absolute;left:11px;top:11px;z-index:2;pointer-events:none;
-  border-radius:6px;padding:5px 9px;background:#282626ed;color:#fff;
-  font-size:12px;line-height:1.35;font-weight:700;letter-spacing:.01em;
-  box-shadow:0 2px 7px #0002;
-}
-@media(max-width:600px){
-  .demo-catalog-banner{font-size:14px;padding:13px 15px;margin-bottom:20px}
-  .product-card .demo-pill{font-size:11px;left:8px;top:8px;padding:5px 7px}
-}
