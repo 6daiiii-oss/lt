@@ -11,7 +11,12 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   ${field('name','Nombre del producto','text',p.name||'','required maxlength="500"')}
   ${select('category_id','Categoría',categories.map(c=>[c.id,c.name]),p.category_id)}
   ${field('wholesale','Tu precio por unidad (S/)','number',p.id?inputMoney(p.wholesale_cents):'','min="0.01" step="0.01" required')}
-  <div class="field"><span>El cliente pagará por unidad</span><output id="price-preview" aria-live="polite"></output><small>Precio final con IGV incluido. Vendo descuenta su comisión al proveedor; el envío se suma aparte.</small></div>
+  <div>${field('retail','Precio sugerido de reventa (S/, opcional)','number',p.retail_cents?inputMoney(p.retail_cents):'','min="0.01" step="0.01" placeholder="Ej.: 35.00"')}<p class="small muted">Precio orientativo para las tiendas. No obliga a revender a ese importe.</p></div>
+  <div class="full">
+    <p class="small"><b>Precio que pagará la tienda:</b> <output id="price-preview" aria-live="polite"></output>. Precio final por unidad con IGV incluido; Vendo descuenta su comisión al proveedor. Envío aparte.</p>
+    <p class="small muted" id="resale-preview" aria-live="polite"></p>
+    ${check('same_tax_basis','Ambos precios corresponden a la misma unidad e incluyen los mismos impuestos (para calcular una diferencia comparable).',p.same_tax_basis)}
+  </div>
   <h2 class="full">2. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
   <div>${field('moq','Mínimo de unidades por compra','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
@@ -23,19 +28,30 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   <details class="full card"><summary>Más opciones (opcional): color, características y venta por paquetes</summary><div class="form-grid">
   ${field('variant','Color, tamaño o presentación (opcional)','text',p.variant||'')}
   ${field('sku','Código del producto (se crea automáticamente si lo dejas vacío)','text',p.sku||'',`maxlength="100" ${p.id?'readonly':''}`)}
-  ${field('retail','Precio sugerido de reventa (S/, opcional)','number',p.retail_cents?inputMoney(p.retail_cents):'','min="0.01" step="0.01"')}
   <div>${field('pack_multiple','¿Se vende en grupos de cuántas unidades?','number',p.pack_multiple??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 para vender unidades sueltas. Si solo vendes cajas de 6, escribe 6.</p></div>
   <div class="full"><h3>Características (opcional)</h3><p class="small">Escribe una característica y su detalle, por ejemplo Material y Algodón.</p><div id="spec-rows" class="stack"></div><button type="button" class="text-button" id="add-spec">Añadir característica</button></div>
-  <div class="full">${check('same_tax_basis','El precio de reventa corresponde a la misma unidad e incluye los mismos impuestos que mi precio.',p.same_tax_basis)}${check('active','Mantener este producto disponible',p.id?p.status!=='archived':true)}</div></div></details>
+  <div class="full">${check('active','Mantener este producto disponible',p.id?p.status!=='archived':true)}</div></div></details>
   <div class="full">${check('submit_for_review','Enviar a Vendo para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd(onboarding?'Guardar y seguir con mi catálogo':'Guardar producto')}</div>
   </form></section>`,bind(){
-    const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,minimum=form.elements.moq,stock=form.elements.stock,pack=form.elements.pack_multiple;
+    const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,retail=form.elements.retail,sameTaxBasis=form.elements.same_tax_basis,minimum=form.elements.moq,stock=form.elements.stock,pack=form.elements.pack_multiple;
     const explain=()=>{
       const n=Number(minimum.value),available=Number(stock.value),step=Number(pack.value);
-      try {const base=toCents(price.value);document.querySelector('#price-preview').textContent=money(base);}catch{document.querySelector('#price-preview').textContent='Escribe tu precio';}
+      let base=null;
+       try {base=toCents(price.value);document.querySelector('#price-preview').textContent=money(base);}catch{document.querySelector('#price-preview').textContent='Escribe tu precio';}
+       const resaleInfo=document.querySelector('#resale-preview');
+       if(!retail.value.trim())resaleInfo.textContent='Puedes indicar un precio sugerido de reventa para ayudar a las tiendas a comparar.';
+       else {
+         try {
+           const suggested=toCents(retail.value);
+           resaleInfo.textContent=base===null?'Completa tu precio por unidad para poder comparar.':
+             !sameTaxBasis.checked?'Si ambos precios incluyen los mismos impuestos y unidades, marca la casilla para mostrar la diferencia bruta.':
+             suggested<base?'Aviso: el precio sugerido es menor que el precio mayorista. Revisa si es correcto.':
+             'Diferencia bruta orientativa por unidad: '+money(suggested-base)+' (antes de otros gastos).';
+         }catch{resaleInfo.textContent='Indica un precio de reventa válido con hasta dos decimales.';}
+       }
       document.querySelector('#quantity-preview').textContent=`Tienes ${available} unidades en total${p.reserved?` (${p.reserved} reservadas)`:''}. Cada pedido empieza desde ${n} unidad${n===1?'':'es'}${step>1?`, en grupos de ${step}`:''}.`+(available>0&&n>available?' El mínimo supera las unidades disponibles: nadie podrá comprar todavía.':'')+(n>=100?' Revisa el mínimo: ¿es lo que debe comprar cada cliente o lo que tienes guardado?':'');
     };
-    [price,minimum,stock,pack].forEach(el=>el.addEventListener('input',explain));explain();
+    [price,retail,minimum,stock,pack].forEach(el=>el.addEventListener('input',explain));sameTaxBasis.addEventListener('change',explain);explain();
     let uploading=false;
     const renderPhotos=()=>{document.querySelector('#photo-editor').innerHTML=photos.length?photos.map((im,i)=>`<article class="photo-tile"><img src="${esc(im.url)}" alt="Vista previa de la foto ${i+1}"><p>${i===0?'Portada':'Foto '+(i+1)}</p><div class="actions">${i?`<button type="button" class="text-button" data-cover="${i}">Usar de portada</button>`:''}<button type="button" class="text-button" data-remove="${i}" aria-label="Quitar foto ${i+1}">Quitar</button></div></article>`).join(''):'<p class="small muted">Aquí verás tus fotos antes de guardar.</p>';
       document.querySelectorAll('[data-cover]').forEach(b=>b.onclick=()=>{photos.unshift(...photos.splice(Number(b.dataset.cover),1));renderPhotos();});
