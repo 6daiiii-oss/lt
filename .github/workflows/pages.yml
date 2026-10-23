@@ -2,7 +2,7 @@ name: Publish Lote to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['public/**', 'scripts/build-pages.mjs', 'scripts/pages-demo-catalog.mjs', 'scripts/pages-runtime.js', '.github/workflows/pages.yml']
+    paths: ['public/**', 'scripts/build-pages.mjs', 'scripts/pages-runtime.js', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
