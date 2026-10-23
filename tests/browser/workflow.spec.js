@@ -95,6 +95,11 @@ test('producto sencillo: 1100 disponibles, mínimo 1 y código automático sin o
   await page.getByLabel('Nombre del producto',{exact:true}).fill('Prueba de cantidades claras');
   await page.getByLabel('Categoría',{exact:true}).selectOption('hogar');
   await page.getByLabel('Tu precio por unidad (S/)',{exact:true}).fill('12');
+  const resalePrice=page.getByLabel('Precio sugerido de reventa (S/, opcional)',{exact:true});
+  await expect(resalePrice).toBeVisible();
+  await resalePrice.fill('32.50');
+  await page.locator('[name=same_tax_basis]').check();
+  await expect(page.locator('#resale-preview')).toContainText('S/20.50');
   await page.getByLabel('¿Cuántas unidades tienes para vender?',{exact:true}).fill('1100');
   await expect(page.getByLabel('Mínimo de unidades por compra',{exact:true})).toHaveValue('1');
   await expect(page.locator('#quantity-preview')).toContainText('Tienes 1100 unidades en total. Cada pedido empieza desde 1 unidad.');
@@ -103,6 +108,9 @@ test('producto sencillo: 1100 disponibles, mínimo 1 y código automático sin o
   await page.getByRole('button',{name:'Guardar producto',exact:true}).click();await expect(page).toHaveURL(/\/panel\/productos$/);
   const products=await (await page.request.get('/api/seller/products')).json(),p=products.find(p=>p.name==='Prueba de cantidades claras');
   expect(p.moq).toBe(1);expect(p.total).toBe(1100);expect(p.sku).toMatch(/^LOTE-/);expect(p.status).toBe('pending');
+  expect(p.retail_cents).toBe(3250);expect(p.same_tax_basis).toBe(true);
+  await page.getByRole('link',{name:'Prueba de cantidades claras',exact:true}).click();
+  await expect(page.getByLabel('Precio sugerido de reventa (S/, opcional)',{exact:true})).toHaveValue('32.50');
 });
 
 test('la marca selecciona regiones con casillas y las conserva al guardar',async({page})=>{
