@@ -33,7 +33,7 @@ async function render() {
       if(admin&&!state.user.is_admin)throw new Error('Esta cuenta no tiene acceso administrativo.');
       if(seller&&!state.user.phone_verified_at){navigate('/registro/celular',{replace:true});return;}
       if(seller&&currentOrg()?.kind!=='seller')throw new Error('Este espacio pertenece a las marcas y proveedores.');
-      shell=shopping?publicShell:body=>privateShell(body,admin?'admin':seller?'seller':currentOrg()?.kind==='seller'?'seller':'buyer');
+      shell=path==='/panel/empezar'?brandSignupShell:shopping?publicShell:body=>privateShell(body,admin?'admin':seller?'seller':currentOrg()?.kind==='seller'?'seller':'buyer');
       view=admin?await adminView(path,url):seller?await sellerView(path,url):null;
       if(!view)view=await accountView(path,url);
     }
@@ -46,7 +46,7 @@ async function render() {
     document.querySelector('#org-switch')?.addEventListener('change',async event=>{state.organizationId=event.target.value;await refreshMe();reload();});
     document.querySelectorAll('img:not(.photo-main)').forEach(image=>image.addEventListener('error',()=>{const span=document.createElement('span');span.className='image-placeholder';span.textContent='Imagen no disponible';image.replaceWith(span);},{once:true}));
     const h1=document.querySelector('h1');document.title=h1?`${h1.innerText.replace(/\s+/g,' ').trim()} — Vendo`:'Vendo';
-    document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:scrollTop});
+    document.querySelector('#main')?.focus({preventScroll:true});window.scrollTo({top:scrollTop});if(url.hash){try{document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();}catch{}}
   }catch(error) {
     if(current!==generation)return;
     if(error.status===401){state.user=null;state.organizations=[];state.organizationId=null;state.csrfToken=null;navigate('/login?next='+encodeURIComponent(path+url.search)+'&sesion=caducada',{replace:true});return;}

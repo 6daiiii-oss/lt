@@ -1,0 +1,24 @@
+/* Organisation and interaction only: Vendo's identity remains in vendo-brand.css. */
+.welcome-view{max-width:940px;margin-inline:auto}.welcome-view .brand-steps{margin-bottom:28px}
+.next-step{max-width:900px}.context-links{display:flex;flex-wrap:wrap;gap:12px;align-items:start}
+.journey-progress progress{width:100%;height:9px;accent-color:var(--terracotta)}
+.journey-checklist{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:0}
+.journey-checklist li{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--border)}
+.journey-checklist li:last-child{border-bottom:0}.step-state{flex:0 0 24px;font-size:20px;color:var(--terracotta)}
+.journey-checklist li>div{display:grid;gap:5px}.journey-checklist strong{font-size:15px}.journey-checklist a{width:fit-content;min-height:32px;display:flex;align-items:center}
+.supplier-products{display:grid;gap:18px}.supplier-product{display:grid;grid-template-columns:100px minmax(0,1fr);gap:24px}
+.supplier-product-photo{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px;background:var(--soft)}
+.supplier-product h2{font-size:22px;margin:0 0 12px}.supplier-product .summary-dl{max-width:550px;margin-block:18px}
+.supplier-product details{margin-top:12px}.supplier-product details p{font-size:14px}.supplier-product .button{min-height:44px}
+.field-error{display:block;font-size:13px;font-weight:500;color:var(--error,#a82929);line-height:1.5}
+[aria-invalid=true]{outline:2px solid var(--error,#a82929);outline-offset:1px}.check:has(.field-error){flex-wrap:wrap}.check .field-error{flex-basis:100%}
+.card>summary,.product-more>summary,.advanced-filters>summary{font-weight:600;cursor:pointer;min-height:44px;padding-block:10px}
+.card[open]>summary,.product-more[open]>summary{margin-bottom:16px}.product-more{border-top:1px solid var(--border);margin-block:18px}
+.advanced-filters{grid-column:1/-1}.advanced-filters .advanced-grid{padding-top:16px}.product-info h3{margin-top:0}
+@media(max-width:540px){
+ .supplier-product{grid-template-columns:64px minmax(0,1fr);gap:12px}.supplier-product h2{font-size:19px;overflow-wrap:anywhere}
+ .supplier-product .summary-dl{font-size:13px;gap:8px}.supplier-product .summary-dl dd{margin:0}.supplier-product .button{width:100%}
+ .context-links{display:grid;grid-template-columns:minmax(0,1fr)}.context-links .button{width:100%}
+ .welcome-view .brand-steps{padding:0}.journey-checklist a{min-height:44px}.journey-checklist strong{font-size:14px}
+ .market-nav{justify-content:space-between}.marketplace .market-nav a{font-size:13px;padding-inline:0;white-space:normal}
+}
