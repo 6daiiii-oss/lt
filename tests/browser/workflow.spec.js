@@ -142,8 +142,11 @@ test('paneles operativos y simulador 7%: sin errores ni desbordes en móvil',asy
       }
       await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');if(role!=='admin')await page.getByText('Dinero y comisiones',{exact:true}).click();
       await expect(page.locator('#fee-simulation')).toContainText('70.00');
-      await page.getByLabel('Procesamiento cotizado al comprador (S/, opcional)',{exact:true}).fill('35');
-      await expect(page.locator('#fee-simulation')).toContainText('70.00');
+      await page.getByLabel('Total de productos (S/)',{exact:true}).fill('1400');
+      await expect(page.locator('#fee-simulation')).toContainText('98.00');
+      const calculator=page.locator('.card').filter({has:page.getByRole('heading',{name:'Comisión de Vendo',exact:true})}).last();
+      await expect(calculator).not.toContainText(/IGV|Procesamiento|Neto estimado/);
+      await expect(page.locator('#fee-simulation dt')).toHaveCount(1);
       await page.screenshot({path:`test-results/finanzas-${role}-390.png`,fullPage:true});
       expect(errors).toEqual([]);
     } finally {await context.close();}
