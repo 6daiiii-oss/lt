@@ -45,7 +45,7 @@ accountRouter.delete('/organizations/me/addresses/:id',async(req,res)=>{
   await query('DELETE FROM addresses WHERE id=$1 AND organization_id=$2',[id.parse(req.params.id),req.org?.id]);res.json({message:'Dirección eliminada.'});
 });
 accountRouter.get('/favorites',orgRole('buyer'),async(req,res)=>{
-  res.json((await query(`SELECT f.id,f.product_id,f.brand_id,p.name AS product_name,b.name AS brand_name FROM favorites f LEFT JOIN products p ON p.id=f.product_id LEFT JOIN brands b ON b.id=coalesce(f.brand_id,p.brand_id) WHERE organization_id=$1 ORDER BY f.created_at DESC`,[req.org.id])).rows);
+  res.json((await query(`SELECT f.id,f.product_id,f.brand_id,p.name AS product_name,b.name AS brand_name FROM favorites f LEFT JOIN products p ON p.id=f.product_id LEFT JOIN brands b ON b.id=coalesce(f.brand_id,p.brand_id) WHERE f.organization_id=$1 ORDER BY f.created_at DESC`,[req.org.id])).rows);
 });
 accountRouter.post('/favorites',orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({product_id:id.optional(),brand_id:id.optional()}).refine(v=>Boolean(v.product_id)!==Boolean(v.brand_id)),req.body);

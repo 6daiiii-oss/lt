@@ -23,6 +23,21 @@ async function request(method,path,body,user,headers={}) {
   const data=await response.json();return {status:response.status,data,headers:response.headers};
 }
 const post=(path,body,user,headers)=>request('POST',path,body,user,headers);
+
+test('favoritos lista productos y marcas sin ambigüedad SQL y mantiene aislamiento entre tiendas',async()=>{
+ const p=await product(db,accounts.sellerA,{name:'Producto guardado'});
+ assert.equal((await request('GET','/favorites',undefined)).status,401);
+ assert.equal((await request('GET','/favorites',undefined,accounts.sellerA)).status,403);
+ assert.equal((await post('/favorites',{product_id:p.id},accounts.buyerA)).status,201);
+ assert.equal((await post('/favorites',{brand_id:accounts.sellerB.brandId},accounts.buyerA)).status,201);
+ const own=await request('GET','/favorites',undefined,accounts.buyerA);assert.equal(own.status,200);assert.equal(own.data.length,2);assert.ok(own.data.some(f=>f.product_name==='Producto guardado'));assert.ok(own.data.some(f=>f.brand_name==='DEMO Marca B'));
+ assert.deepEqual((await request('GET','/favorites',undefined,accounts.buyerB)).data,[]);
+ assert.equal((await request('GET','/favorites',undefined,accounts.buyerB,{'X-Organization-Id':accounts.buyerA.orgId})).status,403);
+ await request('DELETE','/favorites/'+own.data[0].id,undefined,accounts.buyerB);
+ assert.equal((await request('GET','/favorites',undefined,accounts.buyerA)).data.length,2);
+ await request('DELETE','/favorites/'+own.data[0].id,undefined,accounts.buyerA);
+ assert.equal((await request('GET','/favorites',undefined,accounts.buyerA)).data.length,1);
+});
 test('el carrito comprueba la dirección elegida y explica la región que impide comprar',async()=>{
   const p=await product(db,accounts.sellerA);await putInCart(accounts.buyerA,p);
   await db.query("UPDATE brands SET shipping_regions=ARRAY['arequipa'] WHERE id=$1",[accounts.sellerA.brandId]);
