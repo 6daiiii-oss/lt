@@ -140,7 +140,7 @@ test('paneles operativos y simulador 7%: sin errores ni desbordes en móvil',asy
         await expect(page.getByRole('heading',{name:'No pudimos completar esta vista.'})).toHaveCount(0);
         await page.setViewportSize({width:390,height:900});await noOverflow(page);
       }
-      await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');
+      await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');if(role!=='admin')await page.getByText('Dinero y comisiones',{exact:true}).click();
       await expect(page.locator('#fee-simulation')).toContainText('70.00');
       await page.getByLabel('Procesamiento cotizado al comprador (S/, opcional)',{exact:true}).fill('35');
       await expect(page.locator('#fee-simulation')).toContainText('70.00');

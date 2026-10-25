@@ -187,6 +187,17 @@ async function paidOrder({twoBrands=false}={}) {
   const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1 ORDER BY brand_id',[result.data.purchase_id])).rows;
   return {a,b,checkout:result.data,orders};
 }
+
+test('estadísticas diarias respetan fechas de Perú, pagos y aislamiento del proveedor',async()=>{
+ await paidOrder({twoBrands:true});
+ await db.query("UPDATE orders SET created_at=CASE WHEN brand_id=$1 THEN '2026-01-01T04:59:59Z'::timestamptz ELSE '2026-01-01T05:00:00Z'::timestamptz END",[accounts.sellerA.brandId]);
+ const unpaid=await product(db,accounts.sellerA,{wholesale_cents:9999,moq:1});await putInCart(accounts.buyerA,unpaid);const pending=await checkout(accounts.buyerA);assert.equal(pending.status,201);await db.query("UPDATE orders SET created_at='2026-01-01T04:59:59Z' WHERE purchase_id=$1",[pending.data.purchase_id]);
+ const endpoint='/seller/analytics?from=2025-12-31&to=2025-12-31';const own=await request('GET',endpoint,undefined,accounts.sellerA);assert.equal(own.status,200);assert.equal(own.data.orders,1);assert.equal(own.data.gross_products_cents,1500);assert.deepEqual(own.data.daily,[{date:'2025-12-31',gross_products_cents:1500,orders:1}]);
+ assert.deepEqual((await request('GET',endpoint,undefined,accounts.sellerB)).data.daily,[]);
+ assert.deepEqual((await request('GET','/seller/analytics?from=2026-01-01&to=2026-01-01',undefined,accounts.sellerA)).data.daily,[]);
+ assert.equal((await request('GET','/seller/analytics?from=2026-01-01&to=2026-01-01',undefined,accounts.sellerB)).data.daily[0].gross_products_cents,1200);
+ assert.equal((await request('GET',endpoint,undefined,accounts.buyerA)).status,403);assert.equal((await request('GET',endpoint,undefined)).status,401);
+});
 test('instalación vacía: cero productos, pedidos, reseñas y métricas comerciales',async()=>{
   assert.equal((await request('GET','/products')).data.total,0);
   assert.equal((await request('GET','/categories')).data.length,6);
