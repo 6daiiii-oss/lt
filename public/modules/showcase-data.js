@@ -1,5 +1,493 @@
-// Read-only exhibition examples. These are not offers, inventory or supplier records.
+// Read-only catalog examples. These are not offers, inventory or supplier records.
 export const showcaseProducts=Object.freeze([
+  {
+    "id": "exh-21",
+    "name": "Audífonos inalámbricos con estuche",
+    "category_id": "tecnologia",
+    "description": "Tu música siempre a mano. Un formato compacto con estuche para acompañar trayectos, pausas y jornadas de trabajo sin enredarte con cables.",
+    "is_showcase": true,
+    "source_id": 100,
+    "images": [
+      {
+        "url": "/images/exhibicion/100/1.webp",
+        "alt": "Audífonos inalámbricos con estuche · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/100/2.webp",
+        "alt": "Audífonos inalámbricos con estuche · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-22",
+    "name": "Audífonos de diadema AirPods Max",
+    "category_id": "tecnologia",
+    "description": "Un espacio para concentrarte y disfrutar tus playlists. Su diseño de diadema y acabado plateado destacan en un escritorio creativo o una selección de accesorios personales.",
+    "is_showcase": true,
+    "source_id": 101,
+    "images": [
+      {
+        "url": "/images/exhibicion/101/1.webp",
+        "alt": "Audífonos de diadema AirPods Max · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-23",
+    "name": "Parlante compacto HomePod mini",
+    "category_id": "tecnologia",
+    "description": "Dale un lugar a la música en casa. Su diseño compacto y acabado oscuro se integran con facilidad a una mesa auxiliar o un rincón de trabajo.",
+    "is_showcase": true,
+    "source_id": 103,
+    "images": [
+      {
+        "url": "/images/exhibicion/103/1.webp",
+        "alt": "Parlante compacto HomePod mini · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-24",
+    "name": "Batería magnética MagSafe",
+    "category_id": "tecnologia",
+    "description": "Energía de apoyo en un formato que ocupa poco. Una idea práctica para quienes pasan el día fuera y prefieren llevar accesorios compactos junto al teléfono.",
+    "is_showcase": true,
+    "source_id": 105,
+    "images": [
+      {
+        "url": "/images/exhibicion/105/1.webp",
+        "alt": "Batería magnética MagSafe · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/105/2.webp",
+        "alt": "Batería magnética MagSafe · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-25",
+    "name": "Aro de luz con soporte para celular",
+    "category_id": "tecnologia",
+    "description": "Pon tus ideas frente a la cámara. Un accesorio para imaginar mejores fotos de catálogo, videollamadas o contenido desde un rincón de tu propio negocio.",
+    "is_showcase": true,
+    "source_id": 110,
+    "images": [
+      {
+        "url": "/images/exhibicion/110/1.webp",
+        "alt": "Aro de luz con soporte para celular · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-26",
+    "name": "MacBook Pro de 14 pulgadas",
+    "category_id": "tecnologia",
+    "description": "Un escritorio que también puede ir contigo. Su formato portátil y acabado gris invitan a organizar proyectos, editar contenido y trabajar en distintos espacios.",
+    "is_showcase": true,
+    "source_id": 78,
+    "images": [
+      {
+        "url": "/images/exhibicion/78/1.webp",
+        "alt": "MacBook Pro de 14 pulgadas · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/78/2.webp",
+        "alt": "MacBook Pro de 14 pulgadas · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-27",
+    "name": "Laptop Asus Zenbook de doble pantalla",
+    "category_id": "tecnologia",
+    "description": "Más espacio visual para tus ideas. Su propuesta de doble pantalla permite mostrar una estación creativa pensada para organizar ventanas y explorar nuevas formas de trabajar.",
+    "is_showcase": true,
+    "source_id": 79,
+    "images": [
+      {
+        "url": "/images/exhibicion/79/1.webp",
+        "alt": "Laptop Asus Zenbook de doble pantalla · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/79/2.webp",
+        "alt": "Laptop Asus Zenbook de doble pantalla · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-28",
+    "name": "Laptop Huawei MateBook X Pro",
+    "category_id": "tecnologia",
+    "description": "Líneas limpias para un espacio de trabajo ligero. Una propuesta portátil para visualizar tu agenda, tus proyectos y el contenido de tu negocio en un solo lugar.",
+    "is_showcase": true,
+    "source_id": 80,
+    "images": [
+      {
+        "url": "/images/exhibicion/80/1.webp",
+        "alt": "Laptop Huawei MateBook X Pro · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/80/2.webp",
+        "alt": "Laptop Huawei MateBook X Pro · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-29",
+    "name": "Laptop Dell XPS de 13 pulgadas",
+    "category_id": "tecnologia",
+    "description": "Trabajo y estudio en un formato fácil de llevar. Su diseño sobrio encaja en un escritorio pequeño y en una rutina que se mueve entre distintos espacios.",
+    "is_showcase": true,
+    "source_id": 82,
+    "images": [
+      {
+        "url": "/images/exhibicion/82/1.webp",
+        "alt": "Laptop Dell XPS de 13 pulgadas · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/82/2.webp",
+        "alt": "Laptop Dell XPS de 13 pulgadas · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-30",
+    "name": "Tablet iPad mini con acabado claro",
+    "category_id": "tecnologia",
+    "description": "Ideas, lecturas y notas en una pantalla compacta. Su formato invita a llevar una herramienta visual a reuniones, clases o momentos de inspiración fuera del escritorio.",
+    "is_showcase": true,
+    "source_id": 159,
+    "images": [
+      {
+        "url": "/images/exhibicion/159/1.webp",
+        "alt": "Tablet iPad mini con acabado claro · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/159/2.webp",
+        "alt": "Tablet iPad mini con acabado claro · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-31",
+    "name": "Tablet Samsung Galaxy Tab S8 Plus",
+    "category_id": "tecnologia",
+    "description": "Una pantalla amplia para dar espacio a tus ideas. Una propuesta para explorar apuntes, presentaciones y contenido visual con un diseño de líneas sencillas.",
+    "is_showcase": true,
+    "source_id": 160,
+    "images": [
+      {
+        "url": "/images/exhibicion/160/1.webp",
+        "alt": "Tablet Samsung Galaxy Tab S8 Plus · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/160/2.webp",
+        "alt": "Tablet Samsung Galaxy Tab S8 Plus · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-32",
+    "name": "Cargador compacto para iPhone",
+    "category_id": "tecnologia",
+    "description": "Un básico para mantener ordenado tu kit diario. Su presentación compacta facilita imaginar un rincón de carga práctico en casa, en la oficina o dentro del equipaje.",
+    "is_showcase": true,
+    "source_id": 104,
+    "images": [
+      {
+        "url": "/images/exhibicion/104/1.webp",
+        "alt": "Cargador compacto para iPhone · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/104/2.webp",
+        "alt": "Cargador compacto para iPhone · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-33",
+    "name": "Audífonos inalámbricos Beats Flex",
+    "category_id": "tecnologia",
+    "description": "Muévete con tu música cerca. Su diseño con banda flexible ofrece una propuesta práctica para quienes prefieren mantener ambos auriculares unidos durante el día.",
+    "is_showcase": true,
+    "source_id": 107,
+    "images": [
+      {
+        "url": "/images/exhibicion/107/1.webp",
+        "alt": "Audífonos inalámbricos Beats Flex · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-34",
+    "name": "Trípode compacto para celular",
+    "category_id": "tecnologia",
+    "description": "Un lugar estable para tu teléfono. Su soporte con tres apoyos permite imaginar videollamadas, fotos de productos y contenido desde una mesa sin sostener el celular con la mano.",
+    "is_showcase": true,
+    "source_id": 109,
+    "images": [
+      {
+        "url": "/images/exhibicion/109/1.webp",
+        "alt": "Trípode compacto para celular · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/109/2.webp",
+        "alt": "Trípode compacto para celular · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-35",
+    "name": "Bastón extensible para selfies",
+    "category_id": "tecnologia",
+    "description": "Haz espacio para todos en la foto. Una idea sencilla para retratos, viajes y contenido espontáneo sin depender siempre de una mano detrás de la cámara.",
+    "is_showcase": true,
+    "source_id": 111,
+    "images": [
+      {
+        "url": "/images/exhibicion/111/1.webp",
+        "alt": "Bastón extensible para selfies · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-36",
+    "name": "Funda MagSafe color ciruela para iPhone 12",
+    "category_id": "tecnologia",
+    "description": "Color discreto para un accesorio de todos los días. Esta ficha muestra una funda de referencia para iPhone 12; revisa siempre el modelo antes de elegir accesorios.",
+    "is_showcase": true,
+    "source_id": 108,
+    "images": [
+      {
+        "url": "/images/exhibicion/108/1.webp",
+        "alt": "Funda MagSafe color ciruela para iPhone 12 · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/108/2.webp",
+        "alt": "Funda MagSafe color ciruela para iPhone 12 · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-37",
+    "name": "Licuadora de sobremesa",
+    "category_id": "hogar",
+    "description": "Dale ritmo a la cocina con una estación para tus mezclas favoritas. Su formato de sobremesa invita a preparar nuevas combinaciones y aprovechar mejor los ingredientes del día.",
+    "is_showcase": true,
+    "source_id": 51,
+    "images": [
+      {
+        "url": "/images/exhibicion/51/1.webp",
+        "alt": "Licuadora de sobremesa · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/51/2.webp",
+        "alt": "Licuadora de sobremesa · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-38",
+    "name": "Wok de acero al carbono",
+    "category_id": "hogar",
+    "description": "Una pieza protagonista para recetas llenas de color. Su forma amplia invita a imaginar salteados, verduras y comidas que reúnen a todos alrededor de la cocina.",
+    "is_showcase": true,
+    "source_id": 52,
+    "images": [
+      {
+        "url": "/images/exhibicion/52/1.webp",
+        "alt": "Wok de acero al carbono · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-39",
+    "name": "Tabla para preparar alimentos",
+    "category_id": "hogar",
+    "description": "Un punto de partida para cocinar con orden. Su superficie de trabajo reúne los ingredientes en un solo lugar y aporta una presentación sencilla a tu espacio de cocina.",
+    "is_showcase": true,
+    "source_id": 53,
+    "images": [
+      {
+        "url": "/images/exhibicion/53/1.webp",
+        "alt": "Tabla para preparar alimentos · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-40",
+    "name": "Exprimidor manual para cítricos",
+    "category_id": "hogar",
+    "description": "Un toque fresco sin ocupar demasiado espacio. Su color amarillo y formato manual convierten este utensilio en una idea práctica para completar una cocina cotidiana.",
+    "is_showcase": true,
+    "source_id": 54,
+    "images": [
+      {
+        "url": "/images/exhibicion/54/1.webp",
+        "alt": "Exprimidor manual para cítricos · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-41",
+    "name": "Cortador de huevos en láminas",
+    "category_id": "hogar",
+    "description": "Pequeños detalles que simplifican la preparación. Una herramienta compacta para presentar ensaladas, tostadas y platos con láminas de huevo de aspecto más uniforme.",
+    "is_showcase": true,
+    "source_id": 55,
+    "images": [
+      {
+        "url": "/images/exhibicion/55/1.webp",
+        "alt": "Cortador de huevos en láminas · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-42",
+    "name": "Cocina eléctrica de sobremesa",
+    "category_id": "hogar",
+    "description": "Una zona de cocción para espacios compactos. Su formato de sobremesa permite visualizar una cocina auxiliar práctica para organizar mejor el lugar disponible.",
+    "is_showcase": true,
+    "source_id": 56,
+    "images": [
+      {
+        "url": "/images/exhibicion/56/1.webp",
+        "alt": "Cocina eléctrica de sobremesa · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/56/2.webp",
+        "alt": "Cocina eléctrica de sobremesa · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-43",
+    "name": "Rallador de cocina con mango negro",
+    "category_id": "hogar",
+    "description": "Texturas que cambian un plato. Un utensilio de uso cotidiano para imaginar ingredientes rallados y terminar recetas con una presentación más cuidada.",
+    "is_showcase": true,
+    "source_id": 60,
+    "images": [
+      {
+        "url": "/images/exhibicion/60/1.webp",
+        "alt": "Rallador de cocina con mango negro · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-44",
+    "name": "Horno microondas de sobremesa",
+    "category_id": "hogar",
+    "description": "Haz más práctica la rutina de la cocina. Su formato independiente permite imaginar una estación para calentar y servir sin complicar la distribución del espacio.",
+    "is_showcase": true,
+    "source_id": 66,
+    "images": [
+      {
+        "url": "/images/exhibicion/66/1.webp",
+        "alt": "Horno microondas de sobremesa · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/66/2.webp",
+        "alt": "Horno microondas de sobremesa · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-45",
+    "name": "Organizador vertical para tazas",
+    "category_id": "hogar",
+    "description": "Tus tazas favoritas, a la vista. Un soporte vertical que ayuda a imaginar una estación de café ordenada y aprovecha la altura en lugar de extenderse por la mesa.",
+    "is_showcase": true,
+    "source_id": 67,
+    "images": [
+      {
+        "url": "/images/exhibicion/67/1.webp",
+        "alt": "Organizador vertical para tazas · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/67/2.webp",
+        "alt": "Organizador vertical para tazas · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-46",
+    "name": "Pinzas de cocina con detalle rojo",
+    "category_id": "hogar",
+    "description": "Control y color en un solo utensilio. Una idea útil para servir, girar y presentar alimentos mientras mantienes el resto de tu espacio de trabajo organizado.",
+    "is_showcase": true,
+    "source_id": 70,
+    "images": [
+      {
+        "url": "/images/exhibicion/70/1.webp",
+        "alt": "Pinzas de cocina con detalle rojo · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-47",
+    "name": "Olla con tapa de vidrio",
+    "category_id": "hogar",
+    "description": "Un básico para recetas que se comparten. Su tapa transparente y acabado metálico dan forma a una pieza versátil dentro de una cocina de todos los días.",
+    "is_showcase": true,
+    "source_id": 71,
+    "images": [
+      {
+        "url": "/images/exhibicion/71/1.webp",
+        "alt": "Olla con tapa de vidrio · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-48",
+    "name": "Pelador manual de cocina",
+    "category_id": "hogar",
+    "description": "Menos pasos entre los ingredientes y tu receta. Un accesorio pequeño y fácil de ubicar para completar el conjunto de utensilios que usas a diario.",
+    "is_showcase": true,
+    "source_id": 77,
+    "images": [
+      {
+        "url": "/images/exhibicion/77/1.webp",
+        "alt": "Pelador manual de cocina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-49",
+    "name": "Jabón de manos Super Leaves",
+    "category_id": "belleza",
+    "description": "Un detalle cuidado para el lavamanos. Su envase con dispensador permite imaginar una rutina cotidiana más ordenada y una presentación limpia para baños o cocinas.",
+    "is_showcase": true,
+    "source_id": 118,
+    "images": [
+      {
+        "url": "/images/exhibicion/118/1.webp",
+        "alt": "Jabón de manos Super Leaves · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/118/2.webp",
+        "alt": "Jabón de manos Super Leaves · vista 2"
+      }
+    ]
+  },
+  {
+    "id": "exh-50",
+    "name": "Gel de ducha Olay Ultra Moisture",
+    "category_id": "belleza",
+    "description": "Renueva la presentación de tus básicos de baño. Una ficha para explorar una rutina de cuidado personal con un envase fácil de reconocer y protagonismo en el estante.",
+    "is_showcase": true,
+    "source_id": 119,
+    "images": [
+      {
+        "url": "/images/exhibicion/119/1.webp",
+        "alt": "Gel de ducha Olay Ultra Moisture · vista 1"
+      },
+      {
+        "url": "/images/exhibicion/119/2.webp",
+        "alt": "Gel de ducha Olay Ultra Moisture · vista 2"
+      }
+    ]
+  },
   {
     "id": "exh-01",
     "name": "Máscara Lash Princess",

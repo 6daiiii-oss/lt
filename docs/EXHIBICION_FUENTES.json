@@ -473,6 +473,729 @@
           "sha256": "a0c6cf758b417a7704c0a46c8dfea371daac86a2cad800a5270656ea92513f3f"
         }
       ]
+    },
+    {
+      "sourceId": 100,
+      "sourceTitle": "Apple Airpods",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/100",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/1.webp",
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/100/1.webp",
+          "alt": "Audífonos inalámbricos con estuche · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "60001ba208a6e259af2437623715b22adb43f1e51204320349325b11cf53afeb"
+        },
+        {
+          "url": "/images/exhibicion/100/2.webp",
+          "alt": "Audífonos inalámbricos con estuche · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "58ab4d821905f9a441e61d479050cc09ed3de6de1f35366666fc911436a589fa"
+        }
+      ]
+    },
+    {
+      "sourceId": 101,
+      "sourceTitle": "Apple AirPods Max Silver",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/101",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods-max-silver/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/101/1.webp",
+          "alt": "Audífonos de diadema AirPods Max · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods-max-silver/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "2a0219919fd758a1d466c18d138549aca34f000bb6850875d7d7956fea22b0da"
+        }
+      ]
+    },
+    {
+      "sourceId": 103,
+      "sourceTitle": "Apple HomePod Mini Cosmic Grey",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/103",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-homepod-mini-cosmic-grey/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/103/1.webp",
+          "alt": "Parlante compacto HomePod mini · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-homepod-mini-cosmic-grey/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "b48350d460c018282701f89d6f5a478b25c7e0599a38d7c272e69ba0547a62a7"
+        }
+      ]
+    },
+    {
+      "sourceId": 105,
+      "sourceTitle": "Apple MagSafe Battery Pack",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/105",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-magsafe-battery-pack/1.webp",
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-magsafe-battery-pack/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/105/1.webp",
+          "alt": "Batería magnética MagSafe · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-magsafe-battery-pack/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "6358da20ed97a59466343687c7f179ee3edd5cdc0cd9797a420a17b3f19beaf5"
+        },
+        {
+          "url": "/images/exhibicion/105/2.webp",
+          "alt": "Batería magnética MagSafe · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-magsafe-battery-pack/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "4182550f475bf5d5f69eed7cd6cb0fcda86f2876012e92aa84b34f12c7a701af"
+        }
+      ]
+    },
+    {
+      "sourceId": 110,
+      "sourceTitle": "Selfie Lamp with iPhone",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/110",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-lamp-with-iphone/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/110/1.webp",
+          "alt": "Aro de luz con soporte para celular · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-lamp-with-iphone/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "72f98f4a0c565cfef2a3c61f12e6d62e2bc641d286fe2c042f74251b296883ca"
+        }
+      ]
+    },
+    {
+      "sourceId": 78,
+      "sourceTitle": "Apple MacBook Pro 14 Inch Space Grey",
+      "sourceCategory": "laptops",
+      "sourceUrl": "https://dummyjson.com/products/78",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/1.webp",
+        "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/78/1.webp",
+          "alt": "MacBook Pro de 14 pulgadas · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7aebd15251918e8bb96829c80ddce7f487c22e55fa6751b632ea596084c1d0e6"
+        },
+        {
+          "url": "/images/exhibicion/78/2.webp",
+          "alt": "MacBook Pro de 14 pulgadas · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8b5441c442d156fd10dd19b33e185806b783ff1053c7b44ac3292934bc72597d"
+        }
+      ]
+    },
+    {
+      "sourceId": 79,
+      "sourceTitle": "Asus Zenbook Pro Dual Screen Laptop",
+      "sourceCategory": "laptops",
+      "sourceUrl": "https://dummyjson.com/products/79",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/1.webp",
+        "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/79/1.webp",
+          "alt": "Laptop Asus Zenbook de doble pantalla · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ec75d836338eb7c1352e94feb18a33d3c8f398061f5704bda0a38f5c86cb68e7"
+        },
+        {
+          "url": "/images/exhibicion/79/2.webp",
+          "alt": "Laptop Asus Zenbook de doble pantalla · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/asus-zenbook-pro-dual-screen-laptop/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8632f625d45ffe48d02beb103b7a312614e3f6cd8e10182b73a77fd70b8c6dcc"
+        }
+      ]
+    },
+    {
+      "sourceId": 80,
+      "sourceTitle": "Huawei Matebook X Pro",
+      "sourceCategory": "laptops",
+      "sourceUrl": "https://dummyjson.com/products/80",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/1.webp",
+        "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/80/1.webp",
+          "alt": "Laptop Huawei MateBook X Pro · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "37317442e9df6035e93821ff5892aa8c3e6e87c3785c0971b89af4ce9618fcd3"
+        },
+        {
+          "url": "/images/exhibicion/80/2.webp",
+          "alt": "Laptop Huawei MateBook X Pro · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/huawei-matebook-x-pro/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a452b0ca4fd637812cb35b8bc2650955739e342b1275a6d45162948b91f092a5"
+        }
+      ]
+    },
+    {
+      "sourceId": 82,
+      "sourceTitle": "New DELL XPS 13 9300 Laptop",
+      "sourceCategory": "laptops",
+      "sourceUrl": "https://dummyjson.com/products/82",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/1.webp",
+        "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/82/1.webp",
+          "alt": "Laptop Dell XPS de 13 pulgadas · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d23fac25d3d26f41e34957c97014a64d8fdbaadae3ee71ac56d7f65e3c9a1389"
+        },
+        {
+          "url": "/images/exhibicion/82/2.webp",
+          "alt": "Laptop Dell XPS de 13 pulgadas · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/laptops/new-dell-xps-13-9300-laptop/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7ac1af7229952193c830fa5033ccd99fee9d648c7a1846f8ce579a39a38d0e67"
+        }
+      ]
+    },
+    {
+      "sourceId": 159,
+      "sourceTitle": "iPad Mini 2021 Starlight",
+      "sourceCategory": "tablets",
+      "sourceUrl": "https://dummyjson.com/products/159",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/1.webp",
+        "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/159/1.webp",
+          "alt": "Tablet iPad mini con acabado claro · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8d925f751c46358a5c82af8484c230ba4768346a4deb88e73e248dc7de32686c"
+        },
+        {
+          "url": "/images/exhibicion/159/2.webp",
+          "alt": "Tablet iPad mini con acabado claro · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "9b84283b9b8a15ba27b165169aba8e01119621e608ef4f3370ad97a79afe09e5"
+        }
+      ]
+    },
+    {
+      "sourceId": 160,
+      "sourceTitle": "Samsung Galaxy Tab S8 Plus Grey",
+      "sourceCategory": "tablets",
+      "sourceUrl": "https://dummyjson.com/products/160",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/1.webp",
+        "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/160/1.webp",
+          "alt": "Tablet Samsung Galaxy Tab S8 Plus · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "421c88a9ecd23668097f285c40ba5c4c2669b4d194a119fc0dddc179b09cbcdc"
+        },
+        {
+          "url": "/images/exhibicion/160/2.webp",
+          "alt": "Tablet Samsung Galaxy Tab S8 Plus · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/tablets/samsung-galaxy-tab-s8-plus-grey/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "f36d93ad9b2cb03a53d11d3286f4723fd719a9d889edb17f41fa0c8a9b74b0cb"
+        }
+      ]
+    },
+    {
+      "sourceId": 104,
+      "sourceTitle": "Apple iPhone Charger",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/104",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-iphone-charger/1.webp",
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-iphone-charger/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/104/1.webp",
+          "alt": "Cargador compacto para iPhone · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-iphone-charger/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "0bf8663bf6aa96da1e060f4fde4ddc4745b4a9aa02f36c83e467743752522f4a"
+        },
+        {
+          "url": "/images/exhibicion/104/2.webp",
+          "alt": "Cargador compacto para iPhone · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/apple-iphone-charger/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "55e25cfb83e0991cafd65c9b500f21419176a4b6648f73f1094785d5042a62a9"
+        }
+      ]
+    },
+    {
+      "sourceId": 107,
+      "sourceTitle": "Beats Flex Wireless Earphones",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/107",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/beats-flex-wireless-earphones/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/107/1.webp",
+          "alt": "Audífonos inalámbricos Beats Flex · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/beats-flex-wireless-earphones/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "f5c4e7da4732cf58bfe2927dd55f96c4dd8611871f4753fb835ab6cd030f07cd"
+        }
+      ]
+    },
+    {
+      "sourceId": 109,
+      "sourceTitle": "Monopod",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/109",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/monopod/1.webp",
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/monopod/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/109/1.webp",
+          "alt": "Monopie de apoyo para cámara · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/monopod/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "3a0a8fd8dc530cb4065dcff181072152f7f94784a197303701fae5b93651225a"
+        },
+        {
+          "url": "/images/exhibicion/109/2.webp",
+          "alt": "Monopie de apoyo para cámara · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/monopod/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d09b7a8c869bfb2b612d6fd72a8c1aab9d0054cff261341b7fc655fa9455d807"
+        }
+      ]
+    },
+    {
+      "sourceId": 111,
+      "sourceTitle": "Selfie Stick Monopod",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/111",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-stick-monopod/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/111/1.webp",
+          "alt": "Bastón extensible para selfies · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/selfie-stick-monopod/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "5781ccf71d801647585686cdab2b8b2d99fd8918bc7866c583be54da807f2202"
+        }
+      ]
+    },
+    {
+      "sourceId": 108,
+      "sourceTitle": "iPhone 12 Silicone Case with MagSafe Plum",
+      "sourceCategory": "mobile-accessories",
+      "sourceUrl": "https://dummyjson.com/products/108",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/1.webp",
+        "https://cdn.dummyjson.com/product-images/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/108/1.webp",
+          "alt": "Funda MagSafe color ciruela para iPhone 12 · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "5559d8ab36af9c315fd5dd00cc3d7a38ede9568b36f68ee98349779171dba413"
+        },
+        {
+          "url": "/images/exhibicion/108/2.webp",
+          "alt": "Funda MagSafe color ciruela para iPhone 12 · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "19f68ba01935ec860b29b9016dae68f947f9fa304e383c5b310f4cc419299090"
+        }
+      ]
+    },
+    {
+      "sourceId": 51,
+      "sourceTitle": "Boxed Blender",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/51",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/1.webp",
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/51/1.webp",
+          "alt": "Licuadora de sobremesa · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "1fcd3941d13862e2c60a9d7538daa3778bb714af44535a18299b17d49497da53"
+        },
+        {
+          "url": "/images/exhibicion/51/2.webp",
+          "alt": "Licuadora de sobremesa · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a0c22fea0d0c1095788fb7d4a3b1ed0b5abc8020248dd826e3a18a60e44dfba4"
+        }
+      ]
+    },
+    {
+      "sourceId": 52,
+      "sourceTitle": "Carbon Steel Wok",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/52",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/carbon-steel-wok/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/52/1.webp",
+          "alt": "Wok de acero al carbono · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/carbon-steel-wok/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "11df57e8f1ac0892fb43a1a3ccdfcd24b024ae5bca44f8fe05666516bb5715a9"
+        }
+      ]
+    },
+    {
+      "sourceId": 53,
+      "sourceTitle": "Chopping Board",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/53",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/chopping-board/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/53/1.webp",
+          "alt": "Tabla para preparar alimentos · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/chopping-board/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "24dbe85fa9e29d24aab87ebb7c57b636a5dea7f2061c4f6cc582bd05312ece07"
+        }
+      ]
+    },
+    {
+      "sourceId": 54,
+      "sourceTitle": "Citrus Squeezer Yellow",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/54",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/citrus-squeezer-yellow/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/54/1.webp",
+          "alt": "Exprimidor manual para cítricos · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/citrus-squeezer-yellow/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "61f76c926de8bec97952733fa174bc06d4409a95873e56bdf0d0a3d0945e3d89"
+        }
+      ]
+    },
+    {
+      "sourceId": 55,
+      "sourceTitle": "Egg Slicer",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/55",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/egg-slicer/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/55/1.webp",
+          "alt": "Cortador de huevos en láminas · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/egg-slicer/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d8d656db73717acc98a6426aba6db296ff3a1d599169f2c6c844719563cbb0bf"
+        }
+      ]
+    },
+    {
+      "sourceId": 56,
+      "sourceTitle": "Electric Stove",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/56",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/electric-stove/1.webp",
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/electric-stove/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/56/1.webp",
+          "alt": "Cocina eléctrica de sobremesa · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/electric-stove/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "131422ba4fa0838fe89e3c136108c6b9013e36bfb16430cb634d452732436b68"
+        },
+        {
+          "url": "/images/exhibicion/56/2.webp",
+          "alt": "Cocina eléctrica de sobremesa · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/electric-stove/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "f5f988754272847513d8dca262b6d788a7ddf8d1275ba47a1565e3fcd8af5aca"
+        }
+      ]
+    },
+    {
+      "sourceId": 60,
+      "sourceTitle": "Grater Black",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/60",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/grater-black/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/60/1.webp",
+          "alt": "Rallador de cocina con mango negro · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/grater-black/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "f01bfcc7ecb4dc5b84690f5e66c6820c0a43f9e6f9c84f676044fc93875bc62a"
+        }
+      ]
+    },
+    {
+      "sourceId": 66,
+      "sourceTitle": "Microwave Oven",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/66",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/microwave-oven/1.webp",
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/microwave-oven/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/66/1.webp",
+          "alt": "Horno microondas de sobremesa · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/microwave-oven/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "855a5229d2596d07fac74d8a7ba90d118568d6403fc5bc9eb4f2cb8f33603111"
+        },
+        {
+          "url": "/images/exhibicion/66/2.webp",
+          "alt": "Horno microondas de sobremesa · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/microwave-oven/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "1cddfcb88b47beb4597ff1e85cfab7c19f31a79f06d83d10e30165871c25e511"
+        }
+      ]
+    },
+    {
+      "sourceId": 67,
+      "sourceTitle": "Mug Tree Stand",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/67",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/mug-tree-stand/1.webp",
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/mug-tree-stand/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/67/1.webp",
+          "alt": "Organizador vertical para tazas · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/mug-tree-stand/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8cae4bea1da4ed48f22a711615527b8356c6d622bf64257428cc31fe3e8793cc"
+        },
+        {
+          "url": "/images/exhibicion/67/2.webp",
+          "alt": "Organizador vertical para tazas · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/mug-tree-stand/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d1b1aa6c74e1a74b6500698bfb3917bba06c9cf9d49eb174ec5603a1c420451b"
+        }
+      ]
+    },
+    {
+      "sourceId": 70,
+      "sourceTitle": "Red Tongs",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/70",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/red-tongs/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/70/1.webp",
+          "alt": "Pinzas de cocina con detalle rojo · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/red-tongs/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8c0999705a7f93afc22b4306ade259939140681f7fa24c630414ea615a735d4d"
+        }
+      ]
+    },
+    {
+      "sourceId": 71,
+      "sourceTitle": "Silver Pot With Glass Cap",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/71",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/silver-pot-with-glass-cap/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/71/1.webp",
+          "alt": "Olla con tapa de vidrio · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/silver-pot-with-glass-cap/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ef2fe755f75b4d226e12ee5a6713b426b0eb742e06c6e83a9a514e23d7768cf4"
+        }
+      ]
+    },
+    {
+      "sourceId": 77,
+      "sourceTitle": "Yellow Peeler",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/77",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/yellow-peeler/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/77/1.webp",
+          "alt": "Pelador manual de cocina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/yellow-peeler/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "4d064015230abd30dc73cd5a0121ee63ec8871b81d95037c2add7277c7adb1d8"
+        }
+      ]
+    },
+    {
+      "sourceId": 118,
+      "sourceTitle": "Attitude Super Leaves Hand Soap",
+      "sourceCategory": "skin-care",
+      "sourceUrl": "https://dummyjson.com/products/118",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/skin-care/attitude-super-leaves-hand-soap/1.webp",
+        "https://cdn.dummyjson.com/product-images/skin-care/attitude-super-leaves-hand-soap/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/118/1.webp",
+          "alt": "Jabón de manos Super Leaves · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/skin-care/attitude-super-leaves-hand-soap/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "c5a206936392b935b51fa070efbf3c735e42633497f206cd15032454e9c8f7ce"
+        },
+        {
+          "url": "/images/exhibicion/118/2.webp",
+          "alt": "Jabón de manos Super Leaves · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/skin-care/attitude-super-leaves-hand-soap/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "602ffd07a17246446904470e3f3743e82fe05159ea2353491c783c22338e89f7"
+        }
+      ]
+    },
+    {
+      "sourceId": 119,
+      "sourceTitle": "Olay Ultra Moisture Shea Butter Body Wash",
+      "sourceCategory": "skin-care",
+      "sourceUrl": "https://dummyjson.com/products/119",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/skin-care/olay-ultra-moisture-shea-butter-body-wash/1.webp",
+        "https://cdn.dummyjson.com/product-images/skin-care/olay-ultra-moisture-shea-butter-body-wash/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/119/1.webp",
+          "alt": "Gel de ducha Olay Ultra Moisture · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/skin-care/olay-ultra-moisture-shea-butter-body-wash/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8bf707e0babe8c8e9f0d4a9a4d60584b6d37ec25188797cd2802db68bb2ad219"
+        },
+        {
+          "url": "/images/exhibicion/119/2.webp",
+          "alt": "Gel de ducha Olay Ultra Moisture · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/skin-care/olay-ultra-moisture-shea-butter-body-wash/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7d77fdad8e3a5592ef10cb6449b2a76f62b91e168d72a4748832a9f4e86456db"
+        }
+      ]
     }
   ]
 }
