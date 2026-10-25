@@ -1,0 +1,478 @@
+{
+  "catalog": "Exhibición",
+  "prepared_on": "2026-10-25",
+  "trends": "https://www.shopify.com/blog/trending-products",
+  "image_dataset": "https://dummyjson.com/docs/products",
+  "products": [
+    {
+      "sourceId": 1,
+      "sourceTitle": "Essence Mascara Lash Princess",
+      "sourceCategory": "beauty",
+      "sourceUrl": "https://dummyjson.com/products/1",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/1/1.webp",
+          "alt": "Essence Mascara Lash Princess · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "4c9b190e6d218f0ca7aae7523ffc083be9df44c585823796978148f9d81854ee"
+        }
+      ]
+    },
+    {
+      "sourceId": 2,
+      "sourceTitle": "Eyeshadow Palette with Mirror",
+      "sourceCategory": "beauty",
+      "sourceUrl": "https://dummyjson.com/products/2",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/2/1.webp",
+          "alt": "Eyeshadow Palette with Mirror · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8af18a1b9c65e70aa1f0d019690366f42733469fcca124b669ccf7ba9770e2e6"
+        }
+      ]
+    },
+    {
+      "sourceId": 4,
+      "sourceTitle": "Red Lipstick",
+      "sourceCategory": "beauty",
+      "sourceUrl": "https://dummyjson.com/products/4",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/beauty/red-lipstick/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/4/1.webp",
+          "alt": "Red Lipstick · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/beauty/red-lipstick/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "278bed35d514122e810fb10c311a5c679b88983dca1b715fc58f848b54a88756"
+        }
+      ]
+    },
+    {
+      "sourceId": 5,
+      "sourceTitle": "Red Nail Polish",
+      "sourceCategory": "beauty",
+      "sourceUrl": "https://dummyjson.com/products/5",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/5/1.webp",
+          "alt": "Red Nail Polish · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "0e32f4e4a2bde87add285a060840d78eb1e5e771e5866af74d585603de6f7bf7"
+        }
+      ]
+    },
+    {
+      "sourceId": 6,
+      "sourceTitle": "Calvin Klein CK One",
+      "sourceCategory": "fragrances",
+      "sourceUrl": "https://dummyjson.com/products/6",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/1.webp",
+        "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/6/1.webp",
+          "alt": "Calvin Klein CK One · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "33a06ed35111202988074b703de2067d0869509f9084a15fe737a72fcf91bc91"
+        },
+        {
+          "url": "/images/exhibicion/6/2.webp",
+          "alt": "Calvin Klein CK One · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/calvin-klein-ck-one/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "32e263893931a81136e40ac16c4b75dd20c7a0eeb810bdf546768a3352d9fd94"
+        }
+      ]
+    },
+    {
+      "sourceId": 8,
+      "sourceTitle": "Dior J'adore",
+      "sourceCategory": "fragrances",
+      "sourceUrl": "https://dummyjson.com/products/8",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/fragrances/dior-j'adore/1.webp",
+        "https://cdn.dummyjson.com/product-images/fragrances/dior-j'adore/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/8/1.webp",
+          "alt": "Dior J'adore · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/dior-j'adore/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7523c50c1bd3a0271181ea46029a3b2ff7b6183dbef39c37dcad67b6e433c011"
+        },
+        {
+          "url": "/images/exhibicion/8/2.webp",
+          "alt": "Dior J'adore · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/dior-j'adore/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d7d767c5c46f98014a93a5de524a727a727647510a63a0616e2e7fb542d152f9"
+        }
+      ]
+    },
+    {
+      "sourceId": 43,
+      "sourceTitle": "Decoration Swing",
+      "sourceCategory": "home-decoration",
+      "sourceUrl": "https://dummyjson.com/products/43",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/home-decoration/decoration-swing/1.webp",
+        "https://cdn.dummyjson.com/product-images/home-decoration/decoration-swing/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/43/1.webp",
+          "alt": "Decoration Swing · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/decoration-swing/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "b1a09e708a2c715a5b3f05ab7a6d280ae61650c5648d32e7bd9a0923e66b394e"
+        },
+        {
+          "url": "/images/exhibicion/43/2.webp",
+          "alt": "Decoration Swing · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/decoration-swing/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d34154804a6efa20cce67b207de8dc2047c315233b0cc40980f3fca2a22272d4"
+        }
+      ]
+    },
+    {
+      "sourceId": 45,
+      "sourceTitle": "House Showpiece Plant",
+      "sourceCategory": "home-decoration",
+      "sourceUrl": "https://dummyjson.com/products/45",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/home-decoration/house-showpiece-plant/1.webp",
+        "https://cdn.dummyjson.com/product-images/home-decoration/house-showpiece-plant/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/45/1.webp",
+          "alt": "House Showpiece Plant · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/house-showpiece-plant/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "01336fe6d0371ada7492c6d53d235e00bccdc2e1ce23caab1ab66a82b244e7e2"
+        },
+        {
+          "url": "/images/exhibicion/45/2.webp",
+          "alt": "House Showpiece Plant · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/house-showpiece-plant/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "9e9a6161333b6f55cad0083af7e00ec8c8a6c16517b76323ba1767b114323e31"
+        }
+      ]
+    },
+    {
+      "sourceId": 46,
+      "sourceTitle": "Plant Pot",
+      "sourceCategory": "home-decoration",
+      "sourceUrl": "https://dummyjson.com/products/46",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/home-decoration/plant-pot/1.webp",
+        "https://cdn.dummyjson.com/product-images/home-decoration/plant-pot/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/46/1.webp",
+          "alt": "Plant Pot · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/plant-pot/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "378b614ce6769c4c6c213766092327a5218ea1a679e8b418a679cdf41b2b72f2"
+        },
+        {
+          "url": "/images/exhibicion/46/2.webp",
+          "alt": "Plant Pot · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/plant-pot/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "2349be806f15e9e5588dfb08004c2a02cca0281b0fc02569ed70752547c3e52f"
+        }
+      ]
+    },
+    {
+      "sourceId": 47,
+      "sourceTitle": "Table Lamp",
+      "sourceCategory": "home-decoration",
+      "sourceUrl": "https://dummyjson.com/products/47",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/home-decoration/table-lamp/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/47/1.webp",
+          "alt": "Table Lamp · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/table-lamp/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "0867beea2c2781b480f05f7b171912fa8588a877eccc6190a6a5cc37fdf44b52"
+        }
+      ]
+    },
+    {
+      "sourceId": 48,
+      "sourceTitle": "Bamboo Spatula",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/48",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/bamboo-spatula/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/48/1.webp",
+          "alt": "Bamboo Spatula · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/bamboo-spatula/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ec0bec3b77734405a023e3de3bfff01d8413a03d68e619632685c2ffe65f7ab9"
+        }
+      ]
+    },
+    {
+      "sourceId": 61,
+      "sourceTitle": "Hand Blender",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/61",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/hand-blender/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/61/1.webp",
+          "alt": "Hand Blender · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/hand-blender/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7b2c34f540db288ec9fd276cab21db12d5675e666d748af079af9a2a5c799eaf"
+        }
+      ]
+    },
+    {
+      "sourceId": 62,
+      "sourceTitle": "Ice Cube Tray",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/62",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/ice-cube-tray/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/62/1.webp",
+          "alt": "Ice Cube Tray · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/ice-cube-tray/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "2c0d10791bd783304171651b5fafb88892d7b25aed8d40a0abae57644e4ef44d"
+        }
+      ]
+    },
+    {
+      "sourceId": 65,
+      "sourceTitle": "Lunch Box",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/65",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/lunch-box/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/65/1.webp",
+          "alt": "Lunch Box · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/lunch-box/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "e7cb3516f994d1584826de96a8e6bf59407ec2e3330ca379cecc74a4ecd4a6a8"
+        }
+      ]
+    },
+    {
+      "sourceId": 73,
+      "sourceTitle": "Spice Rack",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/73",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/spice-rack/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/73/1.webp",
+          "alt": "Spice Rack · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/spice-rack/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "647ecaf96774e0be433a4ac923aafe9cece018da9a44776a543b6ba89ae7a00e"
+        }
+      ]
+    },
+    {
+      "sourceId": 172,
+      "sourceTitle": "Blue Women's Handbag",
+      "sourceCategory": "womens-bags",
+      "sourceUrl": "https://dummyjson.com/products/172",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/1.webp",
+        "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/172/1.webp",
+          "alt": "Blue Women's Handbag · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d835f10e79651a29ebebebb69c456714ed0d3adc7efe30ccff04b78a9be7d24f"
+        },
+        {
+          "url": "/images/exhibicion/172/2.webp",
+          "alt": "Blue Women's Handbag · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/blue-women's-handbag/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "68a81db99f90e351a30c555e19827f5a6e8a7b44115d644ceecfaf7518b076a6"
+        }
+      ]
+    },
+    {
+      "sourceId": 175,
+      "sourceTitle": "White Faux Leather Backpack",
+      "sourceCategory": "womens-bags",
+      "sourceUrl": "https://dummyjson.com/products/175",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/1.webp",
+        "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/175/1.webp",
+          "alt": "White Faux Leather Backpack · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "bcdd9f951790dc029a7926b7a83f1f21b35da885692f72cd79c9e00888d87a06"
+        },
+        {
+          "url": "/images/exhibicion/175/2.webp",
+          "alt": "White Faux Leather Backpack · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/white-faux-leather-backpack/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ab71971f4473902eb5cbc35a292496d9aba73c23d9449badbf7928e30088479f"
+        }
+      ]
+    },
+    {
+      "sourceId": 176,
+      "sourceTitle": "Women Handbag Black",
+      "sourceCategory": "womens-bags",
+      "sourceUrl": "https://dummyjson.com/products/176",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/1.webp",
+        "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/176/1.webp",
+          "alt": "Women Handbag Black · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "c94dd2eaeede7780d49959eea345fd1f7bd61ddc351a73700fe30450c5532c8e"
+        },
+        {
+          "url": "/images/exhibicion/176/2.webp",
+          "alt": "Women Handbag Black · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/womens-bags/women-handbag-black/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "9fd7113a34a636a27db09d9e57083f46f4b5d3634f5a08883cffb5f16dcde173"
+        }
+      ]
+    },
+    {
+      "sourceId": 154,
+      "sourceTitle": "Black Sun Glasses",
+      "sourceCategory": "sunglasses",
+      "sourceUrl": "https://dummyjson.com/products/154",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/1.webp",
+        "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/154/1.webp",
+          "alt": "Black Sun Glasses · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "00e1f89deefc9c252dc4d877c61e43a181e281b531fce899eae126a9c632e8d3"
+        },
+        {
+          "url": "/images/exhibicion/154/2.webp",
+          "alt": "Black Sun Glasses · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/black-sun-glasses/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a52e3c2b6d6baaa79853a2232b91613e81b5ee279fb91ea02f4104f7a1ba3156"
+        }
+      ]
+    },
+    {
+      "sourceId": 86,
+      "sourceTitle": "Man Short Sleeve Shirt",
+      "sourceCategory": "mens-shirts",
+      "sourceUrl": "https://dummyjson.com/products/86",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/1.webp",
+        "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/2.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/86/1.webp",
+          "alt": "Man Short Sleeve Shirt · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a919351e54b801189bb176a72b9fc12de1d1116df8e9801516c143dfa79a3a45"
+        },
+        {
+          "url": "/images/exhibicion/86/2.webp",
+          "alt": "Man Short Sleeve Shirt · vista 2",
+          "source": "https://cdn.dummyjson.com/product-images/mens-shirts/man-short-sleeve-shirt/2.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a0c6cf758b417a7704c0a46c8dfea371daac86a2cad800a5270656ea92513f3f"
+        }
+      ]
+    }
+  ]
+}

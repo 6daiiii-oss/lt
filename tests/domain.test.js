@@ -24,6 +24,14 @@ async function request(method,path,body,user,headers={}) {
 }
 const post=(path,body,user,headers)=>request('POST',path,body,user,headers);
 
+test('fichas de exhibición no son inventario ni se pueden comprar aun con compras habilitadas',async()=>{
+ const listing=await request('GET','/products');assert.equal(listing.data.total,0);
+ assert.equal((await post('/cart/items',{product_id:'exh-01',quantity:1,expected_price_cents:100},accounts.buyerA)).status,422);
+ assert.equal((await post('/favorites',{product_id:'exh-01'},accounts.buyerA)).status,422);
+ assert.equal((await db.query('SELECT count(*) AS n FROM cart_items')).rows[0].n,'0');
+ assert.equal((await db.query('SELECT count(*) AS n FROM products')).rows[0].n,'0');
+});
+
 test('favoritos lista productos y marcas sin ambigüedad SQL y mantiene aislamiento entre tiendas',async()=>{
  const p=await product(db,accounts.sellerA,{name:'Producto guardado'});
  assert.equal((await request('GET','/favorites',undefined)).status,401);
