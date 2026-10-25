@@ -5,9 +5,9 @@ import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import {showcaseProducts} from '../public/modules/showcase-data.js';
 import {findShowcase} from '../public/modules/showcase.js';
-test('exhibición contiene 20 ejemplos sin inventario comercial y fotos cuadradas verificables',async()=>{
+test('exhibición contiene 50 ejemplos sin inventario comercial y fotos cuadradas verificables',async()=>{
  const sources=JSON.parse(await readFile(new URL('../docs/EXHIBICION_FUENTES.json',import.meta.url)));
- assert.equal(showcaseProducts.length,20);assert.equal(new Set(showcaseProducts.map(p=>p.id)).size,20);
+ assert.equal(showcaseProducts.length,50);assert.equal(new Set(showcaseProducts.map(p=>p.id)).size,50);
  let photos=0;
  for(const p of showcaseProducts){
   assert.equal(p.is_showcase,true);assert.ok(p.description.length>80);
@@ -20,7 +20,7 @@ test('exhibición contiene 20 ejemplos sin inventario comercial y fotos cuadrada
    assert.equal(createHash('sha256').update(bytes).digest('hex'),source.assets.find(a=>a.url===im.url).sha256);photos++;
   }
  }
- assert.equal(photos,30);
+ assert.equal(photos,77);
 });
 test('exhibición respeta búsqueda y categoría sin simular filtros de ofertas',()=>{
  assert.equal(findShowcase(new URLSearchParams({q:'LÁBIAL'})).length,1);
