@@ -84,9 +84,10 @@ sellerRouter.get('/analytics',async(req,res)=>{
   const input=parse(z.object({from:z.iso.date().default(peruDay(new Date(Date.now()-30*86400000))),to:z.iso.date().default(peruDay())}),req.query);
   requireThat(input.from<=input.to,'Revisa el rango de fechas.');
   const rows=(await query(`SELECT ord.* FROM orders ord JOIN purchases p ON p.id=ord.purchase_id WHERE ord.brand_id=$1 AND p.payment_state IN ('approved','refunded','partially_refunded') AND ord.created_at>=($2::date::timestamp AT TIME ZONE 'America/Lima') AND ord.created_at<(($3::date+1)::timestamp AT TIME ZONE 'America/Lima')`,[req.org.brand_id,input.from,input.to])).rows;
-  const gross=rows.reduce((s,r)=>s+r.subtotal_cents,0),buyers=new Map();for(const r of rows) buyers.set(r.buyer_id,(buyers.get(r.buyer_id)||0)+1);
+  const gross=rows.reduce((s,r)=>s+r.subtotal_cents,0),buyers=new Map(),days=new Map();
+  for(const r of rows){buyers.set(r.buyer_id,(buyers.get(r.buyer_id)||0)+1);const date=peruDay(r.created_at),day=days.get(date)||{date,gross_products_cents:0,orders:0};day.gross_products_cents+=r.subtotal_cents;day.orders++;days.set(date,day);}
   const products=(await query(`SELECT oi.product_id,oi.snapshot->>'name' AS name,sum(oi.quantity)::int AS units,sum(oi.quantity*oi.unit_price_cents)::bigint AS gross_cents FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.id=ANY($1::uuid[]) GROUP BY oi.product_id,oi.snapshot->>'name' ORDER BY units DESC`,[rows.map(r=>r.id)])).rows;
-  res.json({period:input,gross_products_cents:gross,refunds_cents:rows.reduce((s,r)=>s+r.refunded_cents,0),orders:rows.length,average_ticket_cents:rows.length?Math.round(gross/rows.length):0,units:products.reduce((s,r)=>s+r.units,0),repeat_buyers:[...buyers.values()].filter(n=>n>1).length,products});
+  res.json({period:input,gross_products_cents:gross,refunds_cents:rows.reduce((s,r)=>s+r.refunded_cents,0),orders:rows.length,average_ticket_cents:rows.length?Math.round(gross/rows.length):0,units:products.reduce((s,r)=>s+r.units,0),repeat_buyers:[...buyers.values()].filter(n=>n>1).length,products,daily:[...days.values()].sort((a,b)=>a.date.localeCompare(b.date))});
 });
 sellerRouter.post('/orders/:id/fulfillment',verified,async(req,res)=>{
   const input=parse(z.object({state:z.enum(['preparing','shipped']),carrier:text.optional(),tracking_code:text.optional()}),req.body);
