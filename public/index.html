@@ -15,11 +15,12 @@
     <link rel="stylesheet" href="/journey.css" />
     <link rel="stylesheet" href="/analytics.css" />
     <link rel="stylesheet" href="/showcase.css" />
+    <link rel="stylesheet" href="/loader.css" />
     <script type="module" src="/modules/app.js"></script>
   </head>
   <body>
     <a class="skip" href="#main">Saltar al contenido</a>
-    <div id="app"><main class="container loading" id="main" aria-live="polite">Preparando Vendo…</main></div>
+    <div id="app"><main class="boot-loader" id="main" tabindex="-1"><div class="boot-loader-content" role="status" aria-live="polite"><img class="boot-loader-logo" src="/brand/vendo-principal.svg" width="210" height="40" alt="Vendo" fetchpriority="high"><span class="boot-loader-orbit" aria-hidden="true"><span></span></span><span class="sr-only">Cargando Vendo…</span></div></main></div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <noscript>Activa JavaScript para consultar el catálogo y gestionar tu cuenta. No se cargan productos sin conexión al servidor.</noscript>
   </body>
