@@ -129,7 +129,7 @@
  .catalog-location{display:none}.catalog-empty{padding:27px;gap:20px}.home-empty{flex-wrap:wrap}
 }
 @media(max-width:600px){
- .marketplace{font-size:16px}.market-utility{display:none}.market-header{padding-block:18px 15px;gap:18px 10px}.market-brand .logo{font-size:31px}.market-brand .logo img{width:30px;height:30px}
+ .marketplace{font-size:16px}.market-utility{display:none}.market-header{padding-block:18px 15px;gap:18px 10px}.market-brand .logo{font-size:31px}.market-brand .logo img{width:120px;height:auto;max-width:100%;max-height:none;object-fit:contain;object-position:left center}
  .market-brand>span{font-size:14px}.marketplace .header-actions{gap:12px;font-size:14px}.marketplace .header-actions .header-signup{font-size:14px;padding:9px 12px;min-height:44px}.marketplace .cart-link{font-size:14px;padding:8px 10px;gap:5px}
  .market-nav{gap:24px}.market-nav a{font-size:15px;min-height:47px;padding-block:10px}
  .discovery-search{gap:10px;padding-left:13px}.discovery-search input{font-size:16px}.discovery-search input::placeholder{font-size:15px}.discovery-search button{font-size:15px;padding-inline:16px}
