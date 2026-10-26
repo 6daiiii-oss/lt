@@ -129,6 +129,7 @@
  .catalog-location{display:none}.catalog-empty{padding:27px;gap:20px}.home-empty{flex-wrap:wrap}
 }
 @media(max-width:600px){
+ .market-nav-wrap{position:relative;min-height:50px}.mobile-menu-toggle{display:flex;align-items:center;justify-content:center;width:46px;height:44px;margin:3px 0 3px 20px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--brand);cursor:pointer}.mobile-menu-toggle:hover,.mobile-menu-toggle:focus-visible{background:#28262610}.market-nav{display:none;position:absolute;z-index:35;top:calc(100% + 1px);left:0;margin:0;width:min(280px,calc(100vw - 24px));padding:8px!important;flex-direction:column;gap:0;overflow:visible;border:1px solid var(--border);border-radius:0 0 10px 0;background:white;box-shadow:0 12px 28px #192d2720}.market-nav-wrap.is-open .market-nav{display:flex}.market-nav a{min-height:48px;padding:12px 14px;border:0;border-radius:6px}.market-nav a[aria-current]{background:var(--background);border:0}
  .marketplace{font-size:16px}.market-utility{display:none}.market-header{padding-block:18px 15px;gap:18px 10px}.market-brand .logo{font-size:31px}.market-brand .logo img{width:120px;height:auto;max-width:100%;max-height:none;object-fit:contain;object-position:left center}
  .market-brand>span{font-size:14px}.marketplace .header-actions{gap:12px;font-size:14px}.marketplace .header-actions .header-signup{font-size:14px;padding:9px 12px;min-height:44px}.marketplace .cart-link{font-size:14px;padding:8px 10px;gap:5px}
  .market-nav{gap:24px}.market-nav a{font-size:15px;min-height:47px;padding-block:10px}
