@@ -1,0 +1,10 @@
+.boot-loader{min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:32px;background:var(--background,#f7f5ef)}
+.boot-loader-content{display:flex;flex-direction:column;align-items:center;gap:36px;animation:vendo-arrive .45s ease-out both}
+.boot-loader-logo{width:210px;max-width:65vw;height:auto}
+.boot-loader-orbit{position:relative;display:block;width:58px;height:58px;border:3px solid #a8624020;border-radius:50%}
+.boot-loader-orbit::before{content:"";position:absolute;inset:-3px;border:3px solid transparent;border-top-color:#a86240;border-right-color:#a8624070;border-radius:50%;animation:vendo-orbit 1.05s cubic-bezier(.55,.15,.45,.85) infinite}
+.boot-loader-orbit>span{position:absolute;inset:-3px;animation:vendo-orbit 1.05s cubic-bezier(.55,.15,.45,.85) infinite}
+.boot-loader-orbit>span::after{content:"";position:absolute;width:7px;height:7px;top:4px;right:4px;border-radius:50%;background:#a86240;box-shadow:0 0 0 5px #a8624012}
+@keyframes vendo-orbit{to{transform:rotate(360deg)}}
+@keyframes vendo-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.boot-loader-content,.boot-loader-orbit::before,.boot-loader-orbit>span{animation:none}}
