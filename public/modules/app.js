@@ -16,6 +16,7 @@ async function render() {
   const scrollTop=nextScrollTop;nextScrollTop=0;
   disposeSearch();
   root.setAttribute('aria-busy','true');
+  root.innerHTML='<main class="boot-loader" id="main" tabindex="-1"><div class="boot-loader-content" role="status" aria-live="polite"><img class="boot-loader-logo" src="/brand/vendo-principal.svg" width="210" height="40" alt="Vendo"><span class="boot-loader-orbit" aria-hidden="true"><span></span></span><span class="sr-only">Cargando Vendo…</span></div></main>';
   let shell=publicShell;
   try {
     const privateRoute=/^\/(cuenta|panel|administracion|pedidos|favoritos|notificaciones|buzon|carrito|checkout|incidencias)(\/|$)/.test(path);
@@ -23,7 +24,6 @@ async function render() {
       await refreshMe();
       if(current!==generation)return;
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
-      root.innerHTML='<main id="main" class="container loading" tabindex="-1" aria-live="polite">Abriendo tu espacio…</main>';
     }
     let view=await legalView(path)||await authView(path,url)||await demoView(path)||await publicView(path,url);
     if((path==='/registro'&&url.searchParams.get('tipo')==='proveedor')||(path==='/registro/celular'&&currentOrg()?.kind==='seller'))shell=brandSignupShell;
