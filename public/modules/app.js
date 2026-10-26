@@ -54,6 +54,8 @@ async function render() {
   }finally{root.removeAttribute('aria-busy');}
 }
 document.addEventListener('click',event=>{
+  const panelMenuButton=event.target.closest('.panel-menu-toggle');
+  if(panelMenuButton){const menu=document.getElementById(panelMenuButton.getAttribute('aria-controls')),open=panelMenuButton.getAttribute('aria-expanded')==='true';panelMenuButton.setAttribute('aria-expanded',String(!open));menu.hidden=open;return;}
   const filters=document.querySelector('.filter-popover[open]');if(filters&&!filters.contains(event.target))filters.open=false;
   const a=event.target.closest('a[href]');if(!a||a.target||a.hasAttribute('download')||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||event.button!==0)return;
   const url=new URL(a.href,location.origin);
