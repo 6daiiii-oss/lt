@@ -54,8 +54,6 @@ async function render() {
   }finally{root.removeAttribute('aria-busy');}
 }
 document.addEventListener('click',event=>{
-  const menuButton=event.target.closest('.mobile-menu-toggle');
-  if(menuButton){const menu=menuButton.closest('.market-nav-wrap'),open=menu.classList.toggle('is-open');menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');return;}
   const filters=document.querySelector('.filter-popover[open]');if(filters&&!filters.contains(event.target))filters.open=false;
   const a=event.target.closest('a[href]');if(!a||a.target||a.hasAttribute('download')||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||event.button!==0)return;
   const url=new URL(a.href,location.origin);
