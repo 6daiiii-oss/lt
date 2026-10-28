@@ -1,45 +1,54 @@
-/* Vendo 1.0: negro cálido, cobre y marfil. Visual layer only. */
+/* Shared visual language. Business rules and brand artwork remain unchanged. */
 :root{
-  --brand:#282626;--brand-hover:#1c1a19;--background:#f6f3ec;--surface:#fff;
-  --text:#282626;--muted:#68615c;--soft:#e8ddd2;--accent:#a86649;
-  --terracotta:#874a34;--peach:#e8ddd2;--border:#d8cfc5;--error:#b33832;
-  --body:Inter,Arial,sans-serif;--display:Inter,Arial,sans-serif;
+ --brand:#242321;--brand-hover:#151413;--background:#faf9f7;--surface:#fff;
+ --text:#171717;--muted:#66615d;--soft:#f5f5f4;--accent:#ff5a1f;
+ --terracotta:#c83e0b;--action:#ce410e;--action-hover:#ae3509;
+ --peach:#fff0e8;--border:#eae7e3;--error:#b33832;
+ --body:Inter,Arial,sans-serif;--display:Inter,Arial,sans-serif;
 }
 body{background:var(--background);color:var(--text)}
-:focus-visible{outline-color:#874a34}
-::selection{background:#e8ddd2;color:#282626}
-.logo{color:#282626;letter-spacing:0}
-.logo img{display:block;width:160px;height:auto;max-height:32px;object-fit:contain}
-.sidebar .logo img{width:150px;max-height:30px}
-.button{background:#874a34;border-color:#874a34;border-radius:8px}
-.button:hover{background:#713c29;border-color:#713c29}
-.button.secondary{color:#282626;border-color:#d8cfc5;background:#fff}
-.button.secondary:hover{background:#f6f3ec}
-.button.light{background:#e8ddd2;color:#282626;border-color:#e8ddd2}
-.topline,.sidebar,.supplier-invite{background:#282626}
-.topline a,.supplier-invite .eyebrow{color:#d89b7e}
-.sidebar nav a:hover,.sidebar nav a[aria-current]{background:#413936}
-.panel-label{color:#d8cfc5}
-.sidebar .back-store{color:#e8ddd2}
-.hero h1 span,.trade-data .number,.step .step-number{color:#874a34}
-.category-card:nth-child(2n) .category-icon{background:#e8ddd2;color:#874a34}
-.selection-card:nth-child(2){background:#e8ddd2}
-.selection-card:nth-child(3){background:#f6f3ec}
-.section.soft,.trade-strip,.footer{background:#f0ebe3}
-.supplier-invite .button.light{background:#f6f3ec;border-color:#f6f3ec;color:#282626}
-.supplier-type{color:#d89b7e}
-.global-search form,.catalog-empty,.empty{background:#f0ebe3;border-color:#d8cfc5}
-.category-icon,.brand-monogram{background:#e8ddd2;color:#874a34}
-.product-art{background:#f0ebe3}
-.market-nav a[aria-current]{border-color:#874a34;color:#282626}
-.market-nav a:hover,.market-nav a:focus-visible{color:#874a34}
-.market-header{background:#f6f3ec}
-.brand-story{background:#282626}
-.brand-story .eyebrow{color:#d89b7e}
-.brand-benefits li:before{color:#d89b7e}
-.brand-steps li[aria-current=step] span,.brand-steps .complete span{background:#874a34;border-color:#874a34}
-.brand-steps li[aria-current=step]{color:#874a34}
-.brand-fee-note{background:#f0ebe3}
-.badge.positive,.notice{background:#e8ddd2;color:#282626}
-.toast{background:#282626}
-@media(max-width:700px){.logo img{width:138px;max-height:28px}.sidebar .logo img{width:138px}}
+:focus-visible{outline:2px solid var(--terracotta);outline-offset:4px}
+::selection{background:#ffe0cd;color:#171717}
+.logo{color:var(--text);letter-spacing:0}
+.logo img{display:block;width:148px;height:auto;max-height:32px;object-fit:contain}
+.sidebar .logo img{width:145px;max-height:30px}
+.button{background:var(--action);border-color:var(--action);border-radius:9px;transition:background .18s,border-color .18s,box-shadow .18s}
+.button:hover{background:var(--action-hover);border-color:var(--action-hover)}
+.button.secondary{color:var(--text);border-color:#d9d5d0;background:#fff}
+.button.secondary:hover{background:var(--background);border-color:#bdb6af}
+.button.light{background:var(--peach);color:var(--text);border-color:var(--peach)}
+.button.danger{background:var(--error);border-color:var(--error)}
+.button:disabled{cursor:not-allowed;box-shadow:none}
+.topline,.sidebar,.supplier-invite{background:var(--brand)}
+.topline a,.supplier-invite .eyebrow{color:#ffb28f}
+.sidebar nav a{border-radius:8px;transition:background .18s}
+.sidebar nav a:hover{background:#35322f}
+.sidebar nav a[aria-current]{background:#443329;color:#fff;box-shadow:inset 3px 0 var(--accent)}
+.panel-label{color:#bdb8b3}.sidebar .back-store{color:#f2e7df}
+.panel-header{border-bottom:1px solid var(--border)}
+.panel-content{padding:32px 36px 48px}.panel-content .page-heading h1{font-size:32px;line-height:1.2;letter-spacing:-.035em}
+.card,.metric,.auth-wrap{border-color:var(--border);box-shadow:0 2px 5px #29221b03}
+.card{border-radius:12px}.metric{border-radius:12px}
+.field input,.field select,.field textarea{background:#fff;border-color:#d6d1cb;border-radius:8px;transition:border-color .18s,box-shadow .18s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px #ff5a1f10}
+.check input{accent-color:var(--action)}
+.hero h1 span,.trade-data .number,.step .step-number{color:var(--terracotta)}
+.selection-card:nth-child(2){background:var(--peach)}.selection-card:nth-child(3){background:var(--soft)}
+.section.soft,.trade-strip,.footer{background:var(--soft)}
+.supplier-invite .button.light{background:white;border-color:white;color:var(--text)}
+.supplier-type{color:#ffb28f}
+.catalog-empty,.empty{background:var(--background);border-color:var(--border)}
+.category-icon,.brand-monogram{background:var(--peach);color:var(--terracotta)}
+.product-art{background:#f7f7f5}
+.brand-header{background:var(--background);border:1px solid var(--border);border-radius:16px}
+.brand-grid .brand-card{padding:28px;border-radius:12px;transition:border-color .18s,box-shadow .18s}
+.brand-grid .brand-card:hover{border-color:#d1c4b9;box-shadow:0 6px 24px #31211208}
+.brand-monogram{border-radius:16px;font-weight:700}
+.brand-story{background:var(--brand)}.brand-story .eyebrow,.brand-benefits li:before{color:#ffb28f}
+.brand-steps li[aria-current=step] span,.brand-steps .complete span{background:var(--action);border-color:var(--action)}
+.brand-steps li[aria-current=step]{color:var(--terracotta)}
+.brand-fee-note{background:var(--peach)}
+.badge.positive{background:#edf4ed;color:#28543a}.notice{background:#fff4eb;color:#503923}
+.toast{background:var(--brand)}
+@media(max-width:800px){.panel-content{padding:24px}.panel-content .page-heading h1{font-size:28px}}
+@media(max-width:600px){.logo img{width:132px;max-height:28px}.sidebar .logo img{width:132px}.panel-content{padding:22px 16px 40px}.brand-header{padding:24px}.brand-grid .brand-card{padding:22px}}
