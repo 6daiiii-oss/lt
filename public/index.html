@@ -16,11 +16,12 @@
     <link rel="stylesheet" href="/analytics.css" />
     <link rel="stylesheet" href="/showcase.css" />
     <link rel="stylesheet" href="/loader.css" />
+    <script type="module" src="/modules/loading.js"></script>
     <script type="module" src="/modules/app.js"></script>
   </head>
   <body>
     <a class="skip" href="#main">Saltar al contenido</a>
-    <div id="app"><main class="boot-loader" id="main" tabindex="-1"><div class="boot-loader-content" role="status" aria-live="polite"><img class="boot-loader-logo" src="/brand/vendo-principal.svg" width="210" height="40" alt="Vendo" fetchpriority="high"><span class="boot-loader-orbit" aria-hidden="true"><span></span></span><span class="sr-only">Cargando Vendo…</span></div></main></div>
+    <div id="app" data-initial-loading aria-busy="true"><div class="page-skeleton"><p class="sr-only" role="status">Cargando la página de Vendo…</p><div aria-hidden="true"><header class="skeleton-header"><img src="/brand/vendo-principal.svg" width="148" height="28" alt=""><span class="skeleton-block skeleton-nav"></span><span class="skeleton-block skeleton-search"></span><span class="skeleton-block skeleton-account"></span></header><main id="main" class="skeleton-body" tabindex="-1"><div class="skeleton-heading"><span class="skeleton-block skeleton-title"></span><span class="skeleton-block skeleton-line"></span></div><div class="skeleton-block skeleton-hero-photo"></div></main></div></div></div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <noscript>Activa JavaScript para consultar el catálogo y gestionar tu cuenta. No se cargan productos sin conexión al servidor.</noscript>
   </body>
