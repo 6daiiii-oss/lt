@@ -1,3 +1,4 @@
+import { loadingView } from './loading.js';
 import { demoView } from './demo.js';
 import { bindPhotoGalleries } from './photos.js';
 import { api, currentOrg, refreshMe, state } from './api.js';
@@ -16,7 +17,7 @@ async function render() {
   const scrollTop=nextScrollTop;nextScrollTop=0;
   disposeSearch();
   root.setAttribute('aria-busy','true');
-  root.innerHTML='<main class="boot-loader" id="main" tabindex="-1"><div class="boot-loader-content" role="status" aria-live="polite"><img class="boot-loader-logo" src="/brand/vendo-principal.svg" width="210" height="40" alt="Vendo"><span class="boot-loader-orbit" aria-hidden="true"><span></span></span><span class="sr-only">Cargando Vendo…</span></div></main>';
+  root.innerHTML=loadingView(path,url.search);
   let shell=publicShell;
   try {
     const privateRoute=/^\/(cuenta|panel|administracion|pedidos|favoritos|notificaciones|buzon|carrito|checkout|incidencias)(\/|$)/.test(path);
@@ -51,7 +52,7 @@ async function render() {
     if(current!==generation)return;
     if(error.status===401){state.user=null;state.organizations=[];state.organizationId=null;state.csrfToken=null;navigate('/login?next='+encodeURIComponent(path+url.search)+'&sesion=caducada',{replace:true});return;}
     root.innerHTML=shell(`<section class="container page">${empty('No pudimos completar esta vista.',errorText(error),'<button class="button" data-action="retry">Volver a intentar</button>')}<p><a class="link-under" href="/">Volver al inicio</a></p></section>`);onAction('retry',reload);
-  }finally{root.removeAttribute('aria-busy');}
+  }finally{if(current===generation)root.removeAttribute('aria-busy');}
 }
 document.addEventListener('click',event=>{
   const panelMenuButton=event.target.closest('.panel-menu-toggle');
