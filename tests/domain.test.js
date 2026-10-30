@@ -182,16 +182,14 @@ test('adaptador Twilio usa Verify y vincula la comprobación al SID; transporte 
   }
 });
 async function putInCart(buyer,p,n=p.moq) {const r=await post('/cart/items',{product_id:p.id,quantity:n,expected_price_cents:p.wholesale_cents},buyer);assert.equal(r.status,201,JSON.stringify(r.data));}
-async function checkout(buyer,key=randomUUID()) {
-  const cart=await request('GET','/cart',undefined,buyer);
-  return post('/checkout',{address_id:buyer.addressId,receipt:{kind:'order_summary'},reviewed_total_cents:cart.data.total_cents,agree_to_conditions:true,sandbox:true},buyer,{'Idempotency-Key':key});
-}
+async function checkout(buyer,key=randomUUID()) {return (await import('./legacy-checkout-fixture.js')).legacyCheckout(buyer,key);}
+async function legacyCartItem(buyer,p){const cart=await (await import('../server/commerce.js')).ensureCart(db,buyer.orgId);await db.query('INSERT INTO cart_items(cart_id,product_id,quantity,quoted_price_cents) VALUES($1,$2,$3,$4)',[cart,p.id,p.moq,p.wholesale_cents]);}
 async function paidOrder({twoBrands=false}={}) {
   const a=await product(db,accounts.sellerA,{moq:6,pack_multiple:6,wholesale_cents:250});await putInCart(accounts.buyerA,a);
   let b;
-  if(twoBrands){b=await product(db,accounts.sellerB,{moq:3,pack_multiple:3,wholesale_cents:400});await putInCart(accounts.buyerA,b);}
+  if(twoBrands){b=await product(db,accounts.sellerB,{moq:3,pack_multiple:3,wholesale_cents:400});await legacyCartItem(accounts.buyerA,b);}
   const result=await checkout(accounts.buyerA);assert.equal(result.status,201,JSON.stringify(result.data));
-  const approved=await post('/payments/sandbox/'+result.data.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA);assert.equal(approved.status,200,JSON.stringify(approved.data));
+  if(twoBrands){assert.equal((await post('/payments/sandbox/'+result.data.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA)).data.code,'mixed_suppliers');const amount=(await db.query('SELECT total_cents FROM checkouts WHERE id=$1',[result.data.checkout_id])).rows[0].total_cents;await services.applyPaymentEvent({event_id:randomUUID(),attempt_id:result.data.payment_attempt_id,kind:'approved',amount_cents:amount,occurred_at:new Date().toISOString()});}else{const approved=await post('/payments/sandbox/'+result.data.payment_attempt_id+'/simulate',{outcome:'approved'},accounts.buyerA);assert.equal(approved.status,200,JSON.stringify(approved.data));}
   const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1 ORDER BY brand_id',[result.data.purchase_id])).rows;
   return {a,b,checkout:result.data,orders};
 }
@@ -222,10 +220,10 @@ test('MOQ, múltiplos, precio, mínimo de marca y margen sin PVP/base comparable
   await db.query('UPDATE products SET retail_cents=NULL WHERE id=$1',[p.id]);assert.equal((await request('GET','/products/'+p.id)).data.margin_percent,null);
   await db.query('UPDATE products SET retail_cents=500,same_tax_basis=false WHERE id=$1',[p.id]);assert.equal((await request('GET','/products/'+p.id)).data.margin_percent,null);
 });
-test('carrito de dos marcas: compra padre, pedidos hijos, envío y suma exacta; reintento idempotente',async()=>{
+test('regresión histórica: compras multiproveedor existentes conservan importes e idempotencia',async()=>{
   const a=await product(db,accounts.sellerA,{moq:6,pack_multiple:6,wholesale_cents:250});
   const b=await product(db,accounts.sellerB,{moq:3,pack_multiple:3,wholesale_cents:400});
-  await putInCart(accounts.buyerA,a);await putInCart(accounts.buyerA,b);
+  await putInCart(accounts.buyerA,a);assert.equal((await post('/cart/items',{product_id:b.id,quantity:b.moq,expected_price_cents:b.wholesale_cents},accounts.buyerA)).status,409);await legacyCartItem(accounts.buyerA,b);
   const key=randomUUID(),result=await checkout(accounts.buyerA,key);assert.equal(result.status,201,JSON.stringify(result.data));
   const replay=await checkout(accounts.buyerA,key);assert.equal(replay.status,200);assert.equal(replay.data.checkout_id,result.data.checkout_id);
   const orders=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[result.data.purchase_id])).rows;assert.equal(orders.length,2);
@@ -318,9 +316,9 @@ test('reseña requiere compra entregada, pertenece a la tienda y no se duplica; 
   const {orders}=await paidOrder(),o=orders[0],item=(await db.query('SELECT id FROM order_items WHERE order_id=$1',[o.id])).rows[0];
   const review={order_item_id:item.id,rating:5,body:'Experiencia de prueba con compra entregada.'};
   assert.equal((await post('/reviews',review,accounts.buyerA)).status,403);
-  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,409);
+  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',delivery_mode:'home',delivery_details:'Dirección de prueba',shipped_at:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima'}).format(new Date()),carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,409);
   assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'preparing'},accounts.sellerA)).status,200);
-  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,200);
+  assert.equal((await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',delivery_mode:'home',delivery_details:'Dirección de prueba',shipped_at:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima'}).format(new Date()),carrier:'Demo',tracking_code:'DEMO-1'},accounts.sellerA)).status,200);
   assert.equal((await post('/orders/'+o.id+'/delivery',{},accounts.buyerA)).status,200);
   assert.equal((await post('/reviews',review,accounts.buyerB)).status,403);
   assert.equal((await post('/reviews',review,accounts.buyerA)).status,201);
@@ -403,7 +401,7 @@ test('liquidaciones requieren entrega, ausencia de incidencias, transiciones y e
   const input={brand_id:accounts.sellerA.brandId,order_ids:[o.id]};
   assert.equal((await post('/admin/settlements',input,accounts.admin)).status,422);
   await post('/seller/orders/'+o.id+'/fulfillment',{state:'preparing'},accounts.sellerA);
-  await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',carrier:'DEMO',tracking_code:'DEMO-2'},accounts.sellerA);
+  await post('/seller/orders/'+o.id+'/fulfillment',{state:'shipped',delivery_mode:'home',delivery_details:'Dirección de prueba',shipped_at:new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima'}).format(new Date()),carrier:'DEMO',tracking_code:'DEMO-2'},accounts.sellerA);
   await post('/orders/'+o.id+'/delivery',{},accounts.buyerA);
   const created=await post('/admin/settlements',input,accounts.admin);assert.equal(created.status,201,JSON.stringify(created.data));
   const s=created.data;assert.equal(s.amount_cents,o.total_cents-o.commission_cents);

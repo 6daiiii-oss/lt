@@ -28,13 +28,13 @@ export function loadingView(path=location.pathname,search=location.search) {
     const supplier=path==='/registro'&&new URLSearchParams(search).get('tipo')==='proveedor';
     const verification=path==='/registro/celular'||path==='/verificar';
     shell='auth';type=supplier?'signup':verification?'verification':'auth';body=`${supplier?block('skeleton-story'):''}<div class="skeleton-form">${heading()}${fields(path==='/registro'?5:verification||path==='/recuperar'?1:2)}</div>`;
-  } else if(/^\/(panel|administracion|cuenta|pedidos|favoritos|notificaciones|incidencias|buzon)(\/|$)/.test(path)) {
+  } else if(/^\/(panel|administracion|cuenta|pedidos|favoritos|notificaciones|incidencias|buzon|solicitudes|mensajes|solicitar)(\/|$)/.test(path)) {
     shell='private';
     if(/estadisticas|analitica|finanzas|comisiones/.test(path)) {
       type='statistics';body=`${heading()}${metrics()}<div class="skeleton-charts">${Array.from({length:2},()=>`<div class="skeleton-card skeleton-chart">${block('skeleton-line short')}${block('skeleton-chart-area')}</div>`).join('')}</div>`;
-    } else if(/nuevo|editar|perfil|configuracion|seguridad|marca$/.test(path)||/^\/panel\/productos\/[^/]+$/.test(path)) {
+    } else if(/nuevo|editar|perfil|configuracion|seguridad|solicitar|marca$/.test(path)||/^\/panel\/productos\/[^/]+$/.test(path)) {
       type='editor';body=`${heading()}<div class="skeleton-card skeleton-editor">${fields(5)}</div>`;
-    } else if(/productos|catalogo|pedidos|verificaciones|negocios|favoritos|notificaciones|incidencias|buzon|pagos|liquidaciones|logistica|resenas|fuentes|auditoria/.test(path)) {
+    } else if(/productos|catalogo|pedidos|verificaciones|negocios|favoritos|notificaciones|incidencias|buzon|solicitudes|mensajes|pagos|liquidaciones|logistica|resenas|fuentes|auditoria/.test(path)) {
       type='records';body=`${heading()}${table()}`;
     } else {
       type='dashboard';body=`${heading()}<div class="skeleton-card skeleton-welcome">${heading()}${lines()}${block('skeleton-submit')}</div>${heading()}${table()}`;
