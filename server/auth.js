@@ -147,7 +147,8 @@ authRouter.post('/auth/password',authenticated,accountLimit,async(req,res)=>{
   res.clearCookie(config.cookieName,{path:'/'});res.json({message:'Contraseña actualizada. Inicia sesión de nuevo en tus dispositivos.'});
 });
 authRouter.get('/me',async(req,res)=>{
-  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,purchasesEnabled:config.purchasesEnabled&&!config.production,demo:demoEnabled(),mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
+  const unreadMessages=req.user&&req.org?Number((await query(`SELECT count(*) FROM conversation_messages m JOIN conversations c ON c.id=m.conversation_id JOIN brands b ON b.id=c.brand_id WHERE (c.buyer_id=$1 OR b.organization_id=$1) AND m.user_id<>$2 AND m.id>coalesce((SELECT last_message_id FROM conversation_reads cr WHERE cr.conversation_id=c.id AND cr.user_id=$2),0)`,[req.org.id,req.user.id])).rows[0].count):0;
+  res.json({unreadMessages,user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,purchasesEnabled:config.purchasesEnabled&&!config.production,demo:demoEnabled(),mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
 });
 authRouter.get('/dev/mail',authenticated,async(req,res)=>{
   requireThat(!config.production&&!process.env.SMTP_HOST,'Buzón sandbox no disponible.',404);

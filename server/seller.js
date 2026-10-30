@@ -1,4 +1,5 @@
 import { normalizeRegion, peruRegions } from '../public/modules/regions.js';
+import { shipmentSchema } from './negotiation.js';
 import { phoneVerified } from './phone.js';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
@@ -90,14 +91,14 @@ sellerRouter.get('/analytics',async(req,res)=>{
   res.json({period:input,gross_products_cents:gross,refunds_cents:rows.reduce((s,r)=>s+r.refunded_cents,0),orders:rows.length,average_ticket_cents:rows.length?Math.round(gross/rows.length):0,units:products.reduce((s,r)=>s+r.units,0),repeat_buyers:[...buyers.values()].filter(n=>n>1).length,products,daily:[...days.values()].sort((a,b)=>a.date.localeCompare(b.date))});
 });
 sellerRouter.post('/orders/:id/fulfillment',verified,async(req,res)=>{
-  const input=parse(z.object({state:z.enum(['preparing','shipped']),carrier:text.optional(),tracking_code:text.optional()}),req.body);
+  const input=parse(shipmentSchema,req.body);
   await tx(async db=>{
     const o=await accessibleOrder(db,req,id.parse(req.params.id),{lock:true});requireThat(o.seller_id===req.org.id,'Pedido ajeno.',404);
     requireThat(['approved','partially_refunded'].includes(o.payment_state),'El pago no está confirmado.',409);
     requireThat((o.state==='confirmed'&&input.state==='preparing')||(o.state==='preparing'&&input.state==='shipped'),'Transición logística inválida.',409);
-    if(input.state==='shipped') {requireThat(input.carrier&&input.tracking_code,'Indica transportista y seguimiento.');await db.query('INSERT INTO shipments(order_id,carrier,tracking_code) VALUES($1,$2,$3)',[o.id,input.carrier,input.tracking_code]);}
+    if(input.state==='shipped') {requireThat(input.carrier&&(input.tracking_code||input.tracking_url)&&input.delivery_mode&&input.shipped_at,'Indica transportista, modalidad, fecha de despacho y código o enlace de seguimiento.',422);requireThat(input.shipped_at<=peruDay(),'La fecha de despacho no puede ser futura.',422);requireThat(input.delivery_details?.trim(),'Indica la agencia o la dirección de entrega.',422);await db.query('INSERT INTO shipments(order_id,carrier,tracking_code,tracking_url,delivery_mode,delivery_details,shipped_at) VALUES($1,$2,$3,$4,$5,$6,($7::date::timestamp AT TIME ZONE $8::text))',[o.id,input.carrier,input.tracking_code||'',input.tracking_url||null,input.delivery_mode,input.delivery_details,input.shipped_at,'America/Lima']);}
     await db.query('UPDATE orders SET state=$2 WHERE id=$1',[o.id,input.state]);
-    await db.query('INSERT INTO order_events(order_id,actor_id,event,details) VALUES($1,$2,$3,$4)',[o.id,req.user.id,`fulfillment.${input.state}`,{carrier:input.carrier,tracking_code:input.tracking_code}]);
+    await db.query('INSERT INTO order_events(order_id,actor_id,event,details) VALUES($1,$2,$3,$4)',[o.id,req.user.id,`fulfillment.${input.state}`,{carrier:input.carrier,tracking_code:input.tracking_code,tracking_url:input.tracking_url,delivery_mode:input.delivery_mode,delivery_details:input.delivery_details,shipped_at:input.shipped_at}]);
     await notify(db,o.buyer_id,'shipment',input.state==='shipped'?'Tu pedido fue despachado.':'La marca está preparando tu pedido.',`/pedidos/${o.id}`);
     await audit(db,req,'order.fulfillment',o.id,{state:input.state});
   });res.json({message:'Estado logístico actualizado.'});

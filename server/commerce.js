@@ -1,12 +1,12 @@
 import { normalizeRegion, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
-import { feeBreakdown, buyerOrder } from './pricing.js';
+import { buyerOrder } from './pricing.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { query, tx } from './db.js';
 import { config } from './config.js';
 import { authenticated, orgRole, verified } from './auth.js';
-import { audit, cents, hash, id, notify, parse, quantity, requireThat, sumMoney, validateQuantity } from './lib.js';
+import { cents, hash, id, parse, quantity, requireThat, sumMoney, validateQuantity } from './lib.js';
 
 export async function lockBuyer(db,orgId) { return (await db.query('SELECT id,status FROM organizations WHERE id=$1 FOR UPDATE',[orgId])).rows[0]; }
 export async function pendingCheckout(db,orgId) { return (await db.query(`SELECT id,expires_at,total_cents FROM checkouts WHERE organization_id=$1 AND state='pending' ORDER BY created_at DESC LIMIT 1`,[orgId])).rows[0]; }
@@ -57,7 +57,7 @@ commerceRouter.get('/cart',orgRole('buyer'),async(req,res)=>{
   const addressId=req.query.address_id===undefined?null:id.parse(req.query.address_id);
   const address=addressId?(await query('SELECT id,region FROM addresses WHERE id=$1 AND organization_id=$2',[addressId,req.org.id])).rows[0]:null;
   if(addressId)requireThat(address,'Dirección no autorizada.',404);
-  res.json({...quoteCart(await cartRows({query},req.org.id),address),address_id:address?.id||null,pendingCheckout:await pendingCheckout({query},req.org.id)});
+  const quote=quoteCart(await cartRows({query},req.org.id),address);res.json({...quote,total_cents:null,groups:quote.groups.map(g=>({...g,shipping_cents:null,total_cents:null})),separate_requests:quote.groups.length>1,address_id:address?.id||null,pendingCheckout:await pendingCheckout({query},req.org.id)});
 });
 commerceRouter.post('/cart/items',purchasesAvailable,verified,orgRole('buyer'),async(req,res)=>{
   const input=parse(z.object({product_id:id,quantity,expected_price_cents:cents}),req.body);
@@ -66,6 +66,7 @@ commerceRouter.post('/cart/items',purchasesAvailable,verified,orgRole('buyer'),a
     const p=(await db.query(`SELECT p.*,i.total,i.reserved,i.source_updated_at,o.status AS seller_status,b.terms_approved FROM products p JOIN inventory i ON i.product_id=p.id JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id WHERE p.id=$1`,[input.product_id])).rows[0];
     requireThat(p,'Producto no encontrado.',404);const issues=productIssues(p,input.quantity);requireThat(!issues.length,'Revisa las condiciones del producto.',422,'cart_conditions',issues);
     requireThat(p.wholesale_cents===input.expected_price_cents,'El precio cambió. Revisa el producto.',409,'price_changed');
+    const existing=await cartRows(db,req.org.id);requireThat(existing.every(row=>row.brand_id===p.brand_id),'Tu bolsa contiene otro proveedor. Conservamos sus productos; envía esa solicitud por separado antes de cambiar de proveedor.',409,'mixed_suppliers');
     const cartId=await ensureCart(db,req.org.id);
     await db.query(`INSERT INTO cart_items(cart_id,product_id,quantity,quoted_price_cents) VALUES($1,$2,$3,$4) ON CONFLICT(cart_id,product_id) DO UPDATE SET quantity=$3,quoted_price_cents=$4`,[cartId,p.id,input.quantity,p.wholesale_cents]);
   });res.status(201).json({message:'Carrito actualizado.'});
@@ -75,49 +76,7 @@ commerceRouter.delete('/cart/items/:id',orgRole('buyer'),async(req,res)=>{
     await db.query('DELETE FROM cart_items WHERE product_id=$1 AND cart_id IN(SELECT id FROM carts WHERE organization_id=$2)',[id.parse(req.params.id),req.org.id]);});res.json({message:'Producto eliminado.'});
 });
 commerceRouter.post('/checkout',purchasesAvailable,verified,phoneVerified,orgRole('buyer',{approved:true}),async(req,res)=>{
-  requireThat(!config.production,'El checkout real está deshabilitado; falta proveedor y configuración comercial aprobada.',503,'real_checkout_disabled');
-  const input=parse(z.object({address_id:id,receipt:z.object({kind:z.enum(['order_summary','boleta_requested','factura_requested']),legal_name:z.string().max(300).default(''),tax_id:z.string().max(30).default('')}),reviewed_total_cents:cents,agree_to_conditions:z.literal(true),sandbox:z.literal(true)}),req.body);
-  if(input.receipt.kind==='factura_requested') requireThat(input.receipt.legal_name&&input.receipt.tax_id,'Indica los datos de comprobante solicitado.');
-  const key=z.string().min(8).max(128).parse(req.headers['idempotency-key']),requestHash=hash(JSON.stringify(input));
-  const result=await tx(async db=>{
-    const currentBuyer=await lockBuyer(db,req.org.id);
-    requireThat(currentBuyer.status==='approved','El negocio ya no está aprobado para comprar.',403);
-    const prior=(await db.query('SELECT id,request_hash FROM checkouts WHERE organization_id=$1 AND idempotency_key=$2',[req.org.id,key])).rows[0];
-    if(prior) {requireThat(prior.request_hash===requestHash,'La clave de idempotencia pertenece a otra solicitud.',409);return {checkout_id:prior.id,reused:true};}
-    requireThat(!await pendingCheckout(db,req.org.id),'Ya existe un checkout pendiente; retómalo o cancélalo.',409,'checkout_pending');
-    const address=(await db.query('SELECT recipient,line1,district,region,country,phone FROM addresses WHERE id=$1 AND organization_id=$2',[input.address_id,req.org.id])).rows[0];
-    requireThat(address,'Dirección no autorizada.',422);
-    const rows=await cartRows(db,req.org.id,true),quote=quoteCart(rows,address);
-    const problems=quote.groups.flatMap(g=>[...g.issues.map(issue=>g.brand_name+': '+issue),...g.items.flatMap(p=>p.issues.map(issue=>p.name+': '+issue))]);
-    requireThat(quote.eligible,problems[0]||'Tu bolsa está vacía. Añade un producto para continuar.',422,'cart_conditions',problems);
-    requireThat(quote.total_cents===input.reviewed_total_cents,'El total cambió. Revisa el carrito antes de confirmar.',409,'total_changed',quote);
-    const checkout=(await db.query(`INSERT INTO checkouts(organization_id,user_id,idempotency_key,request_hash,total_cents,address_snapshot,receipt_snapshot,expires_at)
-      VALUES($1,$2,$3,$4,$5,$6,$7,now()+$8*interval '1 minute') RETURNING *`,[req.org.id,req.user.id,key,requestHash,quote.total_cents,address,{...input.receipt,fiscal_document_issued:false},config.reservationMinutes])).rows[0];
-    const purchase=(await db.query('INSERT INTO purchases(checkout_id,organization_id,total_cents) VALUES($1,$2,$3) RETURNING id',[checkout.id,req.org.id,quote.total_cents])).rows[0];
-    for(const g of quote.groups) {
-      // Buyer row lock serializes checkouts. Only delivered, non-fully-refunded
-      // orders establish a relationship; failed/cancelled/reserved orders do not.
-      const recurrent=(await db.query(`SELECT 1 FROM orders o JOIN purchases p ON p.id=o.purchase_id
-        WHERE o.buyer_id=$1 AND o.brand_id=$2 AND o.state='delivered'
-        AND o.refunded_cents<o.total_cents AND p.payment_state IN ('approved','partially_refunded') LIMIT 1`,[req.org.id,g.brand_id])).rowCount>0;
-      const fees=feeBreakdown(g.subtotal_cents,g.shipping_cents,recurrent);
-      const bps=fees.basis_points,markupCents=fees.service_total_cents;
-      const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'seven_percent_product_gross_service_igv_included_processing_buyer',fees}])).rows[0];
-      for(const item of g.items) {
-        const p=rows.find(p=>p.id===item.product_id);
-        const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);
-        requireThat(updated.rowCount,'Otra tienda acaba de reservar este stock.',409,'stock_conflict');
-        await db.query('INSERT INTO inventory_reservations(checkout_id,product_id,quantity,expires_at) VALUES($1,$2,$3,$4)',[checkout.id,p.id,p.quantity,checkout.expires_at]);
-        await db.query('INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,$3,$4,$5)',[p.id,checkout.id,'reserved',p.quantity,`reserve:${checkout.id}:${p.id}`]);
-        await db.query(`INSERT INTO order_items(order_id,product_id,quantity,unit_price_cents,snapshot) VALUES($1,$2,$3,$4,$5)`,[order.id,p.id,p.quantity,p.wholesale_cents,{name:p.name,variant:p.variant,sku:p.sku,brand_name:p.brand_name,retail_cents:p.retail_cents,moq:p.moq,pack_multiple:p.pack_multiple,tax_applied:'included_18_percent_assumed',same_tax_basis:p.same_tax_basis,wholesale_cents:p.wholesale_cents}]);
-      }
-      await db.query(`INSERT INTO order_events(order_id,actor_id,event) VALUES($1,$2,'checkout.reserved')`,[order.id,req.user.id]);
-    }
-    const attempt=(await db.query(`INSERT INTO payment_attempts(checkout_id,provider,amount_cents) VALUES($1,'sandbox',$2) RETURNING id`,[checkout.id,quote.total_cents])).rows[0];
-    await audit(db,req,'checkout.created',checkout.id,{sandbox:true,total_cents:quote.total_cents});
-    return {checkout_id:checkout.id,purchase_id:purchase.id,payment_attempt_id:attempt.id,expires_at:checkout.expires_at,sandbox:true};
-  });res.status(result.reused?200:201).json(result);
+ requireThat(false,'Crea una solicitud y acepta la respuesta del proveedor. El pago de nuevas solicitudes está pendiente de habilitación y de la política de transporte.',409,'request_payment_pending');
 });
 commerceRouter.get('/checkout/:id',orgRole('buyer'),async(req,res)=>{
   const checkout=(await query(`SELECT c.*,pa.id AS payment_attempt_id,pa.state AS payment_attempt_state,p.id AS purchase_id FROM checkouts c JOIN payment_attempts pa ON pa.checkout_id=c.id JOIN purchases p ON p.checkout_id=c.id WHERE c.id=$1 AND c.organization_id=$2`,[id.parse(req.params.id),req.org.id])).rows[0];
@@ -161,6 +120,7 @@ commerceRouter.post('/orders/:id/reorder',purchasesAvailable,verified,orgRole('b
       requireThat(input.quote_hash===quoteHash,'La recompra cambió; revisa de nuevo.',409);
       requireThat(quote.every(p=>!p.issues.length),'Hay productos no disponibles o con mínimos incompatibles.',422,'reorder_unavailable',quote);
       requireThat(!await pendingCheckout(db,req.org.id),'Cancela primero el checkout pendiente.',409);
+      const existing=await cartRows(db,req.org.id);requireThat(existing.every(p=>p.brand_id===order.brand_id),'Tu bolsa contiene otro proveedor. Envía una solicitud independiente.',409,'mixed_suppliers');
       const cart=await ensureCart(db,req.org.id);
       for(const p of quote) await db.query('INSERT INTO cart_items(cart_id,product_id,quantity,quoted_price_cents) VALUES($1,$2,$3,$4) ON CONFLICT(cart_id,product_id) DO UPDATE SET quantity=$3,quoted_price_cents=$4',[cart,p.product_id,p.quantity,p.current_price_cents]);
     }

@@ -170,6 +170,7 @@ paymentRouter.post('/payments/sandbox/:id/simulate',authenticated,verified,orgRo
   const attempt=(await query('SELECT pa.* FROM payment_attempts pa JOIN checkouts c ON c.id=pa.checkout_id WHERE pa.id=$1 AND c.organization_id=$2',[id.parse(req.params.id),req.org.id])).rows[0];
   requireThat(attempt,'Intento no encontrado.',404);
   if(outcome==='approved') {
+    const legacy=(await query(`SELECT c.state,count(o.id)::int AS orders FROM checkouts c JOIN purchases p ON p.checkout_id=c.id JOIN orders o ON o.purchase_id=p.id WHERE c.id=$1 GROUP BY c.state`,[attempt.checkout_id])).rows[0];requireThat(legacy?.state!=='pending'||legacy.orders===1,'Esta reserva histórica mezcla proveedores. Cancélala y envía solicitudes independientes; tus productos se conservan en la bolsa.',409,'mixed_suppliers');
     const eligible=await tx(async db=>{
       const buyer=await lockBuyer(db,req.org.id);
       const c=(await db.query('SELECT * FROM checkouts WHERE id=$1 FOR UPDATE',[attempt.checkout_id])).rows[0];

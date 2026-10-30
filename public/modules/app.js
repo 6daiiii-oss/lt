@@ -1,3 +1,4 @@
+import { negotiationView,disposeNegotiation } from './negotiation.js';
 import { loadingView } from './loading.js';
 import { demoView } from './demo.js';
 import { bindPhotoGalleries } from './photos.js';
@@ -15,12 +16,12 @@ let generation=0,nextScrollTop=0;
 async function render() {
   const current=++generation,root=document.querySelector('#app'),path=location.pathname.replace(/\/$/,'')||'/',url=new URL(location.href);
   const scrollTop=nextScrollTop;nextScrollTop=0;
-  disposeSearch();
+  disposeSearch();disposeNegotiation();
   root.setAttribute('aria-busy','true');
   root.innerHTML=loadingView(path,url.search);
   let shell=publicShell;
   try {
-    const privateRoute=/^\/(cuenta|panel|administracion|pedidos|favoritos|notificaciones|buzon|carrito|checkout|incidencias)(\/|$)/.test(path);
+    const privateRoute=/^\/(cuenta|panel|administracion|pedidos|favoritos|notificaciones|buzon|carrito|checkout|incidencias|solicitudes|solicitar|mensajes)(\/|$)/.test(path);
     if(privateRoute) {
       await refreshMe();
       if(current!==generation)return;
@@ -28,6 +29,7 @@ async function render() {
     }
     let view=await legalView(path)||await authView(path,url)||await demoView(path)||await publicView(path,url);
     if((path==='/registro'&&url.searchParams.get('tipo')==='proveedor')||(path==='/registro/celular'&&currentOrg()?.kind==='seller'))shell=brandSignupShell;
+    if(!view&&/^\/(solicitudes|solicitar|mensajes)(\/|$)/.test(path)){view=await negotiationView(path,url);shell=body=>privateShell(body,state.user?.is_admin?'admin':currentOrg()?.kind==='seller'?'seller':'buyer');}
     if(!view) {
       if(!state.user){navigate('/login?next='+encodeURIComponent(path+url.search),{replace:true});return;}
       const admin=path.startsWith('/administracion'),seller=path.startsWith('/panel'),shopping=path==='/carrito'||path.startsWith('/checkout/');
