@@ -136,7 +136,7 @@ test('registro de marca dedicado: diseño adaptable, pasos y datos opcionales',a
   await noOverflow(page);expect(errors).toEqual([]);
 });
 
-test('compras cerradas: producto, bolsa y enlace de pago muestran No disponible',async({page})=>{
+test('pagos cerrados: el producto permite solicitudes y el checkout no expone cobros',async({page})=>{
   const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
   await page.route('**/api/me',async route=>{
     const response=await route.fetch(),data=await response.json();
@@ -152,12 +152,12 @@ test('compras cerradas: producto, bolsa y enlace de pago muestran No disponible'
   }}));
   await page.route('**/api/products/closed-product/reviews',route=>route.fulfill({json:[]}));
   await page.goto('/productos/closed-product');
-  await expect(page.getByRole('button',{name:'No disponible',exact:true})).toBeDisabled();
+  await expect(page.getByText('Pago aún no habilitado.',{exact:false})).toBeVisible();
   await expect(page.locator('[data-form=add-cart]')).toHaveCount(0);
   await login(page,accounts.buyerA);
   for(const path of ['/productos/closed-product','/checkout/reserva-anterior']) {
     await page.goto(path);
-    await expect(page.getByRole('button',{name:'No disponible',exact:true})).toBeDisabled();
+    if(path.startsWith('/productos/'))await expect(page.getByText('Pago aún no habilitado.',{exact:false})).toBeVisible();else await expect(page.getByRole('button',{name:'No disponible',exact:true})).toBeDisabled();
     await expect(page.locator('[data-form=checkout],[data-form=add-cart],[data-action=simulate]')).toHaveCount(0);
     await page.setViewportSize({width:390,height:900});await noOverflow(page);
   }
