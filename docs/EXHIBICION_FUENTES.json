@@ -1,6 +1,6 @@
 {
   "catalog": "Exhibición",
-  "prepared_on": "2026-10-25",
+  "prepared_on": "2026-11-03",
   "trends": "https://www.shopify.com/blog/trending-products",
   "image_dataset": "https://dummyjson.com/docs/products",
   "products": [
@@ -1194,6 +1194,959 @@
           "width": 1000,
           "height": 1000,
           "sha256": "7d77fdad8e3a5592ef10cb6449b2a76f62b91e168d72a4748832a9f4e86456db"
+        }
+      ]
+    },
+    {
+      "sourceId": 7,
+      "sourceTitle": "Chanel Coco Noir Eau De",
+      "sourceCategory": "fragrances",
+      "sourceUrl": "https://dummyjson.com/products/7",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/fragrances/chanel-coco-noir-eau-de/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/7/1.webp",
+          "alt": "Perfume Chanel Coco Noir · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/chanel-coco-noir-eau-de/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "6caf56e184e99e3c25b1156aeb82e6736ba884fe383c8e524f8a09b106307bcd"
+        }
+      ]
+    },
+    {
+      "sourceId": 9,
+      "sourceTitle": "Dolce Shine Eau de",
+      "sourceCategory": "fragrances",
+      "sourceUrl": "https://dummyjson.com/products/9",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/fragrances/dolce-shine-eau-de/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/9/1.webp",
+          "alt": "Perfume Dolce Shine · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/dolce-shine-eau-de/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "4f1ea78ada68b8c52633b2c307d3e4ac3ea0af2f594c27d16d4dfe87a9c88f41"
+        }
+      ]
+    },
+    {
+      "sourceId": 10,
+      "sourceTitle": "Gucci Bloom Eau de",
+      "sourceCategory": "fragrances",
+      "sourceUrl": "https://dummyjson.com/products/10",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/fragrances/gucci-bloom-eau-de/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/10/1.webp",
+          "alt": "Perfume Gucci Bloom · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/fragrances/gucci-bloom-eau-de/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "4d3038bf0719731dcd0019d8c780d5ad6a92949c210f0a0e4eb0d1d4fedb63b2"
+        }
+      ]
+    },
+    {
+      "sourceId": 44,
+      "sourceTitle": "Family Tree Photo Frame",
+      "sourceCategory": "home-decoration",
+      "sourceUrl": "https://dummyjson.com/products/44",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/home-decoration/family-tree-photo-frame/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/44/1.webp",
+          "alt": "Portarretratos de árbol familiar · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/home-decoration/family-tree-photo-frame/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "eece69fdef21dfe5ea1827597e95b27909de766725adb8d8b9a80af5213b3ded"
+        }
+      ]
+    },
+    {
+      "sourceId": 3,
+      "sourceTitle": "Powder Canister",
+      "sourceCategory": "beauty",
+      "sourceUrl": "https://dummyjson.com/products/3",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/beauty/powder-canister/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/3/1.webp",
+          "alt": "Polvos compactos para maquillaje · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/beauty/powder-canister/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "e15e4edea84fdfea8755e566b30cc5b3f5d7121f0f4fd7c2201149d129a770e6"
+        }
+      ]
+    },
+    {
+      "sourceId": 182,
+      "sourceTitle": "Green Crystal Earring",
+      "sourceCategory": "womens-jewellery",
+      "sourceUrl": "https://dummyjson.com/products/182",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/182/1.webp",
+          "alt": "Aretes con cristal verde · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-jewellery/green-crystal-earring/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "b5dad9dedf39a6a40ecafb473a2c165bfce2e81679c8469bc2198277ace664c4"
+        }
+      ]
+    },
+    {
+      "sourceId": 120,
+      "sourceTitle": "Vaseline Men Body and Face Lotion",
+      "sourceCategory": "skin-care",
+      "sourceUrl": "https://dummyjson.com/products/120",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/skin-care/vaseline-men-body-and-face-lotion/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/120/1.webp",
+          "alt": "Loción para rostro y cuerpo · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/skin-care/vaseline-men-body-and-face-lotion/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d15cf746692d92a22def70c0578e1cdc741ee5a547dfdde1ed434ae7b54ec51b"
+        }
+      ]
+    },
+    {
+      "sourceId": 49,
+      "sourceTitle": "Black Aluminium Cup",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/49",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/black-aluminium-cup/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/49/1.webp",
+          "alt": "Taza de aluminio negra · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/black-aluminium-cup/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "2d056cc4bf5c91504c99a252365406320c73901621ae33d9999643205eb66ac6"
+        }
+      ]
+    },
+    {
+      "sourceId": 184,
+      "sourceTitle": "Tropical Earring",
+      "sourceCategory": "womens-jewellery",
+      "sourceUrl": "https://dummyjson.com/products/184",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/184/1.webp",
+          "alt": "Aretes de estilo tropical · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-jewellery/tropical-earring/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "e0e33f3a286062d510b6c059b27875e11f9f9fd69b13d945ed6b96e2c0bfbd6e"
+        }
+      ]
+    },
+    {
+      "sourceId": 50,
+      "sourceTitle": "Black Whisk",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/50",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/black-whisk/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/50/1.webp",
+          "alt": "Batidor manual negro · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/black-whisk/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "0120be0321b2fabbc44937987c6d82fe8914d92f2b61eb1c4b2ca85cb6715234"
+        }
+      ]
+    },
+    {
+      "sourceId": 57,
+      "sourceTitle": "Fine Mesh Strainer",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/57",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/fine-mesh-strainer/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/57/1.webp",
+          "alt": "Colador de malla fina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/fine-mesh-strainer/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "48952f3c4a993bec64d7ef2e92dff1ce6adf43eb78da4e6eff3c257d0bc5df26"
+        }
+      ]
+    },
+    {
+      "sourceId": 183,
+      "sourceTitle": "Green Oval Earring",
+      "sourceCategory": "womens-jewellery",
+      "sourceUrl": "https://dummyjson.com/products/183",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/183/1.webp",
+          "alt": "Aretes ovalados verdes · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/womens-jewellery/green-oval-earring/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "949d37f3dc4fa756e34971d444e5e452218dc42c6a0b4a40c28a2acf12b59cac"
+        }
+      ]
+    },
+    {
+      "sourceId": 58,
+      "sourceTitle": "Fork",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/58",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/fork/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/58/1.webp",
+          "alt": "Tenedor de mesa · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/fork/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "bab0f47ed91b8bdab56625beb28ab2f1096d95d909184a514e8dd420e7aaf888"
+        }
+      ]
+    },
+    {
+      "sourceId": 63,
+      "sourceTitle": "Kitchen Sieve",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/63",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/kitchen-sieve/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/63/1.webp",
+          "alt": "Tamiz de cocina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/kitchen-sieve/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8222d6c678872dcee1942baa9b9182a27e03529caf39cc7260b1a181707d8cc9"
+        }
+      ]
+    },
+    {
+      "sourceId": 64,
+      "sourceTitle": "Knife",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/64",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/knife/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/64/1.webp",
+          "alt": "Cuchillo de cocina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/knife/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d2565e05c41f49304d38bb647fee0c978d1ec8b2856fb9513808fd1d1d303a5e"
+        }
+      ]
+    },
+    {
+      "sourceId": 59,
+      "sourceTitle": "Glass",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/59",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/glass/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/59/1.webp",
+          "alt": "Vaso de vidrio · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/glass/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "09d2147eba8f413c21bf89aa28c16a6b1d68a01c2bd0b434bd96382482dcc633"
+        }
+      ]
+    },
+    {
+      "sourceId": 69,
+      "sourceTitle": "Plate",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/69",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/plate/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/69/1.webp",
+          "alt": "Plato para servir · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/plate/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "3596e50f0d1d6044507b058aca62c2a5ab21b5991ec4b0b86ed6e76f3af48eec"
+        }
+      ]
+    },
+    {
+      "sourceId": 72,
+      "sourceTitle": "Slotted Turner",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/72",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/slotted-turner/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/72/1.webp",
+          "alt": "Espátula ranurada · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/slotted-turner/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "2d33a519a0e3dbf71c541c0525bc4f758e41eda376272b8811df088c5f1678cd"
+        }
+      ]
+    },
+    {
+      "sourceId": 68,
+      "sourceTitle": "Pan",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/68",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/pan/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/68/1.webp",
+          "alt": "Sartén de cocina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/pan/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "94090c5e6562622ef386c1541e07098ffdf5c32e3532fc8a3d163b01054c5c44"
+        }
+      ]
+    },
+    {
+      "sourceId": 75,
+      "sourceTitle": "Tray",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/75",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/tray/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/75/1.webp",
+          "alt": "Bandeja para servir · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/tray/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "c9969a9f4595aa85927a09bc6abec980def947688556b2068f6fa331de929dbb"
+        }
+      ]
+    },
+    {
+      "sourceId": 14,
+      "sourceTitle": "Knoll Saarinen Executive Conference Chair",
+      "sourceCategory": "furniture",
+      "sourceUrl": "https://dummyjson.com/products/14",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/furniture/knoll-saarinen-executive-conference-chair/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/14/1.webp",
+          "alt": "Silla tapizada de oficina · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/furniture/knoll-saarinen-executive-conference-chair/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ee194980f3442ddaec8347e2e20b23dfb45bc8c4270b51e39556a451f6bd1032"
+        }
+      ]
+    },
+    {
+      "sourceId": 74,
+      "sourceTitle": "Spoon",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/74",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/spoon/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/74/1.webp",
+          "alt": "Cuchara de mesa · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/spoon/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "3367312315eac260c86360924e718aa35691c9e8b63f2a96f804d667b7ceff9e"
+        }
+      ]
+    },
+    {
+      "sourceId": 13,
+      "sourceTitle": "Bedside Table African Cherry",
+      "sourceCategory": "furniture",
+      "sourceUrl": "https://dummyjson.com/products/13",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/furniture/bedside-table-african-cherry/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/13/1.webp",
+          "alt": "Mesa de noche de madera · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/furniture/bedside-table-african-cherry/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "df130cb07ea8cf274181dba74fd5e2b2f678f022ce87807498e66184300eedcf"
+        }
+      ]
+    },
+    {
+      "sourceId": 137,
+      "sourceTitle": "American Football",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/137",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/american-football/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/137/1.webp",
+          "alt": "Balón de fútbol americano · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/american-football/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "b488bb4b61fb846e1e02c15e706065c82b128819358988c2d4e3405f4b054948"
+        }
+      ]
+    },
+    {
+      "sourceId": 15,
+      "sourceTitle": "Wooden Bathroom Sink With Mirror",
+      "sourceCategory": "furniture",
+      "sourceUrl": "https://dummyjson.com/products/15",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/furniture/wooden-bathroom-sink-with-mirror/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/15/1.webp",
+          "alt": "Mueble de baño con espejo · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/furniture/wooden-bathroom-sink-with-mirror/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "66624ded7527a8acb157df25fbd8ce2650c09025d81277a012e1d07f5d255499"
+        }
+      ]
+    },
+    {
+      "sourceId": 138,
+      "sourceTitle": "Baseball Ball",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/138",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/baseball-ball/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/138/1.webp",
+          "alt": "Pelota de béisbol · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/baseball-ball/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ceb6a23f5605748022e83f7608217f0efe7a61c0ed26fa926e4ffa354c5ab0c1"
+        }
+      ]
+    },
+    {
+      "sourceId": 140,
+      "sourceTitle": "Basketball",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/140",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/basketball/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/140/1.webp",
+          "alt": "Balón de básquet · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/basketball/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8b952758675452a4a12ded1d557f2261e23f9bb6acdeb55f17d8eb98f56d8f46"
+        }
+      ]
+    },
+    {
+      "sourceId": 76,
+      "sourceTitle": "Wooden Rolling Pin",
+      "sourceCategory": "kitchen-accessories",
+      "sourceUrl": "https://dummyjson.com/products/76",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/kitchen-accessories/wooden-rolling-pin/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/76/1.webp",
+          "alt": "Rodillo de madera · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/kitchen-accessories/wooden-rolling-pin/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "967c3374e562fd4ecb6821e06b5ca624aea8f17e2bb8ee1b9fc86f41c0d7818c"
+        }
+      ]
+    },
+    {
+      "sourceId": 139,
+      "sourceTitle": "Baseball Glove",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/139",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/baseball-glove/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/139/1.webp",
+          "alt": "Guante para béisbol · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/baseball-glove/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "77b7465f2b67e963e30e59a74bc1692d591cd4a88506e8e914fc8bc58d1f59ec"
+        }
+      ]
+    },
+    {
+      "sourceId": 146,
+      "sourceTitle": "Feather Shuttlecock",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/146",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/feather-shuttlecock/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/146/1.webp",
+          "alt": "Volante para bádminton · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/feather-shuttlecock/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "f9388273487e7a7d5503f78ffb0521bc56f0b9b7aa3e6135d8ebf37930fba015"
+        }
+      ]
+    },
+    {
+      "sourceId": 147,
+      "sourceTitle": "Football",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/147",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/football/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/147/1.webp",
+          "alt": "Pelota de fútbol · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/football/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d27a7c0bd6a9ab9ccaa6a0b6656413cff6c5198e4fe0c2c445db42db585f0e0b"
+        }
+      ]
+    },
+    {
+      "sourceId": 152,
+      "sourceTitle": "Tennis Racket",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/152",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/tennis-racket/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/152/1.webp",
+          "alt": "Raqueta de tenis · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/tennis-racket/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "dfa739f1b5f9a2b8d6e5be8d2fb606484b780393ad845be670fa3d882e5e0d37"
+        }
+      ]
+    },
+    {
+      "sourceId": 151,
+      "sourceTitle": "Tennis Ball",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/151",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/tennis-ball/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/151/1.webp",
+          "alt": "Pelota de tenis · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/tennis-ball/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8b3ec65c136080a9578a610b33766556800f88e5e165aea401d30b8e95ac5a0f"
+        }
+      ]
+    },
+    {
+      "sourceId": 85,
+      "sourceTitle": "Man Plaid Shirt",
+      "sourceCategory": "mens-shirts",
+      "sourceUrl": "https://dummyjson.com/products/85",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/85/1.webp",
+          "alt": "Camisa de cuadros para hombre · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mens-shirts/man-plaid-shirt/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "6bc23d9e188c8532af2535bfd24ec8d2977c9f078fb7cb4b33052bf77b96e923"
+        }
+      ]
+    },
+    {
+      "sourceId": 87,
+      "sourceTitle": "Men Check Shirt",
+      "sourceCategory": "mens-shirts",
+      "sourceUrl": "https://dummyjson.com/products/87",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/87/1.webp",
+          "alt": "Camisa casual a cuadros · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mens-shirts/men-check-shirt/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a870274432ec36a1f4959d2c343398bf83ce62ef837679e851fd6ba4be2dc7fa"
+        }
+      ]
+    },
+    {
+      "sourceId": 153,
+      "sourceTitle": "Volleyball",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/153",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/volleyball/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/153/1.webp",
+          "alt": "Pelota de vóley · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/volleyball/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "71ae5dab45572dff16149b9e39af2e6484bd4936490d448651e18b1d84388566"
+        }
+      ]
+    },
+    {
+      "sourceId": 156,
+      "sourceTitle": "Green and Black Glasses",
+      "sourceCategory": "sunglasses",
+      "sourceUrl": "https://dummyjson.com/products/156",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/156/1.webp",
+          "alt": "Lentes verdes y negros · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/green-and-black-glasses/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a03bc15e272c2c8e6e8758df17d948f2dd8b10763165ef8c23c81fe54902b399"
+        }
+      ]
+    },
+    {
+      "sourceId": 83,
+      "sourceTitle": "Blue & Black Check Shirt",
+      "sourceCategory": "mens-shirts",
+      "sourceUrl": "https://dummyjson.com/products/83",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/83/1.webp",
+          "alt": "Camisa a cuadros azul y negra · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "cdcae1e6b65e486fea83c2286e1bef6739de2cb5f0ac786acd6bad7fa98522c1"
+        }
+      ]
+    },
+    {
+      "sourceId": 141,
+      "sourceTitle": "Basketball Rim",
+      "sourceCategory": "sports-accessories",
+      "sourceUrl": "https://dummyjson.com/products/141",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sports-accessories/basketball-rim/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/141/1.webp",
+          "alt": "Aro de básquet para practicar · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sports-accessories/basketball-rim/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a70de4736f3291fc4760d23f28599316e4ece9bed0a8f8eb0726b4052690ed01"
+        }
+      ]
+    },
+    {
+      "sourceId": 157,
+      "sourceTitle": "Party Glasses",
+      "sourceCategory": "sunglasses",
+      "sourceUrl": "https://dummyjson.com/products/157",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/157/1.webp",
+          "alt": "Lentes para fiestas · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/party-glasses/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "da171029aa909b648dc8ef2b18ee80afb1cb1aff3ca9a418d8860f6ed163cfc4"
+        }
+      ]
+    },
+    {
+      "sourceId": 158,
+      "sourceTitle": "Sunglasses",
+      "sourceCategory": "sunglasses",
+      "sourceUrl": "https://dummyjson.com/products/158",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/158/1.webp",
+          "alt": "Lentes de sol oscuros · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/sunglasses/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "bbd0795f284dfbdd83bbd6db6bf923ef26c78fbf8ca0d43c8fbcfda0c0775619"
+        }
+      ]
+    },
+    {
+      "sourceId": 163,
+      "sourceTitle": "Girl Summer Dress",
+      "sourceCategory": "tops",
+      "sourceUrl": "https://dummyjson.com/products/163",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/163/1.webp",
+          "alt": "Vestido de verano · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tops/girl-summer-dress/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "9208b0dc9a6fe6ca86d8d3f6843e65f07aa71fc301c8bcf34ce501d9a5516607"
+        }
+      ]
+    },
+    {
+      "sourceId": 164,
+      "sourceTitle": "Gray Dress",
+      "sourceCategory": "tops",
+      "sourceUrl": "https://dummyjson.com/products/164",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tops/gray-dress/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/164/1.webp",
+          "alt": "Vestido gris · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tops/gray-dress/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "9017f506d0ccb389c306edf61b9e826b46b2b7d2bf0983fc7337c9ed43ed6976"
+        }
+      ]
+    },
+    {
+      "sourceId": 155,
+      "sourceTitle": "Classic Sun Glasses",
+      "sourceCategory": "sunglasses",
+      "sourceUrl": "https://dummyjson.com/products/155",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/155/1.webp",
+          "alt": "Lentes de sol clásicos · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/sunglasses/classic-sun-glasses/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "7c152cc175ba08a23f5e74c90a9d019087c6a258ac7f94842502e2adfab18bd5"
+        }
+      ]
+    },
+    {
+      "sourceId": 162,
+      "sourceTitle": "Blue Frock",
+      "sourceCategory": "tops",
+      "sourceUrl": "https://dummyjson.com/products/162",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tops/blue-frock/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/162/1.webp",
+          "alt": "Vestido azul · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tops/blue-frock/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "d977eff8523f8d7906164fe2304d1841dc16162f6375269affa6410f842c09d3"
+        }
+      ]
+    },
+    {
+      "sourceId": 166,
+      "sourceTitle": "Tartan Dress",
+      "sourceCategory": "tops",
+      "sourceUrl": "https://dummyjson.com/products/166",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tops/tartan-dress/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/166/1.webp",
+          "alt": "Vestido a cuadros · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tops/tartan-dress/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "df2c40b968a83c7803e43ec9d77b80c1d0a49373f44a8a8893fd59534e6bc15c"
+        }
+      ]
+    },
+    {
+      "sourceId": 165,
+      "sourceTitle": "Short Frock",
+      "sourceCategory": "tops",
+      "sourceUrl": "https://dummyjson.com/products/165",
+      "images": [
+        "https://cdn.dummyjson.com/product-images/tops/short-frock/1.webp"
+      ],
+      "assets": [
+        {
+          "url": "/images/exhibicion/165/1.webp",
+          "alt": "Vestido corto · vista 1",
+          "source": "https://cdn.dummyjson.com/product-images/tops/short-frock/1.webp",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "8504cde0ffacd2722f211f3b2f0f131f3469a0625928ee2b5c29429692046c9e"
+        }
+      ]
+    },
+    {
+      "sourceId": 1001,
+      "sourceTitle": "Cubo de colores para armar",
+      "sourceCategory": "juguetes",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rubiks_cube_solved.jpg",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/6/61/Rubiks_cube_solved.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+      ],
+      "license": "CC BY-SA 3.0",
+      "author": "Mike Gonzalez (TheCoffee)",
+      "assets": [
+        {
+          "url": "/images/exhibicion/1001/1.webp",
+          "source": "https://upload.wikimedia.org/wikipedia/commons/6/61/Rubiks_cube_solved.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "ced3843841955baa4cf4784759c47c17957fcb19a8ce93cb1679360294f02b40"
+        }
+      ]
+    },
+    {
+      "sourceId": 1002,
+      "sourceTitle": "Cuadernos de colores",
+      "sourceCategory": "regalos",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Notebooks.jpg",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/e/ea/Notebooks.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+      ],
+      "license": "CC BY 2.0",
+      "author": "L.Marie",
+      "assets": [
+        {
+          "url": "/images/exhibicion/1002/1.webp",
+          "source": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Notebooks.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "a607184bdc2657afd955d65947d000419540a6a0cbac609ae901726fa2d3d896"
+        }
+      ]
+    },
+    {
+      "sourceId": 1003,
+      "sourceTitle": "Lápices de colores para dibujar",
+      "sourceCategory": "regalos",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Buntstifte_--_2021_--_9156.jpg",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/7/72/Buntstifte_--_2021_--_9156.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+      ],
+      "license": "CC BY-SA 4.0",
+      "author": "Dietmar Rabich",
+      "assets": [
+        {
+          "url": "/images/exhibicion/1003/1.webp",
+          "source": "https://upload.wikimedia.org/wikipedia/commons/7/72/Buntstifte_--_2021_--_9156.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+          "width": 1000,
+          "height": 1000,
+          "sha256": "683045fb0e5ce9de96ae6296326748ee086baf8355a85b4269d8381300caf01b"
         }
       ]
     }

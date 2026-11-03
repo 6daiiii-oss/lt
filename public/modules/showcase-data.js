@@ -807,5 +807,723 @@ export const showcaseProducts=Object.freeze([
         "alt": "Camisa tropical de manga corta · imagen de exhibición 2"
       }
     ]
+  },
+  {
+    "id": "exh-51",
+    "name": "Polvos compactos para maquillaje",
+    "category_id": "belleza",
+    "description": "Una idea para ampliar la selección de maquillaje y cuidado personal de tu tienda. Revisa su presentación en esta ficha de exhibición antes de explorar más opciones.",
+    "is_showcase": true,
+    "source_id": 3,
+    "images": [
+      {
+        "url": "/images/exhibicion/3/1.webp",
+        "alt": "Polvos compactos para maquillaje · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-52",
+    "name": "Loción para rostro y cuerpo",
+    "category_id": "belleza",
+    "description": "Una idea para ampliar la selección de maquillaje y cuidado personal de tu tienda. Revisa su presentación en esta ficha de exhibición antes de explorar más opciones.",
+    "is_showcase": true,
+    "source_id": 120,
+    "images": [
+      {
+        "url": "/images/exhibicion/120/1.webp",
+        "alt": "Loción para rostro y cuerpo · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-53",
+    "name": "Perfume Chanel Coco Noir",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 7,
+    "images": [
+      {
+        "url": "/images/exhibicion/7/1.webp",
+        "alt": "Perfume Chanel Coco Noir · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-54",
+    "name": "Perfume Dolce Shine",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 9,
+    "images": [
+      {
+        "url": "/images/exhibicion/9/1.webp",
+        "alt": "Perfume Dolce Shine · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-55",
+    "name": "Perfume Gucci Bloom",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 10,
+    "images": [
+      {
+        "url": "/images/exhibicion/10/1.webp",
+        "alt": "Perfume Gucci Bloom · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-56",
+    "name": "Portarretratos de árbol familiar",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 44,
+    "images": [
+      {
+        "url": "/images/exhibicion/44/1.webp",
+        "alt": "Portarretratos de árbol familiar · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-57",
+    "name": "Aretes con cristal verde",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 182,
+    "images": [
+      {
+        "url": "/images/exhibicion/182/1.webp",
+        "alt": "Aretes con cristal verde · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-58",
+    "name": "Aretes ovalados verdes",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 183,
+    "images": [
+      {
+        "url": "/images/exhibicion/183/1.webp",
+        "alt": "Aretes ovalados verdes · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-59",
+    "name": "Aretes de estilo tropical",
+    "category_id": "regalos",
+    "description": "Una idea para ocasiones especiales y detalles personales. Explora su presentación como inspiración para el surtido de regalos de tu negocio. Este producto es solo de exhibición.",
+    "is_showcase": true,
+    "source_id": 184,
+    "images": [
+      {
+        "url": "/images/exhibicion/184/1.webp",
+        "alt": "Aretes de estilo tropical · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-60",
+    "name": "Cuadernos de colores",
+    "category_id": "regalos",
+    "description": "Cuadernos de colores. Una idea de exhibición para ampliar el surtido de tu negocio. Consulta la imagen ilustrativa y descubre más opciones en esta categoría. No está a la venta.",
+    "is_showcase": true,
+    "source_id": 1002,
+    "images": [
+      {
+        "url": "/images/exhibicion/1002/1.webp",
+        "alt": "Cuadernos de colores · vista 1"
+      }
+    ],
+    "image_credit": {
+      "author": "L.Marie",
+      "source": "https://commons.wikimedia.org/wiki/File:Notebooks.jpg",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0"
+    }
+  },
+  {
+    "id": "exh-61",
+    "name": "Lápices de colores para dibujar",
+    "category_id": "regalos",
+    "description": "Lápices de colores para dibujar. Una idea de exhibición para ampliar el surtido de tu negocio. Consulta la imagen ilustrativa y descubre más opciones en esta categoría. No está a la venta.",
+    "is_showcase": true,
+    "source_id": 1003,
+    "images": [
+      {
+        "url": "/images/exhibicion/1003/1.webp",
+        "alt": "Lápices de colores para dibujar · vista 1"
+      }
+    ],
+    "image_credit": {
+      "author": "Dietmar Rabich",
+      "source": "https://commons.wikimedia.org/wiki/File:Buntstifte_--_2021_--_9156.jpg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+    }
+  },
+  {
+    "id": "exh-62",
+    "name": "Taza de aluminio negra",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 49,
+    "images": [
+      {
+        "url": "/images/exhibicion/49/1.webp",
+        "alt": "Taza de aluminio negra · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-63",
+    "name": "Batidor manual negro",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 50,
+    "images": [
+      {
+        "url": "/images/exhibicion/50/1.webp",
+        "alt": "Batidor manual negro · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-64",
+    "name": "Colador de malla fina",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 57,
+    "images": [
+      {
+        "url": "/images/exhibicion/57/1.webp",
+        "alt": "Colador de malla fina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-65",
+    "name": "Tenedor de mesa",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 58,
+    "images": [
+      {
+        "url": "/images/exhibicion/58/1.webp",
+        "alt": "Tenedor de mesa · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-66",
+    "name": "Vaso de vidrio",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 59,
+    "images": [
+      {
+        "url": "/images/exhibicion/59/1.webp",
+        "alt": "Vaso de vidrio · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-67",
+    "name": "Tamiz de cocina",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 63,
+    "images": [
+      {
+        "url": "/images/exhibicion/63/1.webp",
+        "alt": "Tamiz de cocina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-68",
+    "name": "Cuchillo de cocina",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 64,
+    "images": [
+      {
+        "url": "/images/exhibicion/64/1.webp",
+        "alt": "Cuchillo de cocina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-69",
+    "name": "Sartén de cocina",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 68,
+    "images": [
+      {
+        "url": "/images/exhibicion/68/1.webp",
+        "alt": "Sartén de cocina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-70",
+    "name": "Plato para servir",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 69,
+    "images": [
+      {
+        "url": "/images/exhibicion/69/1.webp",
+        "alt": "Plato para servir · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-71",
+    "name": "Espátula ranurada",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 72,
+    "images": [
+      {
+        "url": "/images/exhibicion/72/1.webp",
+        "alt": "Espátula ranurada · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-72",
+    "name": "Cuchara de mesa",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 74,
+    "images": [
+      {
+        "url": "/images/exhibicion/74/1.webp",
+        "alt": "Cuchara de mesa · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-73",
+    "name": "Bandeja para servir",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 75,
+    "images": [
+      {
+        "url": "/images/exhibicion/75/1.webp",
+        "alt": "Bandeja para servir · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-74",
+    "name": "Rodillo de madera",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 76,
+    "images": [
+      {
+        "url": "/images/exhibicion/76/1.webp",
+        "alt": "Rodillo de madera · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-75",
+    "name": "Mesa de noche de madera",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 13,
+    "images": [
+      {
+        "url": "/images/exhibicion/13/1.webp",
+        "alt": "Mesa de noche de madera · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-76",
+    "name": "Silla tapizada de oficina",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 14,
+    "images": [
+      {
+        "url": "/images/exhibicion/14/1.webp",
+        "alt": "Silla tapizada de oficina · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-77",
+    "name": "Mueble de baño con espejo",
+    "category_id": "hogar",
+    "description": "Una opción para inspirar el surtido de cocina, organización y decoración de tu negocio. Consulta sus imágenes y explora productos relacionados. Este ejemplo no está a la venta.",
+    "is_showcase": true,
+    "source_id": 15,
+    "images": [
+      {
+        "url": "/images/exhibicion/15/1.webp",
+        "alt": "Mueble de baño con espejo · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-78",
+    "name": "Balón de fútbol americano",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 137,
+    "images": [
+      {
+        "url": "/images/exhibicion/137/1.webp",
+        "alt": "Balón de fútbol americano · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-79",
+    "name": "Pelota de béisbol",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 138,
+    "images": [
+      {
+        "url": "/images/exhibicion/138/1.webp",
+        "alt": "Pelota de béisbol · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-80",
+    "name": "Guante para béisbol",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 139,
+    "images": [
+      {
+        "url": "/images/exhibicion/139/1.webp",
+        "alt": "Guante para béisbol · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-81",
+    "name": "Balón de básquet",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 140,
+    "images": [
+      {
+        "url": "/images/exhibicion/140/1.webp",
+        "alt": "Balón de básquet · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-82",
+    "name": "Aro de básquet para practicar",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 141,
+    "images": [
+      {
+        "url": "/images/exhibicion/141/1.webp",
+        "alt": "Aro de básquet para practicar · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-83",
+    "name": "Volante para bádminton",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 146,
+    "images": [
+      {
+        "url": "/images/exhibicion/146/1.webp",
+        "alt": "Volante para bádminton · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-84",
+    "name": "Pelota de fútbol",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 147,
+    "images": [
+      {
+        "url": "/images/exhibicion/147/1.webp",
+        "alt": "Pelota de fútbol · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-85",
+    "name": "Cubo de colores para armar",
+    "category_id": "juguetes",
+    "description": "Cubo de colores para armar. Una idea de exhibición para ampliar el surtido de tu negocio. Consulta la imagen ilustrativa y descubre más opciones en esta categoría. No está a la venta.",
+    "is_showcase": true,
+    "source_id": 1001,
+    "images": [
+      {
+        "url": "/images/exhibicion/1001/1.webp",
+        "alt": "Cubo de colores para armar · vista 1"
+      }
+    ],
+    "image_credit": {
+      "author": "Mike Gonzalez (TheCoffee)",
+      "source": "https://commons.wikimedia.org/wiki/File:Rubiks_cube_solved.jpg",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+    }
+  },
+  {
+    "id": "exh-86",
+    "name": "Pelota de tenis",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 151,
+    "images": [
+      {
+        "url": "/images/exhibicion/151/1.webp",
+        "alt": "Pelota de tenis · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-87",
+    "name": "Raqueta de tenis",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 152,
+    "images": [
+      {
+        "url": "/images/exhibicion/152/1.webp",
+        "alt": "Raqueta de tenis · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-88",
+    "name": "Pelota de vóley",
+    "category_id": "juguetes",
+    "description": "Una idea para actividades recreativas, juegos al aire libre y pasatiempos. Amplía la selección de hobbies de tu tienda con este ejemplo ilustrativo. No representa stock disponible.",
+    "is_showcase": true,
+    "source_id": 153,
+    "images": [
+      {
+        "url": "/images/exhibicion/153/1.webp",
+        "alt": "Pelota de vóley · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-89",
+    "name": "Camisa a cuadros azul y negra",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 83,
+    "images": [
+      {
+        "url": "/images/exhibicion/83/1.webp",
+        "alt": "Camisa a cuadros azul y negra · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-90",
+    "name": "Camisa de cuadros para hombre",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 85,
+    "images": [
+      {
+        "url": "/images/exhibicion/85/1.webp",
+        "alt": "Camisa de cuadros para hombre · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-91",
+    "name": "Camisa casual a cuadros",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 87,
+    "images": [
+      {
+        "url": "/images/exhibicion/87/1.webp",
+        "alt": "Camisa casual a cuadros · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-92",
+    "name": "Lentes de sol clásicos",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 155,
+    "images": [
+      {
+        "url": "/images/exhibicion/155/1.webp",
+        "alt": "Lentes de sol clásicos · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-93",
+    "name": "Lentes verdes y negros",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 156,
+    "images": [
+      {
+        "url": "/images/exhibicion/156/1.webp",
+        "alt": "Lentes verdes y negros · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-94",
+    "name": "Lentes para fiestas",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 157,
+    "images": [
+      {
+        "url": "/images/exhibicion/157/1.webp",
+        "alt": "Lentes para fiestas · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-95",
+    "name": "Lentes de sol oscuros",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 158,
+    "images": [
+      {
+        "url": "/images/exhibicion/158/1.webp",
+        "alt": "Lentes de sol oscuros · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-96",
+    "name": "Vestido azul",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 162,
+    "images": [
+      {
+        "url": "/images/exhibicion/162/1.webp",
+        "alt": "Vestido azul · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-97",
+    "name": "Vestido de verano",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 163,
+    "images": [
+      {
+        "url": "/images/exhibicion/163/1.webp",
+        "alt": "Vestido de verano · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-98",
+    "name": "Vestido gris",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 164,
+    "images": [
+      {
+        "url": "/images/exhibicion/164/1.webp",
+        "alt": "Vestido gris · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-99",
+    "name": "Vestido corto",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 165,
+    "images": [
+      {
+        "url": "/images/exhibicion/165/1.webp",
+        "alt": "Vestido corto · vista 1"
+      }
+    ]
+  },
+  {
+    "id": "exh-100",
+    "name": "Vestido a cuadros",
+    "category_id": "moda",
+    "description": "Una propuesta para complementar el surtido de prendas y accesorios de tu tienda. Descubre su estilo en esta ficha de muestra y explora otras presentaciones del catálogo.",
+    "is_showcase": true,
+    "source_id": 166,
+    "images": [
+      {
+        "url": "/images/exhibicion/166/1.webp",
+        "alt": "Vestido a cuadros · vista 1"
+      }
+    ]
   }
-].map(p=>Object.freeze({...p,images:Object.freeze(p.images.map(Object.freeze))})));
+]);

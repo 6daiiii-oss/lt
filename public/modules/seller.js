@@ -1,3 +1,4 @@
+import {supplierProfileView} from './supplier-profile.js';
 import { analyticsView } from './analytics.js';
 import { sellerHomeView,sellerBusinessView,sellerSettingsView,productSavedView } from './seller-journey.js';
 import { sellerStartView } from './seller-start.js';
@@ -10,6 +11,7 @@ import { pageHeader } from './layout.js';
 import { navigate, reload } from './router.js';
 const stat=(label,value)=>`<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;
 export async function sellerView(path,url) {
+  if(path==='/panel/perfil-publico')return supplierProfileView();
   if(path==='/panel/empezar')return sellerStartView();
   if(path==='/panel/inventario') {
     const list=await api('/seller/products');

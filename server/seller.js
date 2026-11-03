@@ -19,6 +19,14 @@ sellerRouter.get('/summary',async(req,res)=>{
   const latest_orders=(await query(`SELECT o.id,o.total_cents,o.state,o.created_at,buyer.name AS buyer_name FROM orders o JOIN organizations buyer ON buyer.id=o.buyer_id WHERE o.brand_id=$1 ORDER BY o.created_at DESC LIMIT 5`,[req.org.brand_id])).rows;
   res.json({...orders,...products,...jobs,latest_orders});
 });
+sellerRouter.put('/profile',verified,orgRole('seller',{owner:true}),async(req,res)=>{
+ const v=parse(z.object({story:z.string().trim().max(3000),avatar_id:id.nullable(),banner_id:id.nullable()}),req.body);
+ await tx(async db=>{
+  for(const imageId of [v.avatar_id,v.banner_id].filter(Boolean))requireThat((await db.query('SELECT 1 FROM attachments WHERE id=$1 AND organization_id=$2 AND public',[imageId,req.org.id])).rowCount,'Selecciona una imagen de tu negocio.',422);
+  await db.query('UPDATE brands SET story=$2,avatar_id=$3,banner_id=$4 WHERE id=$1',[req.org.brand_id,v.story,v.avatar_id,v.banner_id]);
+  await audit(db,req,'brand.profile.updated',req.org.brand_id);
+ });res.json({message:'Perfil guardado.'});
+});
 sellerRouter.put('/brand',verified,orgRole('seller',{owner:true}),async(req,res)=>{
   const v=parse(z.object({name:text,story:z.string().max(3000),location:text,min_order_cents:cents,shipping_cents:cents,
     shipping_regions:z.array(z.string().transform(normalizeRegion).refine(value=>peruRegions.some(name=>normalizeRegion(name)===value),'Selecciona una región válida de Perú.')).min(1,'Selecciona al menos una región de envío.').max(30),preparation_days:z.number().int().min(0).max(365),shipping_policy:text,return_policy:text,terms_approved:z.boolean()}),req.body);

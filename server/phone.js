@@ -20,7 +20,12 @@ async function twilioRequest(resource,body) {
       body:new URLSearchParams(body),signal:AbortSignal.timeout(10000)});
     data=await response.json();
   }catch {requireThat(false,'El servicio SMS no responde. Intenta más tarde.',503,'sms_unavailable');}
-  requireThat(response.ok,response.status===429?'Se alcanzó el límite de SMS. Intenta más tarde.':'No se pudo procesar la verificación. Solicita un código nuevo.',response.status===429?429:422,'sms_provider');
+  if(!response.ok){
+    // Provider diagnostics contain codes only, never phone numbers, tokens or OTPs.
+    console.error('Twilio Verify rechazó la solicitud',{status:response.status,code:data.code});
+    const messages={21211:'Revisa tu celular. Usa un número peruano de 9 dígitos.',21608:'Twilio requiere autorizar este número en la cuenta de prueba. Contacta al soporte de Vendo.',21408:'Los SMS a Perú no están habilitados en Twilio. Contacta al soporte de Vendo.',60200:'Revisa el celular o solicita un código nuevo.',60202:'Se agotaron los intentos. Solicita un código nuevo.',60203:'Se alcanzó el límite de envíos. Espera antes de solicitar otro SMS.',60410:'Twilio bloqueó temporalmente el envío. Contacta al soporte de Vendo.'};
+    requireThat(false,messages[data.code]||(response.status===429?'Se alcanzó el límite de SMS. Intenta más tarde.':'No se pudo procesar la verificación. Solicita un código nuevo.'),response.status===429?429:422,'sms_provider');
+  }
   return data;
 }
 export const phoneRouter=Router();
@@ -42,6 +47,7 @@ phoneRouter.post('/auth/phone/send',async(req,res)=>{
     await db.query('UPDATE phone_verifications SET used_at=now() WHERE user_id=$1 AND used_at IS NULL',[req.user.id]);
     const code=config.smsProvider==='sandbox'?String(randomInt(100000,1000000)):null;
     const remote=code?null:await twilioRequest('Verifications',{To:phone,Channel:'sms',Locale:'es'});
+    requireThat(code||remote?.status==='pending','No se confirmó el envío del SMS. Intenta nuevamente.',422,'sms_provider');
     const row=(await db.query(`INSERT INTO phone_verifications(user_id,phone,provider,provider_sid,code_hash,sandbox_code_encrypted) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,phone,expires_at`,[req.user.id,phone,config.smsProvider,remote?.sid||null,code?digest(code):null,code?encrypt(code):null])).rows[0];
     await audit(db,req,'phone.code.requested',row.id,{provider:config.smsProvider});
     return row;

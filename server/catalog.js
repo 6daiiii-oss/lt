@@ -54,7 +54,7 @@ catalogRouter.get('/products/:id/reviews',async(req,res)=>{
     JOIN products p ON p.id=oi.product_id JOIN brands b ON b.id=p.brand_id JOIN organizations seller ON seller.id=b.organization_id
     WHERE oi.product_id=$1 AND r.status='published' AND p.status='published' AND seller.status='approved' ORDER BY r.created_at DESC LIMIT 100`,[id.parse(req.params.id)])).rows);
 });
-const publicBrandColumns=`b.id,b.name,b.story,b.location,b.min_order_cents,b.shipping_cents,b.shipping_regions,b.preparation_days,b.shipping_policy,b.return_policy,o.status AS commercial_status`;
+const publicBrandColumns=`b.id,b.name,b.story,b.avatar_id,b.banner_id,b.location,b.min_order_cents,b.shipping_cents,b.shipping_regions,b.preparation_days,b.shipping_policy,b.return_policy,o.status AS commercial_status`;
 catalogRouter.get('/brands',async(req,res)=>{
   const search=z.string().max(100).parse(req.query.q||'');
   res.json((await query(`SELECT ${publicBrandColumns},count(p.id)::int AS product_count FROM brands b JOIN organizations o ON o.id=b.organization_id LEFT JOIN products p ON p.brand_id=b.id AND p.status='published'
