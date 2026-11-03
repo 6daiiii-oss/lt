@@ -35,7 +35,7 @@ sellerRouter.put('/brand',verified,orgRole('seller',{owner:true}),async(req,res)
     await audit(db,req,'brand.terms.updated',req.org.brand_id);
   });res.json({message:'Condiciones actualizadas. Los checkouts pendientes volverán a validar precio y condiciones.'});
 });
-sellerRouter.get('/products',async(req,res)=>res.json((await query(`SELECT p.*,p.wholesale_cents AS customer_price_cents,p.supplier_cents AS wholesale_cents,i.total,i.reserved,i.total-i.reserved AS available,i.source_updated_at,(SELECT json_agg(json_build_object('url',url,'alt',alt) ORDER BY position) FROM product_images WHERE product_id=p.id) AS images FROM products p JOIN inventory i ON i.product_id=p.id WHERE brand_id=$1 ORDER BY p.created_at DESC LIMIT 1000`,[req.org.brand_id])).rows));
+sellerRouter.get('/products',async(req,res)=>res.json((await query(`SELECT p.*,p.wholesale_cents AS customer_price_cents,p.supplier_cents AS wholesale_cents,i.total,i.reserved,i.pack_stock,i.total-i.reserved AS available,i.source_updated_at,(SELECT json_agg(json_build_object('url',url,'alt',alt) ORDER BY position) FROM product_images WHERE product_id=p.id) AS images FROM products p JOIN inventory i ON i.product_id=p.id WHERE brand_id=$1 ORDER BY p.created_at DESC LIMIT 1000`,[req.org.brand_id])).rows));
 sellerRouter.post('/products',verified,async(req,res)=>{
   const input=parse(productSchema,req.body);
   const result=await tx(async db=>{const product=await upsertProduct(db,req.org.brand_id,input);await audit(db,req,'product.upsert',product.id);return product;});res.status(201).json(result);
@@ -94,7 +94,7 @@ sellerRouter.get('/analytics',async(req,res)=>{
   const rows=(await query(`SELECT ord.* FROM orders ord JOIN purchases p ON p.id=ord.purchase_id WHERE ord.brand_id=$1 AND p.payment_state IN ('approved','refunded','partially_refunded') AND ord.created_at>=($2::date::timestamp AT TIME ZONE 'America/Lima') AND ord.created_at<(($3::date+1)::timestamp AT TIME ZONE 'America/Lima')`,[req.org.brand_id,input.from,input.to])).rows;
   const gross=rows.reduce((s,r)=>s+r.subtotal_cents,0),buyers=new Map(),days=new Map();
   for(const r of rows){buyers.set(r.buyer_id,(buyers.get(r.buyer_id)||0)+1);const date=peruDay(r.created_at),day=days.get(date)||{date,gross_products_cents:0,orders:0};day.gross_products_cents+=r.subtotal_cents;day.orders++;days.set(date,day);}
-  const products=(await query(`SELECT oi.product_id,oi.snapshot->>'name' AS name,sum(oi.quantity)::int AS units,sum(oi.quantity*oi.unit_price_cents)::bigint AS gross_cents FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.id=ANY($1::uuid[]) GROUP BY oi.product_id,oi.snapshot->>'name' ORDER BY units DESC`,[rows.map(r=>r.id)])).rows;
+  const products=(await query(`SELECT oi.product_id,oi.snapshot->>'name' AS name,sum(oi.quantity)::int AS units,sum(oi.line_total_cents)::bigint AS gross_cents FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.id=ANY($1::uuid[]) GROUP BY oi.product_id,oi.snapshot->>'name' ORDER BY units DESC`,[rows.map(r=>r.id)])).rows;
   res.json({period:input,gross_products_cents:gross,refunds_cents:rows.reduce((s,r)=>s+r.refunded_cents,0),orders:rows.length,average_ticket_cents:rows.length?Math.round(gross/rows.length):0,units:products.reduce((s,r)=>s+r.units,0),repeat_buyers:[...buyers.values()].filter(n=>n>1).length,products,daily:[...days.values()].sort((a,b)=>a.date.localeCompare(b.date))});
 });
 sellerRouter.post('/orders/:id/fulfillment',verified,async(req,res)=>{

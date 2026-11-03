@@ -1,3 +1,7 @@
+# Actualización · 3 de noviembre de 2026
+
+Comisión vigente: 5% sobre productos después de descuentos, IGV del servicio incluido y sin comisión sobre envío. Registro sin SMS obligatorio. Presentaciones y tramos automáticos, stock compartido o separado para cajas selladas, y cotizaciones opcionales con destino, flete, entrega y vencimiento. Las compras reales continúan cerradas. Los apartados fechados siguientes conservan el historial de versiones anteriores.
+
 # Actualización · Registro por número y carga inicial de catálogo
 
 Se implementa alta con número obligatorio y confirmación SMS dentro del registro. No se exige confirmar correo para gestionar productos ni solicitar revisión de negocio. El proveedor entra directamente a Crear mi catálogo y puede añadir productos sucesivos con descripciones y cantidades claras. El correo sigue sin confirmar hasta que el titular lo confirme opcionalmente; solo entonces puede usarse para recuperación de contraseña.

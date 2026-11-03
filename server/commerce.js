@@ -1,3 +1,5 @@
+import {resolveLine,destinationMatches} from './line-pricing.js';
+import {stockAvailable,changeStock} from './stock.js';
 import { normalizeRegion, regionName } from '../public/modules/regions.js';
 import { phoneVerified } from './phone.js';
 import { feeBreakdown, buyerOrder } from './pricing.js';
@@ -11,20 +13,22 @@ import { audit, cents, hash, id, notify, parse, quantity, requireThat, sumMoney,
 export async function lockBuyer(db,orgId) { return (await db.query('SELECT id,status FROM organizations WHERE id=$1 FOR UPDATE',[orgId])).rows[0]; }
 export async function pendingCheckout(db,orgId) { return (await db.query(`SELECT id,expires_at,total_cents FROM checkouts WHERE organization_id=$1 AND state='pending' ORDER BY created_at DESC LIMIT 1`,[orgId])).rows[0]; }
 export async function cartRows(db,orgId,lock=false) {
-  return (await db.query(`SELECT ci.quantity,ci.quoted_price_cents,p.*,i.total,i.reserved,i.source_updated_at,
+  const rows=(await db.query(`SELECT ci.quantity,ci.quoted_price_cents,ci.presentation_key,ci.pack_quantity,ci.assortment_note,ci.offer_id,p.*,i.total,i.reserved,i.source_updated_at,i.pack_stock,
    b.name AS brand_name,b.organization_id AS seller_id,b.min_order_cents,b.shipping_cents,b.shipping_regions,b.shipping_policy,b.return_policy,b.preparation_days,b.terms_approved,o.status AS seller_status,
    (SELECT url FROM product_images WHERE product_id=p.id ORDER BY position LIMIT 1) AS image
    FROM carts cart JOIN cart_items ci ON ci.cart_id=cart.id JOIN products p ON p.id=ci.product_id JOIN inventory i ON i.product_id=p.id
    JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id
    WHERE cart.organization_id=$1 ORDER BY p.id ${lock?'FOR UPDATE OF ci,p,i,b,o':''}`,[orgId])).rows;
+  for(const row of rows){try{row.pricing=await resolveLine(db,row,row,orgId);}catch(e){row.pricing_error=e.message;}}return rows;
 }
 export function productIssues(p,n=p.quantity) {
   const issues=[];
-  try {validateQuantity(p,n);} catch(e){issues.push(e.message);}
+  if(p.pricing_error)issues.push(p.pricing_error);
+  if(!p.pricing){try {validateQuantity(p,n);} catch(e){issues.push(e.message);}}
   if(p.status!=='published'||p.seller_status!=='approved'||!p.terms_approved) issues.push('Producto o marca no disponible para compra.');
-  if(p.total-p.reserved<n) issues.push('Stock insuficiente.');
+  if(stockAvailable(p,p.pricing?.inventory_key||'')<(p.pricing?.units??n)) issues.push('Stock insuficiente.');
   if(Date.now()-new Date(p.source_updated_at).getTime()>config.stockMaxAgeHours*3600_000) issues.push('El stock necesita actualización del proveedor.');
-  if(p.quoted_price_cents!==undefined&&p.quoted_price_cents!==p.wholesale_cents) issues.push('El precio cambió; vuelve a revisar el producto.');
+  if(p.quoted_price_cents!==undefined&&p.quoted_price_cents!==(p.pricing?.pack_price_cents??p.wholesale_cents)) issues.push('El precio cambió; vuelve a revisar el producto.');
   return issues;
 }
 export function quoteCart(rows,address) {
@@ -33,13 +37,18 @@ export function quoteCart(rows,address) {
     let group=groups.get(p.brand_id);
     if(!group) {group={brand_id:p.brand_id,brand_name:p.brand_name,subtotal_cents:0,shipping_cents:p.shipping_cents,min_order_cents:p.min_order_cents,shipping_regions:p.shipping_regions,shipping_policy:p.shipping_policy,return_policy:p.return_policy,items:[],issues:[]};groups.set(p.brand_id,group);}
     const issues=productIssues(p);
-    group.items.push({product_id:p.id,name:p.name,sku:p.sku,variant:p.variant,quantity:p.quantity,wholesale_cents:p.wholesale_cents,quoted_price_cents:p.quoted_price_cents,moq:p.moq,pack_multiple:p.pack_multiple,available:p.total-p.reserved,source_updated_at:p.source_updated_at,issues});
-    group.subtotal_cents=sumMoney([group.subtotal_cents,p.quantity*p.wholesale_cents]);
+    const pricing=p.pricing;
+    if(pricing?.offer_id){if(group.offer_id&&group.offer_id!==pricing.offer_id)group.issues.push('Usa una sola cotización por pedido.');group.offer_id=pricing.offer_id;group.offer_destination=pricing.offer_destination;group.shipping_cents=pricing.offer_shipping_cents;group.min_order_cents=0;}
+    group.items.push({pricing,assortment_note:p.assortment_note,product_id:p.id,name:p.name,sku:p.sku,variant:p.variant,quantity:p.quantity,wholesale_cents:p.wholesale_cents,quoted_price_cents:p.quoted_price_cents,moq:p.moq,pack_multiple:p.pack_multiple,available:p.total-p.reserved,source_updated_at:p.source_updated_at,issues});
+    group.subtotal_cents=sumMoney([group.subtotal_cents,pricing?.line_total_cents??p.quantity*p.wholesale_cents]);
   }
   for(const g of groups.values()) {
+    if(g.offer_id&&(!g.items.every(x=>x.pricing?.offer_id===g.offer_id)||g.items.length!==g.items[0].pricing.offer_item_count))g.issues.push('La cotización debe incluirse completa, sin mezclar otros productos.');
+    if(g.subtotal_cents>100_000_000)g.issues.push('El subtotal supera el límite de un pedido. Divide la compra.');
     if(g.subtotal_cents<g.min_order_cents) g.issues.push(`Añade S/ ${((g.min_order_cents-g.subtotal_cents)/100).toFixed(2)} en productos de esta marca para completar su compra mínima.`);
-    if(!g.shipping_regions.length) g.issues.push('El proveedor aún no configuró cobertura.');
-    if(address&&!g.shipping_regions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push(`Esta marca no envía a ${regionName(address.region)}. Zonas de envío: ${g.shipping_regions.map(regionName).join(', ')||'sin configurar'}. Elige otra dirección o consulta con la marca.`);
+    if(!g.offer_id&&!g.shipping_regions.length) g.issues.push('El proveedor aún no configuró cobertura.');
+    if(address&&!g.offer_id&&!g.shipping_regions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push(`Esta marca no envía a ${regionName(address.region)}. Zonas de envío: ${g.shipping_regions.map(regionName).join(', ')||'sin configurar'}. Elige otra dirección o consulta con la marca.`);
+    if(address&&g.offer_id&&!destinationMatches(g.offer_destination,address))g.issues.push('La dirección no coincide con el destino cotizado. Solicita actualizar el envío.');
     if(address&&config.coverageRegions.length&&!config.coverageRegions.map(normalizeRegion).includes(normalizeRegion(address.region))) g.issues.push('La dirección está fuera de la cobertura de Lote.');
     g.total_cents=sumMoney([g.subtotal_cents,g.shipping_cents]);
   }
@@ -55,19 +64,19 @@ const purchasesAvailable=(req,res,next)=>{
 };
 commerceRouter.get('/cart',orgRole('buyer'),async(req,res)=>{
   const addressId=req.query.address_id===undefined?null:id.parse(req.query.address_id);
-  const address=addressId?(await query('SELECT id,region FROM addresses WHERE id=$1 AND organization_id=$2',[addressId,req.org.id])).rows[0]:null;
+  const address=addressId?(await query('SELECT id,region,district,line1 FROM addresses WHERE id=$1 AND organization_id=$2',[addressId,req.org.id])).rows[0]:null;
   if(addressId)requireThat(address,'Dirección no autorizada.',404);
   res.json({...quoteCart(await cartRows({query},req.org.id),address),address_id:address?.id||null,pendingCheckout:await pendingCheckout({query},req.org.id)});
 });
 commerceRouter.post('/cart/items',purchasesAvailable,verified,orgRole('buyer'),async(req,res)=>{
-  const input=parse(z.object({product_id:id,quantity,expected_price_cents:cents}),req.body);
+  const input=parse(z.object({product_id:id,quantity:quantity.optional(),presentation_key:z.string().max(60).default(''),pack_quantity:quantity.optional(),assortment_note:z.string().trim().max(500).default(''),offer_id:id.optional(),expected_price_cents:cents}),req.body);
   await tx(async db=>{
     await lockBuyer(db,req.org.id);requireThat(!await pendingCheckout(db,req.org.id),'Finaliza o cancela el checkout pendiente.',409);
-    const p=(await db.query(`SELECT p.*,i.total,i.reserved,i.source_updated_at,o.status AS seller_status,b.terms_approved FROM products p JOIN inventory i ON i.product_id=p.id JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id WHERE p.id=$1`,[input.product_id])).rows[0];
-    requireThat(p,'Producto no encontrado.',404);const issues=productIssues(p,input.quantity);requireThat(!issues.length,'Revisa las condiciones del producto.',422,'cart_conditions',issues);
-    requireThat(p.wholesale_cents===input.expected_price_cents,'El precio cambió. Revisa el producto.',409,'price_changed');
+    const p=(await db.query(`SELECT p.*,i.total,i.reserved,i.pack_stock,i.source_updated_at,o.status AS seller_status,b.terms_approved FROM products p JOIN inventory i ON i.product_id=p.id JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id WHERE p.id=$1`,[input.product_id])).rows[0];
+    requireThat(p,'Producto no encontrado.',404);p.pricing=await resolveLine(db,p,input,req.org.id);const issues=productIssues(p,p.pricing.units);requireThat(!issues.length,'Revisa las condiciones del producto.',422,'cart_conditions',issues);
+    requireThat(p.pricing.pack_price_cents===input.expected_price_cents,'El precio cambió. Revisa el producto.',409,'price_changed');
     const cartId=await ensureCart(db,req.org.id);
-    await db.query(`INSERT INTO cart_items(cart_id,product_id,quantity,quoted_price_cents) VALUES($1,$2,$3,$4) ON CONFLICT(cart_id,product_id) DO UPDATE SET quantity=$3,quoted_price_cents=$4`,[cartId,p.id,input.quantity,p.wholesale_cents]);
+    await db.query(`INSERT INTO cart_items(cart_id,product_id,quantity,quoted_price_cents,presentation_key,pack_quantity,assortment_note,offer_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(cart_id,product_id) DO UPDATE SET quantity=$3,quoted_price_cents=$4,presentation_key=$5,pack_quantity=$6,assortment_note=$7,offer_id=$8`,[cartId,p.id,p.pricing.units,p.pricing.pack_price_cents,p.pricing.presentation_key,p.pricing.pack_quantity,input.assortment_note,input.offer_id||null]);
   });res.status(201).json({message:'Carrito actualizado.'});
 });
 commerceRouter.delete('/cart/items/:id',orgRole('buyer'),async(req,res)=>{
@@ -102,15 +111,15 @@ commerceRouter.post('/checkout',purchasesAvailable,verified,phoneVerified,orgRol
         AND o.refunded_cents<o.total_cents AND p.payment_state IN ('approved','partially_refunded') LIMIT 1`,[req.org.id,g.brand_id])).rowCount>0;
       const fees=feeBreakdown(g.subtotal_cents,g.shipping_cents,recurrent);
       const bps=fees.basis_points,markupCents=fees.service_total_cents;
+      if(g.offer_id)await db.query('UPDATE special_quotes SET checkout_id=$2 WHERE id=$1',[g.offer_id,checkout.id]);
       const order=(await db.query(`INSERT INTO orders(purchase_id,brand_id,buyer_id,subtotal_cents,shipping_cents,commission_bps,commission_cents,total_cents,policy_snapshot)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'seven_percent_product_gross_service_igv_included_processing_buyer',fees}])).rows[0];
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[purchase.id,g.brand_id,req.org.id,g.subtotal_cents,g.shipping_cents,bps,markupCents,g.total_cents,{shipping:g.shipping_policy,returns:g.return_policy,minimum_cents:g.min_order_cents,offer_id:g.offer_id||null,tax:'included_18_percent_assumed',pricing:'supplier_final_price_v2',commission:'five_percent_product_gross_service_igv_included_processing_buyer',fees}])).rows[0];
       for(const item of g.items) {
         const p=rows.find(p=>p.id===item.product_id);
-        const updated=await db.query('UPDATE inventory SET reserved=reserved+$2,updated_at=now() WHERE product_id=$1 AND total-reserved>=$2 RETURNING product_id',[p.id,p.quantity]);
-        requireThat(updated.rowCount,'Otra tienda acaba de reservar este stock.',409,'stock_conflict');
-        await db.query('INSERT INTO inventory_reservations(checkout_id,product_id,quantity,expires_at) VALUES($1,$2,$3,$4)',[checkout.id,p.id,p.quantity,checkout.expires_at]);
-        await db.query('INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,$3,$4,$5)',[p.id,checkout.id,'reserved',p.quantity,`reserve:${checkout.id}:${p.id}`]);
-        await db.query(`INSERT INTO order_items(order_id,product_id,quantity,unit_price_cents,snapshot) VALUES($1,$2,$3,$4,$5)`,[order.id,p.id,p.quantity,p.wholesale_cents,{name:p.name,variant:p.variant,sku:p.sku,brand_name:p.brand_name,retail_cents:p.retail_cents,moq:p.moq,pack_multiple:p.pack_multiple,tax_applied:'included_18_percent_assumed',same_tax_basis:p.same_tax_basis,wholesale_cents:p.wholesale_cents}]);
+        await changeStock(db,p.id,p.pricing.inventory_key,{reserved:p.quantity});
+        await db.query('INSERT INTO inventory_reservations(checkout_id,product_id,quantity,expires_at,inventory_key) VALUES($1,$2,$3,$4,$5)',[checkout.id,p.id,p.quantity,checkout.expires_at,p.pricing.inventory_key]);
+        await db.query('INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference,inventory_key) VALUES($1,$2,$3,$4,$5,$6)',[p.id,checkout.id,'reserved',p.quantity,`reserve:${checkout.id}:${p.id}`,p.pricing.inventory_key]);
+        await db.query(`INSERT INTO order_items(order_id,product_id,quantity,unit_price_cents,snapshot,line_total_cents) VALUES($1,$2,$3,$4,$5,$6)`,[order.id,p.id,p.quantity,Math.max(1,Math.round(p.pricing.unit_equivalent_cents)),{pricing:p.pricing,assortment_note:p.assortment_note,offer_id:p.offer_id||null,name:p.name,variant:p.variant,sku:p.sku,brand_name:p.brand_name,retail_cents:p.retail_cents,moq:p.moq,pack_multiple:p.pack_multiple,tax_applied:'included_18_percent_assumed',same_tax_basis:p.same_tax_basis,wholesale_cents:p.wholesale_cents},p.pricing.line_total_cents]);
       }
       await db.query(`INSERT INTO order_events(order_id,actor_id,event) VALUES($1,$2,'checkout.reserved')`,[order.id,req.user.id]);
     }
@@ -155,6 +164,7 @@ commerceRouter.post('/orders/:id/reorder',purchasesAvailable,verified,orgRole('b
     await lockBuyer(db,req.org.id);const order=await accessibleOrder(db,req,id.parse(req.params.id));requireThat(order.buyer_id===req.org.id,'Solo la tienda compradora puede recomprar.',403);
     const items=(await db.query(`SELECT oi.quantity,oi.unit_price_cents AS previous_price_cents,oi.snapshot,p.*,i.total,i.reserved,i.source_updated_at,o.status AS seller_status,b.terms_approved
       FROM order_items oi JOIN products p ON p.id=oi.product_id JOIN inventory i ON i.product_id=p.id JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id WHERE oi.order_id=$1 ORDER BY p.id`,[order.id])).rows;
+    for(const p of items)if(p.snapshot.pricing?.presentation_key||p.snapshot.offer_id)p.status='reselect_presentation';
     const quote=items.map(p=>({product_id:p.id,name:p.name,quantity:p.quantity,previous_price_cents:p.previous_price_cents,current_price_cents:p.wholesale_cents,moq:p.moq,pack_multiple:p.pack_multiple,available:p.total-p.reserved,status:p.status,issues:productIssues(p),changed:p.previous_price_cents!==p.wholesale_cents||p.snapshot.moq!==p.moq||p.snapshot.pack_multiple!==p.pack_multiple}));
     const quoteHash=hash(JSON.stringify(quote));
     if(input.confirm) {

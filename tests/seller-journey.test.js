@@ -17,6 +17,6 @@ test('revisión pendiente, corrección y aprobación se distinguen sin indicador
 test('productos archivados no completan el catálogo; condiciones sin confirmar tampoco',()=>{
  const org={legal_name:'Ana',business_type:'Proveedor',phone:'123',contact_email:'a@example.invalid',origin_address:'Origen',brand:{location:'Lima',shipping_regions:['lima'],shipping_policy:'Entrega',return_policy:'Incidencias',terms_approved:false}};
  let steps=sellerProgress(org,[{status:'archived'}],{phone_verified_at:'2026-10-25'});
- assert.equal(steps.find(s=>s.key==='phone').done,true);assert.equal(steps.find(s=>s.key==='products').done,false);assert.equal(steps.find(s=>s.key==='business').done,false);
+ assert.equal(steps.some(s=>s.key==='phone'),false);assert.equal(steps.find(s=>s.key==='products').done,false);assert.equal(steps.find(s=>s.key==='business').done,false);
  org.brand.terms_approved=true;steps=sellerProgress(org,[{status:'pending'}],{});assert.equal(steps.find(s=>s.key==='business').done,true);assert.equal(steps.find(s=>s.key==='products').done,true);
 });

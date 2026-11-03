@@ -72,7 +72,7 @@ adminRouter.get('/orders',async(req,res)=>{
 adminRouter.get('/payments',async(req,res)=>res.json((await query(`SELECT pa.*,c.state AS checkout_state,c.expires_at,(SELECT json_agg(json_build_object('product_id',product_id,'quantity',quantity,'state',state)) FROM inventory_reservations WHERE checkout_id=c.id) AS reservations FROM payment_attempts pa JOIN checkouts c ON c.id=pa.checkout_id ORDER BY pa.created_at DESC LIMIT 300`)).rows));
 adminRouter.get('/commissions',async(req,res)=>res.json((await query('SELECT * FROM commission_rules ORDER BY effective_at DESC LIMIT 200')).rows));
 adminRouter.post('/commissions',async(req,res)=>{
-  requireThat(false,'La política vigente es 10% inicial / 7% recurrente sobre productos sin IGV ni envío. Los pedidos conservan su desglose congelado.',409,'fixed_markup');
+  requireThat(false,'La política vigente es 5% sobre el subtotal final de productos después de descuentos, con IGV de la comisión incluido y sin comisión sobre envío. Los pedidos conservan su desglose congelado.',409,'fixed_markup');
 });
 adminRouter.get('/incidents',async(req,res)=>res.json((await query(`SELECT i.*,b.name AS brand_name FROM incidents i JOIN orders o ON o.id=i.order_id JOIN brands b ON b.id=o.brand_id ORDER BY i.created_at DESC LIMIT 300`)).rows));
 adminRouter.post('/incidents/:id/resolve',async(req,res)=>{

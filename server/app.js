@@ -1,3 +1,4 @@
+import {quotesRouter} from './quotes.js';
 import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
@@ -31,7 +32,7 @@ export function createApp({testing=false}={}) {
   app.use('/api',privacyRouter,authRouter,catalogRouter,paymentRouter);
   app.use('/api/seller',sellerRouter);
   app.use('/api/admin',adminRouter);
-  app.use('/api',phoneRouter,mediaRouter,accountRouter,commerceRouter,aftercareRouter);
+  app.use('/api',quotesRouter,phoneRouter,mediaRouter,accountRouter,commerceRouter,aftercareRouter);
   app.use('/api',(req,res)=>res.status(404).json({message:'Ruta de API no encontrada.',code:'not_found'}));
   app.get('/media/:id',servePublicImage);
   const publicDir=resolve('public');

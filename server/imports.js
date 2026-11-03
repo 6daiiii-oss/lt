@@ -1,3 +1,4 @@
+import {validatePresentations} from '../public/modules/volume-pricing.js';
 import { priceForBuyer } from './pricing.js';
 import { parse as parseCsv } from 'csv-parse/sync';
 import { z } from 'zod';
@@ -11,34 +12,58 @@ export const productSchema=z.object({
  wholesale_cents:cents.refine(v=>v>0),retail_cents:cents.refine(v=>v>0).nullable().default(null),same_tax_basis:z.boolean().default(false),
  moq:quantity,pack_multiple:quantity.default(1),stock:z.number().int().min(0).max(1_000_000),
  updated_at:z.iso.datetime().optional(),images:z.array(z.object({url:imageUrl,alt:text})).max(8).default([]),
+ presentations:z.array(z.object({key:z.string(),name:z.string(),units_per_pack:quantity,min_packs:quantity,pack_step:quantity,price_cents:cents,stock_mode:z.enum(['shared','separate']),stock:z.number().int().min(0).max(1_000_000).optional(),allow_assortment:z.boolean().default(false),assortment:z.string().max(500).default(''),quote_from:quantity.nullable().default(null),tiers:z.array(z.object({from:quantity,price_cents:cents})).max(3).default([])})).max(8).optional(),quote_enabled:z.boolean().optional(),
  external_id:z.string().max(150).optional(),active:z.boolean().default(true),submit_for_review:z.boolean().default(false)
-}).refine(p=>p.moq%p.pack_multiple===0,{message:'El mínimo de unidades debe coincidir con las unidades de cada paquete.',path:['moq']});
+}).superRefine((p,ctx)=>{try{if(p.presentations)validatePresentations(p.presentations);}catch(e){ctx.addIssue({code:'custom',path:['presentations'],message:e.message});}}).refine(p=>p.moq%p.pack_multiple===0,{message:'El mínimo de unidades debe coincidir con las unidades de cada paquete.',path:['moq']});
 export async function upsertProduct(db,brandId,input,{sourceId=null}={}) {
   const p=parse(productSchema,input),updatedAt=p.updated_at?new Date(p.updated_at):new Date();
   requireThat(updatedAt.getTime()<=Date.now()+1000,'Timestamp de stock futuro.');
   const brand=(await db.query('SELECT id,organization_id FROM brands WHERE id=$1 FOR UPDATE',[brandId])).rows[0];
   requireThat(brand,'Marca no encontrada.',404);
   for(const image of p.images.filter(i=>i.url.startsWith('/media/'))) requireThat((await db.query('SELECT 1 FROM attachments WHERE id=$1 AND organization_id=$2 AND public',[image.url.slice(7),brand.organization_id])).rowCount,'La imagen subida no pertenece a tu marca.',403);
-  const old=(await db.query(`SELECT p.*,i.reserved,i.source_updated_at FROM products p JOIN inventory i ON i.product_id=p.id WHERE p.brand_id=$1 AND p.sku=$2 FOR UPDATE OF p,i`,[brandId,p.sku])).rows[0];
+  const old=(await db.query(`SELECT p.*,i.reserved,i.source_updated_at,i.pack_stock FROM products p JOIN inventory i ON i.product_id=p.id WHERE p.brand_id=$1 AND p.sku=$2 FOR UPDATE OF p,i`,[brandId,p.sku])).rows[0];
   if(old&&p.updated_at&&new Date(old.source_updated_at)>=updatedAt) return {id:old.id,ignored:true};
   if(sourceId) {
     requireThat(p.external_id,'El feed requiere external_id estable.');
     const mapping=(await db.query('SELECT * FROM source_products WHERE source_id=$1 AND external_id=$2',[sourceId,p.external_id])).rows[0];
     requireThat(!mapping||mapping.product_id===old?.id,'No se puede reasignar external_id a otro SKU.',409);
   }
-  const localDelta=Number((await db.query(`SELECT coalesce(sum(quantity),0) AS n FROM inventory_movements WHERE product_id=$1 AND kind IN ('sold','restock') AND created_at>$2`,[old?.id||null,updatedAt])).rows[0].n);
+  const localDelta=Number((await db.query(`SELECT coalesce(sum(quantity),0) AS n FROM inventory_movements WHERE product_id=$1 AND kind IN ('sold','restock') AND inventory_key='' AND created_at>$2`,[old?.id||null,updatedAt])).rows[0].n);
   const effectiveStock=p.stock+localDelta;
   requireThat(effectiveStock>=(old?.reserved||0),'El stock informado no cubre reservas locales. Requiere conciliación.',409,'stock_reconciliation');
   let status=p.active?(p.submit_for_review?'pending':'draft'):'archived';
   if(old?.status==='blocked') status='blocked';
+  const presentations=p.presentations??old?.presentations??[];const quoteEnabled=p.quote_enabled??old?.quote_enabled??false;
+  const stored=presentations.map(({stock,...rest})=>rest);
+  const presentationChanged=old&&JSON.stringify(stored)!==JSON.stringify(old.presentations);
   const sensitive=old&&['name','sku','category_id','variant','description','wholesale_cents','retail_cents','same_tax_basis','moq','pack_multiple'].some(key=>p[key]!== (key==='wholesale_cents'?old.supplier_cents:old[key]));
-  if(old?.status==='published'&&p.active) status=sensitive?'pending':'published';
+  if(old?.status==='published'&&p.active) status=(sensitive||presentationChanged)?'pending':'published';
   if(old&&JSON.stringify(p.specifications)!==JSON.stringify(old.specifications)&&old.status==='published') status='pending';
   const values=[brandId,p.category_id,p.name,p.description,p.sku,p.variant,p.specifications,priceForBuyer(p.wholesale_cents),p.retail_cents,p.same_tax_basis,p.moq,p.pack_multiple,status];
   values.push(p.wholesale_cents);
   const row=old?(await db.query(`UPDATE products SET category_id=$2,name=$3,description=$4,sku=$5,variant=$6,specifications=$7,wholesale_cents=$8,retail_cents=$9,same_tax_basis=$10,moq=$11,pack_multiple=$12,status=$13,supplier_cents=$14,updated_at=now() WHERE id=$15 AND brand_id=$1 RETURNING *`,[...values,old.id])).rows[0]
     :(await db.query(`INSERT INTO products(brand_id,category_id,name,description,sku,variant,specifications,wholesale_cents,retail_cents,same_tax_basis,moq,pack_multiple,status,supplier_cents) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,values)).rows[0];
+  for(const previous of old?.presentations||[]){
+    if(previous.stock_mode!=='separate')continue;
+    const replacement=presentations.find(x=>x.key===previous.key);
+    if(!replacement||replacement.stock_mode!=='separate'||replacement.units_per_pack!==previous.units_per_pack){
+      requireThat(!(old.pack_stock?.[previous.key]?.reserved),'No cambies una caja con reservas pendientes.',409);
+      const historical=(await db.query("SELECT 1 FROM order_items WHERE product_id=$1 AND snapshot->'pricing'->>'inventory_key'=$2 LIMIT 1",[old.id,previous.key])).rowCount;
+      requireThat(!historical,'Esta caja tiene historial de pedidos. Conserva su configuración y crea otra presentación para cambiar el contenido o el inventario.',409);
+    }
+  }
+  const packStock=Object.create(null);
+  for(const pres of presentations.filter(x=>x.stock_mode==='separate')){
+    const previous=old?.pack_stock?.[pres.key];
+    if(previous?.reserved)requireThat(old.presentations.find(x=>x.key===pres.key)?.units_per_pack===pres.units_per_pack,'No cambies el contenido de una caja con reservas pendientes.',409);
+    const total=pres.stock===undefined?(previous?.total??0):pres.stock*pres.units_per_pack;
+    requireThat(Number.isSafeInteger(total)&&total<=1_000_000&&total>=(previous?.reserved||0),'El stock de cajas no cubre las reservas o supera el límite.',409);
+    packStock[pres.key]={total,reserved:previous?.reserved||0};
+  }
+  for(const [key,bucket] of Object.entries(old?.pack_stock||{}))requireThat(!bucket.reserved||packStock[key],'No retires una presentación con reservas pendientes.',409);
+  await db.query('UPDATE products SET presentations=$2,quote_enabled=$3 WHERE id=$1',[row.id,JSON.stringify(stored),quoteEnabled]);
   await db.query(`INSERT INTO inventory(product_id,total,source_updated_at) VALUES($1,$2,$3) ON CONFLICT(product_id) DO UPDATE SET total=$2,source_updated_at=$3,updated_at=now()`,[row.id,effectiveStock,updatedAt]);
+  await db.query('UPDATE inventory SET pack_stock=$2 WHERE product_id=$1',[row.id,packStock]);
   await db.query(`INSERT INTO inventory_movements(product_id,kind,quantity,reference) VALUES($1,'source_snapshot',$2,$3)`,[row.id,effectiveStock,`source:${row.id}:${crypto.randomUUID()}`]);
   const priorImages=(await db.query('SELECT url,alt FROM product_images WHERE product_id=$1 ORDER BY position',[row.id])).rows;
   if(JSON.stringify(priorImages)!==JSON.stringify(p.images)) {

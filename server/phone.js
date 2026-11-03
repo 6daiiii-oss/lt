@@ -9,7 +9,7 @@ export { phoneNumber } from './phone-format.js';
 import { audit, decrypt, digest, encrypt, equal, id, parse, requireThat } from './lib.js';
 
 export function phoneVerified(req,res,next) {
-  try {requireThat(req.user?.phone_verified_at,'Verifica tu número para continuar.',403,'phone_unverified');next();}catch(e){next(e);}
+  try {requireThat(req.user&&(!config.phoneVerificationRequired||req.user.phone_verified_at),'Verifica tu número para continuar.',403,'phone_unverified');next();}catch(e){next(e);}
 }
 async function twilioRequest(resource,body) {
   requireThat(config.smsProvider==='twilio'&&process.env.TWILIO_ACCOUNT_SID&&process.env.TWILIO_AUTH_TOKEN&&process.env.TWILIO_VERIFY_SERVICE_SID,'El servicio SMS aún no está configurado.',503,'sms_unavailable');

@@ -1,3 +1,4 @@
+import {presentationEditorMarkup,bindPresentationEditor} from './presentation-editor.js';
 import { api } from './api.js';
 import { area, check, fieldFailure, esc, field, formEnd, inputMoney, money, notice, onForm, select, toast, toCents } from './ui.js';
 import { pageHeader } from './layout.js';
@@ -13,6 +14,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   <h2 class="full">2. Datos del producto</h2>
   ${field('name','Nombre del producto','text',p.name||'','required maxlength="500"')}
   ${select('category_id','Categoría',[['','Selecciona una categoría'],...categories.map(c=>[c.id,c.name])],p.category_id||'')}
+  ${field('variant','Variante o modelo','text',p.variant||'','maxlength="150" placeholder="Ej.: blanco, talla M o modelo A"')}
   ${field('wholesale','Tu precio por unidad (S/)','number',p.id?inputMoney(p.wholesale_cents):'','min="0.01" step="0.01" required')}
   <div>${field('retail','Precio sugerido de reventa (S/, opcional)','number',p.retail_cents?inputMoney(p.retail_cents):'','min="0.01" step="0.01" placeholder="Ej.: 35.00"')}<p class="small muted">Precio orientativo para las tiendas. No obliga a revender a ese importe.</p></div>
   <details class="full"><summary>Comparar precios e impuestos (opcional)</summary>
@@ -20,6 +22,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
     <p class="small muted" id="resale-preview" aria-live="polite"></p>
     ${check('same_tax_basis','Ambos precios corresponden a la misma unidad e incluyen los mismos impuestos (para calcular una diferencia comparable).',p.same_tax_basis)}
   </details>
+  ${presentationEditorMarkup(p)}
   <h2 class="full">3. Unidades disponibles y compra mínima</h2>
   <div>${field('stock','¿Cuántas unidades tienes para vender?','number',p.total??0,`min="${p.reserved||0}" max="1000000" step="1" required`)}<p class="small muted">Ejemplo: si tienes 1100 unidades guardadas, escribe 1100 aquí.</p></div>
   <div>${field('moq','Mínimo de unidades por compra','number',p.moq??1,'min="1" max="1000000" step="1" required')}<p class="small muted">Deja 1 si puede comprar una sola unidad. Este campo NO es la cantidad que tienes.</p></div>
@@ -38,7 +41,7 @@ export function productEditor(p,categories,{onboarding=false}={}) {
   <div class="full">${check('submit_for_review','Enviar a Vendo para que revise y publique el producto',p.id?p.status==='pending':true)}${formEnd(onboarding?'Guardar y seguir con mi catálogo':'Guardar producto')}</div>
   </form></section>`,bind(){
     const form=document.querySelector('[data-form=product]'),price=form.elements.wholesale,retail=form.elements.retail,sameTaxBasis=form.elements.same_tax_basis,minimum=form.elements.moq,stock=form.elements.stock,packCount=p.pack_multiple??1;
-    form.elements.category_id.required=true;
+    form.elements.category_id.required=true;const readPresentations=bindPresentationEditor(p);
     const explain=()=>{
       const n=Number(minimum.value),available=Number(stock.value),step=packCount;
       let base=null;
@@ -92,7 +95,8 @@ export function productEditor(p,categories,{onboarding=false}={}) {
         if(!Number.isFinite(n)||n<=(0)||n>100000)throw new Error('Revisa '+key+': debe ser un número positivo.');
         specs[key]=String(n);
       }
-      const body={name:d.name,sku:draftSku,variant:p.variant||'',category_id:d.category_id,description:d.description,specifications:specs,wholesale_cents:toCents(d.wholesale),retail_cents:d.retail?toCents(d.retail):null,moq:Number(d.moq),pack_multiple:packCount,stock:Number(d.stock),same_tax_basis:!!d.same_tax_basis,active:!!d.active,submit_for_review:!!d.submit_for_review,images:photos.map(im=>({url:im.url,alt:d.name}))};
+      const presentations=readPresentations();
+      const body={presentations,quote_enabled:!!d.quote_enabled,name:d.name,sku:draftSku,variant:d.variant?.trim()||'',category_id:d.category_id,description:d.description,specifications:specs,wholesale_cents:presentations.length?Math.max(1,Math.ceil(presentations[0].price_cents/presentations[0].units_per_pack)):toCents(d.wholesale),retail_cents:d.retail?toCents(d.retail):null,moq:presentations.length?1:Number(d.moq),pack_multiple:presentations.length?1:packCount,stock:Number(d.stock),same_tax_basis:!!d.same_tax_basis,active:!!d.active,submit_for_review:!!d.submit_for_review,images:photos.map(im=>({url:im.url,alt:d.name}))};
       const saved=await api('/seller/products'+(p.id?'/'+p.id:''),{method:p.id?'PUT':'POST',body});navigate('/panel/producto-guardado?id='+encodeURIComponent(saved.id));
     },{fieldMap:{wholesale_cents:"wholesale",retail_cents:"retail"}});
   }};

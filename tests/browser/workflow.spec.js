@@ -52,7 +52,7 @@ test('proveedores → catálogo moderado → bolsa multimarcas → sandbox → e
   }finally{await Promise.all(contexts.map(context=>context.close().catch(()=>{})));}
 });
 
-test('registro de proveedor: solo número, acceso directo y dos productos sin verificar correo',async({page})=>{
+test('registro de proveedor: acceso directo sin SMS y dos productos sin verificar correo',async({page})=>{
   const email='registro-'+Date.now()+'@example.invalid',password='Registro-seguro-password-2026';
   await page.goto('/registro?tipo=proveedor');
   await page.getByLabel('Tu nombre',{exact:true}).fill('Prueba de registro');
@@ -61,11 +61,7 @@ test('registro de proveedor: solo número, acceso directo y dos productos sin ve
   await page.getByLabel('Correo electrónico',{exact:true}).fill(email);
   await page.getByLabel('Contraseña · mínimo 12 caracteres').fill(password);
   await page.locator('[name=terms_accepted]').check();
-  await page.getByRole('button',{name:'Continuar y verificar mi número',exact:true}).click();
-  await expect(page).toHaveURL(/\/registro\/celular$/);
-  const code=page.locator('.notice strong');await expect(code).toHaveText(/^\d{6}$/);
-  await page.getByLabel('Código de 6 dígitos',{exact:true}).fill(await code.innerText());
-  await page.getByRole('button',{name:'Verificar y continuar',exact:true}).click();
+  await page.getByRole('button',{name:'Crear mi cuenta de proveedor',exact:true}).click();
   await expect(page).toHaveURL(/\/panel\/empezar$/);
   await expect(page.getByRole('heading',{name:'¡Bienvenido a Vendo!',exact:true})).toBeVisible();
   await page.setViewportSize({width:390,height:900});await noOverflow(page);
@@ -128,7 +124,7 @@ test('la marca selecciona regiones con casillas y las conserva al guardar',async
 });
 
 
-test('paneles operativos y simulador 7%: sin errores ni desbordes en móvil',async({browser})=>{
+test('paneles operativos y simulador 5%: sin errores ni desbordes en móvil',async({browser})=>{
   const accounts=JSON.parse(await readFile('.runtime/ui-accounts.json','utf8'));
   for(const [role,paths] of [['sellerA',['/panel/inventario','/panel/envios','/panel/incidencias','/panel/tiendas','/panel/finanzas']],['admin',['/administracion/finanzas','/administracion/logistica','/administracion/lanzamiento']]]) {
     const context=await browser.newContext(),page=await context.newPage(),errors=[];
@@ -141,7 +137,7 @@ test('paneles operativos y simulador 7%: sin errores ni desbordes en móvil',asy
         await page.setViewportSize({width:390,height:900});await noOverflow(page);
       }
       await page.goto(role==='admin'?'/administracion/finanzas':'/panel/finanzas');if(role!=='admin')await page.getByText('Dinero y comisiones',{exact:true}).click();
-      await expect(page.locator('#fee-simulation')).toContainText('70.00');
+      await expect(page.locator('#fee-simulation')).toContainText('50.00');
       await page.getByLabel('Total de productos (S/)',{exact:true}).fill('1400');
       await expect(page.locator('#fee-simulation')).toContainText('98.00');
       const calculator=page.locator('.card').filter({has:page.getByRole('heading',{name:'Comisión de Vendo',exact:true})}).last();

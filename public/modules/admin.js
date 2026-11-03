@@ -46,7 +46,7 @@ export async function adminView(path) {
   }
     if(path==='/administracion/comisiones') {
       const rules=await api('/admin/commissions');
-      return {html:pageHeader('Precios y comisión','Comisión del 7%, IGV incluido','Sobre el precio de los productos, sin comisión sobre envío. El costo contratado de procesamiento se informará al comprador antes de pagar.')+notice('La misma comisión se aplica a primeras compras y recompras. Cada pedido conserva su versión y desglose. El procesamiento requiere cotización e integración real antes de habilitar cobros.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
+      return {html:pageHeader('Precios y comisión','Comisión del 5%, IGV incluido','Sobre el precio de los productos, sin comisión sobre envío. El costo contratado de procesamiento se informará al comprador antes de pagar.')+notice('La misma comisión se aplica a primeras compras y recompras. Cada pedido conserva su versión y desglose. El procesamiento requiere cotización e integración real antes de habilitar cobros.')+button('Simular liquidación','/administracion/finanzas',true)+(rules.length?table(['Marca','Porcentaje histórico','Vigencia'],rules.map(r=>'<tr><td>'+esc(r.brand_id||'General')+'</td><td>'+r.basis_points/100+'%</td><td>'+date(r.effective_at)+'</td></tr>')):'')};
     }
 
   if(path==='/administracion/incidencias') {

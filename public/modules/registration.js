@@ -4,7 +4,7 @@ import { button, esc, field, formEnd, notice, onForm, toast } from './ui.js';
 import { navigate, reload } from './router.js';
 export async function registrationPhoneView() {
  if(!state.user){navigate('/registro',{replace:true});return {html:''};}
- if(state.user.phone_verified_at){navigate(currentOrg()?.kind==='seller'?'/panel/empezar':'/cuenta',{replace:true});return {html:''};}
+ if(!state.phoneVerificationRequired||state.user.phone_verified_at){navigate(currentOrg()?.kind==='seller'?'/panel/empezar':'/cuenta',{replace:true});return {html:''};}
  const p=await api('/auth/phone'),messages=p.localPreview?await api('/dev/sms'):[];
  const body=`
  ${p.localPreview?notice('Prueba local: no se envían mensajes reales. Usa el código de ejemplo que aparece abajo.','warning'):''}

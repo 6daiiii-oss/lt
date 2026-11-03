@@ -5,9 +5,9 @@ import { config } from './config.js';
 import { id, parse, requireThat } from './lib.js';
 export const catalogRouter=Router();
 export const catalogFrom=`FROM products p JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id JOIN inventory i ON i.product_id=p.id JOIN categories c ON c.id=p.category_id`;
-export const catalogColumns=`p.id,p.name,p.description,p.sku,p.variant,p.specifications,p.category_id,p.wholesale_cents,p.retail_cents,p.moq,p.pack_multiple,p.published_at,
+export const catalogColumns=`p.id,p.name,p.description,p.presentations,p.quote_enabled,p.sku,p.variant,p.specifications,p.category_id,p.wholesale_cents,p.retail_cents,p.moq,p.pack_multiple,p.published_at,
  b.id AS brand_id,b.name AS brand_name,b.min_order_cents,b.shipping_cents,b.shipping_regions,b.location,b.preparation_days,b.shipping_policy,b.return_policy,
- i.total-i.reserved AS available,i.source_updated_at,
+ i.total-i.reserved AS available,(SELECT coalesce(jsonb_object_agg(entry.key,(entry.value->>'total')::int-(entry.value->>'reserved')::int),'{}'::jsonb) FROM jsonb_each(i.pack_stock) entry) AS presentation_available,i.source_updated_at,
  CASE WHEN p.retail_cents>0 AND p.same_tax_basis THEN round((p.retail_cents-p.wholesale_cents)*100.0/p.retail_cents,2) END AS margin_percent,
  (SELECT json_agg(json_build_object('url',pi.url,'alt',pi.alt) ORDER BY position) FROM product_images pi WHERE pi.product_id=p.id) AS images`;
 export const visible=`p.status='published' AND o.status='approved' AND b.terms_approved=true`;

@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 export const config = {
+  phoneVerificationRequired: false,
   demo: process.env.LOTE_DEMO_MODE === 'true',
   cookieName: process.env.LOTE_DEMO_MODE === 'true' ? 'lote_demo_session' : 'lote_session',
   production: process.env.NODE_ENV === 'production',

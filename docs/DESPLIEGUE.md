@@ -5,7 +5,7 @@ Esta entrega permite publicar el catálogo y utilizar sus paneles. **No habilita
 ## Condiciones implementadas
 
 - La marca declara precio final por unidad con IGV incluido. El precio publicado no recibe un recargo de Vendo.
-- Comisión del 7% sobre el total de productos, con el IGV del servicio incluido, tanto en primer pedido como en recompra. El transporte no genera comisión.
+- Comisión del 5% sobre el subtotal final de productos después de descuentos, con el IGV del servicio incluido, tanto en primer pedido como en recompra. El transporte no genera comisión.
 - En productos por S/1.000, la comisión total es S/70: servicio S/59,32 e IGV S/10,68. El proveedor recibe S/930 más el envío que le corresponda.
 - Desglose congelado por pedido; historial sin recalcular. Si una entrega se anula posteriormente, los pedidos ya creados no cambian.
 - El comprador asumiría el procesamiento de la pasarela, sujeto a contrato y condiciones legales. El simulador admite una cotización explícita; no inventa una tarifa. Por ejemplo, con productos por S/1.000 y una cotización de S/35, el comprador pagaría S/1.035 y el proveedor conservaría S/930. El simulador administrativo reparte importes en céntimos y no mueve dinero.

@@ -1,10 +1,10 @@
 > Compras cerradas: los productos muestran «No disponible»; no se puede añadir al carrito, reservar ni recomprar. Producción mantiene el bloqueo. Solo para recorridos sandbox fuera de producción puede activarse `SANDBOX_PURCHASES_ENABLED=true`. El registro y la carga de catálogo no dependen de esta opción.
 
-> Actualización de registro: los nuevos proveedores verifican solo su celular durante el alta y pasan a `/panel/empezar` para crear varios productos. El correo no bloquea catálogo ni revisión comercial. SMS real requiere Twilio configurado; GitHub Pages sigue siendo una vista sin cuentas ni guardado. Ver [guía de registro](docs/REGISTRO_PROVEEDORES.md).
+> Actualización de registro: los nuevos proveedores registran su celular como contacto, sin SMS obligatorio, y pasan a `/panel/empezar` para crear varios productos. El correo no bloquea catálogo ni revisión comercial. La verificación por SMS queda opcional; GitHub Pages sigue siendo una vista sin cuentas ni guardado. Ver [guía de registro](docs/REGISTRO_PROVEEDORES.md).
 
 # Vendo · catálogo B2B y preparación comercial
 
-Sitio oficial: https://vendo-peru.onrender.com. El registro incluye condiciones y privacidad versionadas. Las compras reales siguen cerradas. Comisión prevista: 7% con IGV incluido sobre productos; procesamiento al comprador, pendiente de pasarela contratada y cotización. Consulta [estado y verificaciones de esta entrega](docs/ENTREGA_VENDO.md).
+Sitio oficial: https://vendo-peru.onrender.com. El registro incluye condiciones y privacidad versionadas. Las compras reales siguen cerradas. Comisión vigente: 5% con IGV incluido sobre el subtotal final de productos después de descuentos; procesamiento al comprador, pendiente de pasarela contratada y cotización. Consulta [estado y verificaciones de esta entrega](docs/ENTREGA_VENDO.md).
 
 Lote conecta marcas y proveedores revisados con tiendas independientes para reventa. Perú, español y PEN (S/). Frontend modular HTML/CSS/JavaScript, API Express 5 y PostgreSQL 17. **No hay cobros, transferencias ni comprobantes fiscales reales habilitados.**
 
@@ -101,7 +101,7 @@ Los importes son enteros en céntimos; cantidades y múltiplos son enteros. El s
 
 El checkout crea una compra padre y pedidos por marca, guarda snapshots y reserva inventario dentro de transacciones. El adaptador sandbox entrega eventos HMAC con cuerpo original, timestamp e ID único. Una URL del navegador no confirma pagos. Un pago tardío sin reserva válida queda en excepción para conciliación, sin sobreventa.
 
-La marca ingresa el precio final con IGV, sin recargo al comprador. Lote aplica 10% inicial / 7% recurrente sobre productos sin IGV ni envío, más IGV de la comisión. Recompra: misma tienda y marca con entrega previa no totalmente reembolsada. Se guarda el desglose en el pedido; no se recalcula el historial. El procesamiento es estimado y no se descuenta de las liquidaciones sandbox. Los detalles tributarios y de despliegue están en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
+La marca ingresa el precio final con IGV, sin recargo al comprador. Vendo descuenta 5% del subtotal final de productos después de los tramos o precios negociados; el IGV de la comisión está incluido y el envío no genera comisión. Cada pedido conserva su desglose histórico. El procesamiento corresponde al comprador y requiere una tarifa real contratada antes de habilitar cobros. Consulta [presentaciones y cotizaciones](docs/PRESENTACIONES_Y_COTIZACIONES.md).
 
 Los precios suponen bienes gravados al 18%; no hay emisión fiscal ni cobros reales. El simulador separa servicio, IGV y procesamiento. Revisar impuestos por categoría antes de habilitar ventas.
 

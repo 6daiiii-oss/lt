@@ -14,7 +14,7 @@ before(async()=>{
 });
 beforeEach(async()=>{
   await db.query('TRUNCATE users,organizations RESTART IDENTITY CASCADE');
-  config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;config.smsProvider='sandbox';config.production=false;config.purchasesEnabled=true;
+  config.phoneVerificationRequired=false;config.coverageRegions=[];config.feedOrigins=[];config.sandboxBps=0;config.smsProvider='sandbox';config.production=false;config.purchasesEnabled=true;
   accounts=await fixtures(db);
 });
 after(async()=>{if(server){await new Promise(resolve=>server.close(resolve));}if(db)await db.pool.end();if(isolated)await isolated.drop();});
@@ -115,9 +115,10 @@ test('precio final sin recargo: edición conserva precios y compradores no ven c
     assert.equal(JSON.stringify(data).includes('supplier_'),false);assert.equal(JSON.stringify(data).includes('commission'),false);
   }
   const seller=(await request('GET','/orders/'+oid,undefined,accounts.sellerA)).data;
-  assert.equal(seller.commission_cents,700);assert.equal(seller.subtotal_cents,10000);
+  assert.equal(seller.commission_cents,500);assert.equal(seller.subtotal_cents,10000);
 });
-test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación obligatoria',async()=>{
+test('SMS local opcional y controles si se reactiva la verificación obligatoria',async()=>{
+  config.phoneVerificationRequired=true;
   const user=accounts.buyerA;
   const p=await product(db,accounts.sellerA);await putInCart(user,p);
   await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
@@ -139,7 +140,8 @@ test('SMS local: titular, intentos persistentes, reuso, cooldown y verificación
   assert.equal((await request('GET','/dev/sms',undefined,user)).status,404);
   assert.equal((await post('/auth/phone/send',{phone:'+51987654322'},user)).status,503);
 });
-test('SMS bloquea tras 5 intentos y rechaza códigos caducados; marcas sin celular no crean productos',async()=>{
+test('SMS bloquea tras 5 intentos; el bloqueo de marca solo aplica si se exige verificación',async()=>{
+  config.phoneVerificationRequired=true;
   const user=accounts.sellerA;
   await db.query('UPDATE users SET phone_verified_at=NULL WHERE id=$1',[user.userId]);
   assert.equal((await post('/seller/products',{},user)).data.code,'phone_unverified');
@@ -281,9 +283,9 @@ test('confirmación del frontend, importe alterado y webhook sin firma nunca con
 });
 test('cambio de comisión no altera snapshots ni liquidaciones históricas',async()=>{
   await db.query(`INSERT INTO commission_rules(basis_points,effective_at,approved_by) VALUES(350,now()-interval '1 day',$1)`,[accounts.admin.userId]);
-  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,700);assert.equal(orders[0].commission_cents,105);
+  const {orders}=await paidOrder();assert.equal(orders[0].commission_bps,500);assert.equal(orders[0].commission_cents,75);
   await post('/admin/commissions',{brand_id:null,basis_points:1500,effective_at:new Date().toISOString()},accounts.admin);
-  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:700,commission_cents:105});
+  const old=(await db.query('SELECT commission_bps,commission_cents FROM orders WHERE id=$1',[orders[0].id])).rows[0];assert.deepEqual(old,{commission_bps:500,commission_cents:75});
 });
 test('aislamiento: dos marcas y dos tiendas; CSRF y origen; API de proveedor queda ligada a su organización',async()=>{
   const p=await product(db,accounts.sellerA);const {orders}=await paidOrder();
@@ -360,7 +362,7 @@ test('sincronización incremental idempotente, stock antiguo no sobrescribe, aus
   config.feedOrigins=['https://127.0.0.1'];await assert.rejects(()=>fetchAuthorizedFeed({url:'https://127.0.0.1/feed'}),e=>e.status===403);
 });
 test('tokens de correo de un uso y expiración; recuperación revoca sesiones, sin exposición entre cuentas',async()=>{
-  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-10-22.1',email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',phone:'+51987654329',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
+  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-11-03.1',email:'new@demo.invalid',password:'Demo-only-password-123',name:'DEMO Nueva',businessName:'DEMO Nuevo negocio',phone:'+51987654329',kind:'buyer'});assert.equal(signup.status,201,JSON.stringify(signup.data));
   const cookie=signup.headers.get('set-cookie').split(';')[0];const me=await request('GET','/me',undefined,{cookie,csrf:''});
   const user={cookie,csrf:me.data.csrfToken,orgId:me.data.organizationId};
   await post('/auth/resend',{},user);
@@ -432,28 +434,28 @@ test('imágenes se decodifican, normalizan y mantienen privadas; otra organizaci
 });
 
 
-test('7%: only an eligible delivery establishes same-buyer same-brand recurrence',async()=>{
+test('5%: only an eligible delivery establishes same-buyer same-brand recurrence',async()=>{
   const p=await product(db,accounts.sellerA,{wholesale_cents:100000,moq:1,stock:20});
   await putInCart(accounts.buyerA,p);
   const first=await checkout(accounts.buyerA);assert.equal(first.status,201);
   const firstOrder=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[first.data.purchase_id])).rows[0];
-  assert.equal(firstOrder.commission_bps,700);assert.equal(firstOrder.commission_cents,7000);
+  assert.equal(firstOrder.commission_bps,500);assert.equal(firstOrder.commission_cents,5000);
   await services.applyPaymentEvent({event_id:randomUUID(),attempt_id:first.data.payment_attempt_id,kind:'approved',amount_cents:firstOrder.total_cents,occurred_at:new Date().toISOString()});
   await db.query("UPDATE orders SET state='delivered' WHERE id=$1",[firstOrder.id]);
   await putInCart(accounts.buyerA,p);
   const repeat=await checkout(accounts.buyerA);assert.equal(repeat.status,201);
   const repeated=(await db.query('SELECT * FROM orders WHERE purchase_id=$1',[repeat.data.purchase_id])).rows[0];
-  assert.equal(repeated.commission_bps,700);assert.equal(repeated.commission_cents,7000);
+  assert.equal(repeated.commission_bps,500);assert.equal(repeated.commission_cents,5000);
   assert.equal(repeated.policy_snapshot.fees.recurrent,true);
   await putInCart(accounts.buyerB,p);
   const other=await checkout(accounts.buyerB);
-  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,700);
+  assert.equal((await db.query('SELECT commission_bps FROM orders WHERE purchase_id=$1',[other.data.purchase_id])).rows[0].commission_bps,500);
   // Cancel pending repeat and fully refund original: it must no longer qualify.
   await services.expireCheckout(repeat.data.checkout_id,{force:true});
   await db.query('UPDATE orders SET refunded_cents=total_cents WHERE id=$1',[firstOrder.id]);
   const fresh=await checkout(accounts.buyerA);assert.equal(fresh.status,201);
   const freshOrder=(await db.query('SELECT commission_bps,policy_snapshot FROM orders WHERE purchase_id=$1',[fresh.data.purchase_id])).rows[0];
-  assert.equal(freshOrder.commission_bps,700);assert.equal(freshOrder.policy_snapshot.fees.recurrent,false);
+  assert.equal(freshOrder.commission_bps,500);assert.equal(freshOrder.policy_snapshot.fees.recurrent,false);
 });
 
 test('new seller read models require seller role and isolate buyers/shipments/incidents',async()=>{
@@ -467,14 +469,15 @@ test('new seller read models require seller role and isolate buyers/shipments/in
   }
 });
 
-test('phone-only registration: unverified email can create multiple products after OTP; no shortcuts',async()=>{
-  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-10-22.1',email:'phoneonly@demo.invalid',password:'Phone-only-password-123',name:'Persona',businessName:'Marca nueva',phone:'987654328',kind:'seller',tax_id:'20123456789'});
+test('registro sin SMS: celular y correo sin verificar permiten preparar productos; OTP opcional',async()=>{
+  const signup=await post('/auth/register',{terms_accepted:true,terms_version:'2026-11-03.1',email:'phoneonly@demo.invalid',password:'Phone-only-password-123',name:'Persona',businessName:'Marca nueva',phone:'987654328',kind:'seller',tax_id:'20123456789'});
   assert.equal(signup.status,201,JSON.stringify(signup.data));
   const cookie=signup.headers.get('set-cookie').split(';')[0],me=(await request('GET','/me',undefined,{cookie,csrf:''})).data;
   const user={cookie,csrf:me.csrfToken,orgId:me.organizationId};
   assert.equal(me.user.verified_at,null);assert.equal(me.user.phone_verified_at,null);
   assert.equal((await db.query('SELECT count(*) FROM mail_outbox WHERE user_id=$1',[me.user.id])).rows[0].count,'0');
-  assert.equal((await post('/seller/products',{},user)).data.code,'phone_unverified');
+  assert.equal((await post('/seller/products',{},user)).status,422);
+  assert.equal((await post('/seller/products',{name:'Antes de SMS',sku:'NO-SMS',category_id:'hogar',wholesale_cents:2500,moq:1,stock:20},user)).status,201);
   const sent=await post('/auth/phone/send',{phone:'987654328'},user);assert.equal(sent.status,201,JSON.stringify(sent.data));
   assert.equal((await post('/auth/phone/verify',{id:sent.data.id,code:'000000'},user)).status,422);
   const sms=(await request('GET','/dev/sms',undefined,user)).data[0];
@@ -486,7 +489,7 @@ test('phone-only registration: unverified email can create multiple products aft
   await post('/auth/forgot',{email:'phoneonly@demo.invalid'});
   assert.equal((await db.query('SELECT count(*) FROM mail_outbox WHERE user_id=$1',[me.user.id])).rows[0].count,'0');
   for(const n of [1,2])assert.equal((await post('/seller/products',{name:'Producto '+n,sku:'NEW-'+n,category_id:'hogar',wholesale_cents:2500,moq:2,stock:20,description:'Descripción clara del producto',submit_for_review:true},user)).status,201);
-  const own=(await request('GET','/seller/products',undefined,user)).data;assert.equal(own.length,2);assert.ok(own.every(p=>p.status==='pending'));
+  const own=(await request('GET','/seller/products',undefined,user)).data;assert.equal(own.length,3);assert.ok(own.filter(p=>p.sku!=='NO-SMS').every(p=>p.status==='pending'));
   assert.equal((await request('GET','/products')).data.products.some(p=>own.some(o=>o.id===p.id)),false);
   const org=(await request('GET','/organizations/me',undefined,user)).data;assert.equal(org.tax_id,'20123456789');
 });

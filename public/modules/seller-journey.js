@@ -8,7 +8,7 @@ export function sellerProgress(org,products,user){
  const profile=!!(org.legal_name&&org.business_type&&org.phone&&org.contact_email&&org.origin_address);
  const terms=!!(b.location&&b.shipping_regions?.length&&b.shipping_policy&&b.return_policy&&b.terms_approved);
  return [
-  {key:'phone',label:'Celular verificado',done:!!user.phone_verified_at,href:'/registro/celular',action:'Verificar celular'},
+  ...(state.phoneVerificationRequired?[{key:'phone',label:'Celular verificado',done:!!user.phone_verified_at,href:'/registro/celular',action:'Verificar celular'}]:[]),
   {key:'business',label:'Información comercial completada',done:profile&&terms,href:profile?'/panel/marca':'/cuenta/perfil',action:profile?'Completar condiciones':'Completar mi negocio'},
   {key:'products',label:'Productos agregados',done:products.some(p=>p.status!=='archived'),href:'/panel/productos/nuevo?inicio=1',action:'Añadir producto'},
   {key:'review',label:'Solicitud de revisión enviada',done:org.status==='approved'||['pending','approved'].includes(latest?.status),href:'/cuenta/perfil#revision',action:'Solicitar revisión'},

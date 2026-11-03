@@ -34,7 +34,7 @@ export async function identify(req,res,next) {
   } catch(e) { next(e); }
 }
 export function authenticated(req,res,next) { try { requireThat(req.user,'Inicia sesión.',401); next(); } catch(e){next(e);} }
-export function verified(req,res,next) { try { requireThat(req.user?.is_admin?req.user.verified_at:req.user?.phone_verified_at,'Verifica tu número para continuar.',403,'phone_unverified'); next(); } catch(e){next(e);} }
+export function verified(req,res,next) { try { requireThat(req.user?.is_admin?req.user.verified_at:(req.user&&(!config.phoneVerificationRequired||req.user.phone_verified_at)),'Verifica tu número para continuar.',403,'phone_unverified'); next(); } catch(e){next(e);} }
 export function orgRole(kind,{approved=false,owner=false}={}) {
   return (req,res,next)=>{ try {
     requireThat(req.user,'Inicia sesión.',401);
@@ -94,7 +94,7 @@ authRouter.post('/auth/register',accountLimit,async(req,res)=>{
     await audit(db,{user,org},'account.register',user.id,{kind:input.kind});
     await audit(db,{user,org},'legal.accepted',user.id,{version:LEGAL_VERSION,terms_sha256:hash(JSON.stringify(legalDocuments.terms)),privacy_sha256:hash(JSON.stringify(legalDocuments.privacy)),purpose:'account_and_catalog',marketing:false});
   });
-  res.status(201).json({message:'Datos guardados. Verifica tu número para completar el registro.'});
+  res.status(201).json({message:'Cuenta creada. Ya puedes preparar tu negocio.'});
 });
 authRouter.post('/auth/login',accountLimit,async(req,res)=>{
   const input=parse(z.object({email,password:z.string().max(128)}),req.body);
@@ -147,7 +147,7 @@ authRouter.post('/auth/password',authenticated,accountLimit,async(req,res)=>{
   res.clearCookie(config.cookieName,{path:'/'});res.json({message:'Contraseña actualizada. Inicia sesión de nuevo en tus dispositivos.'});
 });
 authRouter.get('/me',async(req,res)=>{
-  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,purchasesEnabled:config.purchasesEnabled&&!config.production,demo:demoEnabled(),phoneVerificationAvailable:config.smsProvider==='twilio',mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
+  res.json({user:req.user||null,organizations:req.organizations?.map(({payout_encrypted,...o})=>o)||[],organizationId:req.org?.id||null,csrfToken:req.session?.csrf_token||null,sandbox:!config.production,realCheckoutEnabled:false,purchasesEnabled:config.purchasesEnabled&&!config.production,demo:demoEnabled(),phoneVerificationRequired:config.phoneVerificationRequired,phoneVerificationAvailable:config.smsProvider==='twilio',mailLocal:!config.production&&!process.env.SMTP_HOST,contact:process.env.BUSINESS_CONTACT_EMAIL||null});
 });
 authRouter.get('/dev/mail',authenticated,async(req,res)=>{
   requireThat(!config.production&&!process.env.SMTP_HOST,'Buzón sandbox no disponible.',404);

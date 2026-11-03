@@ -1,3 +1,5 @@
+import {changeStock} from './stock.js';
+import {resolveLine,destinationMatches} from './line-pricing.js';
 import { Router } from 'express';
 import { createHmac, randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -10,9 +12,9 @@ import { lockBuyer } from './commerce.js';
 export async function releaseReservations(db,checkoutId) {
   const rows=(await db.query(`SELECT * FROM inventory_reservations WHERE checkout_id=$1 AND state='pending' ORDER BY product_id FOR UPDATE`,[checkoutId])).rows;
   for(const r of rows) {
-    await db.query('UPDATE inventory SET reserved=reserved-$2,updated_at=now() WHERE product_id=$1',[r.product_id,r.quantity]);
+    await changeStock(db,r.product_id,r.inventory_key,{reserved:-r.quantity});
     await db.query(`UPDATE inventory_reservations SET state='released' WHERE id=$1`,[r.id]);
-    await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,'released',$3,$4) ON CONFLICT(reference) DO NOTHING`,[r.product_id,checkoutId,r.quantity,`release:${r.id}`]);
+    await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference,inventory_key) VALUES($1,$2,'released',$3,$4,$5) ON CONFLICT(reference) DO NOTHING`,[r.product_id,checkoutId,r.quantity,`release:${r.id}`,r.inventory_key]);
   }
 }
 async function cancelPendingOrders(db,checkoutId,event) {
@@ -40,19 +42,20 @@ export async function expireReservations() {
 export function signWebhook(raw,timestamp) { return createHmac('sha256',config.webhookSecret).update(`${timestamp}.`).update(raw).digest('hex'); }
 export const paymentEventSchema=z.object({event_id:z.string().min(8).max(150),attempt_id:id,kind:z.enum(['approved','failed','expired','refund']),amount_cents:cents,occurred_at:z.iso.datetime(),order_id:id.optional(),refund_id:z.string().min(8).max(150).optional(),reason:z.string().max(1000).optional(),cancel_order:z.boolean().optional(),restock:z.boolean().optional()});
 async function paymentInventory(db,checkoutId) {
-  return (await db.query(`SELECT r.*,p.status,p.wholesale_cents,i.total,i.reserved,i.source_updated_at,o.status AS seller_status,b.terms_approved,b.shipping_cents,b.min_order_cents,b.shipping_policy,b.return_policy,b.shipping_regions,
-    oi.unit_price_cents,ord.shipping_cents AS frozen_shipping,ord.policy_snapshot
+  const rows=(await db.query(`SELECT r.*,p.presentations,p.moq,p.pack_multiple,p.variant,p.status,p.wholesale_cents,i.pack_stock,i.total,i.reserved,i.source_updated_at,o.status AS seller_status,b.terms_approved,b.shipping_cents,b.min_order_cents,b.shipping_policy,b.return_policy,b.shipping_regions,
+    oi.unit_price_cents,oi.snapshot,oi.line_total_cents,ord.buyer_id,ord.shipping_cents AS frozen_shipping,ord.policy_snapshot
     FROM inventory_reservations r JOIN products p ON p.id=r.product_id JOIN inventory i ON i.product_id=r.product_id
     JOIN brands b ON b.id=p.brand_id JOIN organizations o ON o.id=b.organization_id
     JOIN order_items oi ON oi.product_id=p.id JOIN orders ord ON ord.id=oi.order_id JOIN purchases pur ON pur.id=ord.purchase_id
     WHERE r.checkout_id=$1 AND pur.checkout_id=$1 ORDER BY r.product_id FOR UPDATE OF r,i,p,b,o`,[checkoutId])).rows;
+  for(const r of rows){try{const pricing=await resolveLine(db,{...r,id:r.product_id},{...r.snapshot.pricing,quantity:r.quantity,offer_id:r.snapshot.offer_id||undefined},r.buyer_id,{checkoutId});r.offer_destination=pricing.offer_destination;r.pricing_valid=pricing.line_total_cents===r.line_total_cents&&pricing.units===r.quantity;r.expected_shipping=pricing.offer_shipping_cents??r.shipping_cents;r.expected_minimum=pricing.offer_id?0:r.min_order_cents;}catch{r.pricing_valid=false;}}return rows;
 }
 function validPayment(c,reservations,buyerStatus) {
   const region=c.address_snapshot.region.trim().toLocaleLowerCase('es-PE');
   return buyerStatus==='approved'&&c.state==='pending'&&new Date(c.expires_at)>new Date()&&reservations.length>0
     &&(!config.coverageRegions.length||config.coverageRegions.includes(region))
-    &&reservations.every(r=>r.state==='pending'&&r.status==='published'&&r.seller_status==='approved'&&r.terms_approved&&r.shipping_regions.includes(region)
-      &&r.wholesale_cents===r.unit_price_cents&&r.shipping_cents===r.frozen_shipping&&r.min_order_cents===r.policy_snapshot.minimum_cents
+    &&reservations.every(r=>r.state==='pending'&&r.status==='published'&&r.seller_status==='approved'&&r.terms_approved&&(r.offer_destination?destinationMatches(r.offer_destination,c.address_snapshot):r.shipping_regions.includes(region))
+      &&r.pricing_valid&&r.expected_shipping===r.frozen_shipping&&r.expected_minimum===r.policy_snapshot.minimum_cents
       &&r.shipping_policy===r.policy_snapshot.shipping&&r.return_policy===r.policy_snapshot.returns
       &&Date.now()-new Date(r.source_updated_at).getTime()<=config.stockMaxAgeHours*3600_000);
 }
@@ -87,8 +90,8 @@ export async function applyPaymentEvent(untrusted) {
         if(event.restock) {
           const items=(await db.query('SELECT * FROM order_items WHERE order_id=$1 ORDER BY product_id',[order.id])).rows;
           for(const item of items) {
-            const movement=await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,'restock',$3,$4) ON CONFLICT(reference) DO NOTHING RETURNING id`,[item.product_id,c.id,item.quantity,`restock:${order.id}:${item.product_id}`]);
-            if(movement.rowCount) await db.query('UPDATE inventory SET total=total+$2,updated_at=now() WHERE product_id=$1',[item.product_id,item.quantity]);
+            const movement=await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference,inventory_key) VALUES($1,$2,'restock',$3,$4,$5) ON CONFLICT(reference) DO NOTHING RETURNING id`,[item.product_id,c.id,item.quantity,`restock:${order.id}:${item.product_id}`,item.snapshot.pricing?.inventory_key||'']);
+            if(movement.rowCount) await changeStock(db,item.product_id,item.snapshot.pricing?.inventory_key||'',{total:item.quantity});
           }
         }
         await db.query(`UPDATE orders SET state='cancelled' WHERE id=$1`,[order.id]);
@@ -121,9 +124,9 @@ export async function applyPaymentEvent(untrusted) {
         return {state:'exception'};
       }
       for(const r of reservations) {
-        await db.query('UPDATE inventory SET total=total-$2,reserved=reserved-$2,updated_at=now() WHERE product_id=$1',[r.product_id,r.quantity]);
+        await changeStock(db,r.product_id,r.inventory_key,{total:-r.quantity,reserved:-r.quantity});
         await db.query(`UPDATE inventory_reservations SET state='consumed' WHERE id=$1`,[r.id]);
-        await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference) VALUES($1,$2,'sold',$3,$4)`,[r.product_id,c.id,-r.quantity,`sold:${r.id}`]);
+        await db.query(`INSERT INTO inventory_movements(product_id,checkout_id,kind,quantity,reference,inventory_key) VALUES($1,$2,'sold',$3,$4,$5)`,[r.product_id,c.id,-r.quantity,`sold:${r.id}`,r.inventory_key]);
       }
       await db.query(`UPDATE checkouts SET state='approved' WHERE id=$1`,[c.id]);
       await db.query(`UPDATE purchases SET payment_state='approved' WHERE checkout_id=$1`,[c.id]);
